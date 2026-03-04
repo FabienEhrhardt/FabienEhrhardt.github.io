@@ -59,6 +59,18 @@
   <div id="fb4" class="feedback"></div>
 </div>
 
+<div class="question">
+  <p><b>Question 5 :</b> <span id="q5_texte"></span></p>
+  <input type="number" id="q5">
+  <span id="unite5"></span>
+  <button onclick="validerQ5()">Valider</button>
+  <div id="fb5" class="feedback"></div>
+</div>
+
+
+
+
+
 <button onclick="envoyerScore()">Envoyer le résultat</button>
 
 </div>
@@ -69,47 +81,64 @@ let q1Done = false;
 let q2Done = false;
 let q3Done = false;
 let q4Done = false;
+let q5Done = false;
 
 let titre_texte, enonce_texte,nomExo,theme;
-let Question1,Question2,Question3,Question4;
-let R1,R2,R3,R4;
-let Unite1, Unite2, Unite3,Unite4;
-let FbRep1, FbRep2,FbRep3,FpRep4;
+let Question1,Question2,Question3,Question4,Question5;
+let R1,R2,R3,R4,R5;
+let Unite1, Unite2, Unite3,Unite4,Unite5;
+let FbRep1, FbRep2,FbRep3,FpRep4,FbRep5;
 let nbquestion;
 
+// Paramètre exercice
 
-// Paramètres du signal
-let Rch=2*(Math.floor(Math.random() * 9) + 1); // Résistance charge
-let E=1.5*(Math.floor(Math.random() * 32) + 1); //tension à vide de la batterie
-let Rint=0.05*(Math.floor(Math.random() * 9) + 1); // Résistance interne de la batterie
-let Ich=1;
+let tau=10*(Math.floor(Math.random() * 50)+1); //constante de temps
+let E=10*(Math.floor(Math.random() * 50)+1); // Consigne
+let K=0.5+0.5*(Math.floor(Math.random() * 10)+1); // gain statique
+let Xsmax=0;
+let tr5=0;
+let Xsinf=K*E;
+let Xs95=0.95*Xsinf;
+let Xs105=1.05*Xsinf;
+let stabilise=false;
 
-let xmax = (Math.floor(Math.random() * 18) + 2); //valeur maximale sur l'axe X
-let NomCourbe1 = "Tension batterie (V)";
-let NomCourbe2 = "Tension charge (V)";
-let TitreAxeX = "Courant I (A)";
-let TitreAxeY = "Tension V (V)";
-let ymax1 = 50; //valeur maximale sue l'axe Y1
-let ymax2 = 50; //valeur maximale sue l'axe Y2
+
+
+
+
+let xmax = superarrondi(6*tau); //valeur maximale sur l'axe X
+let NomCourbe1 = "Consigne Xc";
+let NomCourbe2 = "Sortie Xs";
+let TitreAxeX = "temps (s)";
+let TitreAxeY = "Grandeurs";
+let ymax1 = superarrondi(1.1*Math.max(E,K*E)); //valeur maximale sue l'axe Y1
+let ymax2 = superarrondi(1.1*Math.max(E,K*E)); //valeur maximale sue l'axe Y2
+
 
 
 function fonction1(t){
-   // V=E-RI batterie
-   return E-Rint*t;
+   // Consigne
+   return E;
 }
 
 function fonction2(t){
-   //V=RI résistance
-   return Rch*t;
+   //Sortie asservie
+   let Xs=K*E*(1-Math.exp(-t/tau));
+   
+	return Xs;
 }
 
 
 //Permet de faire un arrondi.
-function arrondi(num){
-	if(num===0) return 0;
-	return Math.round((num)*Math.pow(10,1-Math.floor(Math.log10((num)))))/Math.pow(10,1-Math.floor(Math.log10((num))));
+function superarrondi(num){
+	
+	return Math.ceil((num)*Math.pow(10,-Math.floor(Math.log10((num)))))/Math.pow(10,-Math.floor(Math.log10((num))));
 }
 
+function arrondi(num){
+	if(num===0) return 0;
+	return Math.round((num)*Math.pow(10,2-Math.floor(Math.log10((num)))))/Math.pow(10,2-Math.floor(Math.log10((num))));
+}
 
 
 
@@ -117,39 +146,44 @@ window.onload = function () {
   
   // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
   /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
-  nbquestion=4;
+  nbquestion=5;
   nomExo="exo1";
-  theme="5";
+  theme="2";
   //Titre de l'exercice
-  titre_texte="Modèle de Thévenin d'une batterie";
+  titre_texte="Etude de la réponse indicielle d'un système du premier ordre";
   //Enoncé de l'exercice
-  enonce_texte="A partir de la courbe modélisée d'une batterie, déterminer les paramètres"
+  enonce_texte="A partir de la mesure de la consigne et de la sortie, déterminer les paramètres"
   
   // Ecriture des questions 
   //QuestionX : énoncé de la question
   //FbRepX : Feedback de la question
   //RX : réponse de la question
   //UnitéX : unité de la réponse
-  Question1=`Donner la tension à vide`;
-  R1=E;
-  FbRep1 =`C'est la valeur de la tension lorsque le courant est nul \\(E=${R1}V\\)`;
-  Unite1=`\\(V\\)`;
+  Question1=`Déterminer la valeur de la sortie en régime permanent`;
+  R1=arrondi(K*E);
+  FbRep1 =`C'est la valeur lorsque la grandeur de sortie n'évolue plus \\(X_{s \\infty}=${R1}\\)`;
+  Unite1=`\\(\\)`;
   
-  Question2=`Déterminer la résistance interne de la batterie ` ;
-  R2=arrondi(Rint);
-  FbRep2 =`\\(R_{int}=\\frac{\\Delta V}{\\Delta I}=${R2}\\Omega\\)`;
-  Unite2=`\\(\\Omega\\)`;
+  Question2=`Calculer le gain statique`;
+  R2=arrondi(K);
+  FbRep2 =`On le calcule avec \\(K=\\frac{X_{s \\infty}}{X_{e \\infty}}=${R2}\\). Attention K peut avoir une unité`;
+  Unite2=``;
 	
-  Question3=`Déterminer le courant au point de fonctionnement` ;
-  R3=arrondi(E/(Rint+Rch));
-  FbRep3 =`On trace le point d'intersection entre les deux courbes et on mesure \\(I=${R3} A\\)`;
-  Unite3=`\\(A\\)`;
+  Question3=`Déterminer la constante de temps du système` ;
+  R3=arrondi(tau);  
+  FbRep3 = `Voir la courbe \\(\\uparrow\\). C'est le temps pour obtenir 63% de la variation \\(\\tau=${R3}s\\)`;
+  Unite3=`\\(s\\)`;
   
-  Question4=`Déterminer la tension au point de fonctionnement` ;
-  R4=arrondi(Rch*E/(Rint+Rch));
-  FbRep4 =`On trace le point d'intersection entre les deux courbes et on mesure \\(V=${R4} V\\)`;
-  Unite4=`\\(V\\)`;
+  Question4=`Déterminer le temps de réponse à 5 % \\(t_{r5 \\%}\\)` ;
+  R4=arrondi(3*tau); 
+  FbRep4 =`Voir la courbe \\(\\uparrow\\). On trace les courbes à 95% et 105% de la valeur finale et on relève le temps lorsqu'on entre et on reste dans la zone +/-5% \\(tr_{5 \\%}=${R4} s\\)`;
+  Unite4=`\\(s\\)`;
   
+  Question5=`Déterminer le rapport entre \\(\\tau\\) et \\(t_{r 5\\%}\\)` ;
+  R5=3;
+  FbRep5 = `\\(t_{r 5\\%}=3 \\tau\\) donc \\(\\frac{t_{r 5\\%}}{\\tau}=3\\)`;
+  Unite5=``;
+ 
   
   //Ecriture du texte
   document.getElementById("titre").innerHTML = titre_texte ;
@@ -162,6 +196,9 @@ window.onload = function () {
   document.getElementById("unite3").innerHTML = Unite3 ;
   document.getElementById("q4_texte").innerHTML = Question4 ;
   document.getElementById("unite4").innerHTML = Unite4 ;
+  document.getElementById("q5_texte").innerHTML = Question5;
+  
+  
   MathJax.typeset();
   
   //Trace de la Courbe
@@ -178,10 +215,10 @@ function validerQ1() {
   if ((r >= 0.95*R1)&&(r <= 1.05*R1)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
-	tracerPoint(0,E,'E');
+	
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep1;
-	tracerPoint(0,E,'E');
+	
   }
   q1Done = true;
   MathJax.typeset();
@@ -214,13 +251,14 @@ function validerQ3() {
   if ((r >= 0.95*R3)&&(r <= 1.05*R3)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
-	tracerPoint(E/(Rint+Rch),Rch*E/(Rint+Rch),'F1');
 	
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep3;
-	tracerPoint(E/(Rint+Rch),Rch*E/(Rint+Rch),'F1');
   }
   q3Done = true;
+  tracerDroite(0,0.63*K*E,xmax,0.63*K*E,'pink');
+  tracerDroite(tau,0,tau,ymax1,'pink');
+  tracerPoint(tau,0,'t');
   MathJax.typeset();
 }
 
@@ -233,15 +271,35 @@ function validerQ4() {
   if ((r >= 0.95*R4)&&(r <= 1.05*R4)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
+	
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep4;
   }
   q4Done = true;
+  tracerDroite(0,Xs95,xmax,Xs95,'green');
+  tracerDroite(0,Xs105,xmax,Xs105,'green');
+  tracerDroite(3*tau,0,3*tau,ymax1,'green');
+  tracerPoint(3*tau,0,'tr5%');
   MathJax.typeset();
 }
 
+function validerQ5() {
+  if (q5Done) return;
 
+  let r = document.getElementById("q5").value;
+  let fb = document.getElementById("fb5");
+  
+  if ((r >= 0.95*R5)&&(r <= 1.05*R5)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep5;
+	
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep5;
+  }
 
+  q5Done = true;
+  MathJax.typeset();
+}
 
 
 
@@ -489,6 +547,33 @@ function tracerCourbe() {
     
 }
 
+
+
+function tracerDroite(xA,yA,xB,yB,couleur) {
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const pas = xmax/1000;
+
+  // Origine du repère
+  const ox = 50;
+  const oy = H-20;
+
+  // Échelles
+  const scaleX = (W - 80) / xmax; // pixels par seconde
+  const scaleY1 = (H-40)/ymax1; // pixels par unité 1
+
+ 
+  /*************** COURBE 1 ***************/
+  ctx.strokeStyle = couleur;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ox+xA*scaleX, oy-yA*scaleY1);
+  ctx.lineTo(ox+xB*scaleX, oy-yB*scaleY1);
+  ctx.stroke();
+}
 
 
 

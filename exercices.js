@@ -15,7 +15,7 @@ const listeExercices = [
 	{
         theme: "2",
         exercices: [
-
+			{ nom: "exo1", titre: "Etude de la réponse indicielle d'un système du premier ordre" }
         ]
     },
 	{

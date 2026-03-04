@@ -306,14 +306,14 @@ function envoyerScore() {
 
         } else {
             // Pas de SCORM détecté → mode local
-            sauvegarderScore(nomExo, scorePourcent);
+            sauvegarderScore(theme,nomExo, scorePourcent);
             alert("Score (mode local) : " + scorePourcent + "%");
         }
 
   } catch (e) {
 
     console.log("Erreur SCORM :", e);
-	sauvegarderScore(nomExo, scorePourcent);
+	sauvegarderScore(theme,nomExo, scorePourcent);
     alert("Score (hors Moodle) : " + scorePourcent + "%");
 
   }
