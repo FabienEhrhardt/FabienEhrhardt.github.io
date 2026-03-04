@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test SCORM - BTS Electrotechnique</title>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="scorm.js"></script>
+<link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+<div class="container">
+
+<!-- Titre --> 
+<h2><span id="titre"></h2>
+
+<div class="enonce">
+  <p><b>Enoncé :</b> <span id="enonce"></span></p>
+</div>
+
+<!-- Courbe --> 
+<canvas id="graph" width="600" height="400" style="border:1px solid black;"></canvas>
+
+
+<!-- Questions --> 
+<div class="question">
+  <p><b>Question 1 :</b> <span id="q1_texte"></span></p>
+  <input type="number" id="q1">
+  <span id="unite1"></span>
+  <button onclick="validerQ1()">Valider</button>
+  <div id="fb1" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 2 :</b> <span id="q2_texte"></span></p>
+  <input type="number" id="q2">
+  <span id="unite2"></span>
+  <button onclick="validerQ2()">Valider</button>
+  <div id="fb2" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 3 :</b> <span id="q3_texte"></span></p>
+  <input type="number" id="q3">
+  <span id="unite3"></span>
+  <button onclick="validerQ3()">Valider</button>
+  <div id="fb3" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 4 :</b> <span id="q4_texte"></span></p>
+  <input type="number" id="q4">
+  <span id="unite4"></span>
+  <button onclick="validerQ4()">Valider</button>
+  <div id="fb4" class="feedback"></div>
+</div>
+
+<button onclick="envoyerScore()">Envoyer le résultat</button>
+
+</div>
+
+<script>
+let score = 0;
+let q1Done = false;
+let q2Done = false;
+let q3Done = false;
+let q4Done = false;
+
+let titre_texte, enonce_texte,nomExo,theme;
+let Question1,Question2,Question3,Question4;
+let R1,R2,R3,R4;
+let Unite1, Unite2, Unite3,Unite4;
+let FbRep1, FbRep2,FbRep3,FpRep4;
+let nbquestion;
+
+
+// Paramètres du signal
+let V = 50*(Math.floor(Math.random() * 5) + 1); // amplitude
+let I = 10*(Math.floor(Math.random() * 5) + 1); // amplitude
+let phi =-90+10*(Math.floor(Math.random() * 18)); //phi
+let f= 50*(Math.floor(Math.random() * 10) + 1);
+let omega = 2 * Math.PI*f; // pulsation rad/s
+let xmax = 2/f; //valeur maximale sur l'axe X
+let NomCourbe1 = "tension v(t) (V)";
+let NomCourbe2 = "courant i(t) (A)";
+let TitreAxeX = "Temps t (s)";
+let TitreAxeY = "Amplitude";
+let ymax1 = 300; //valeur maximale sue l'axe Y1
+let ymax2 = 60; //valeur maximale sue l'axe Y2
+
+function fonction1(t){
+   return V*Math.sin(omega*t);
+}
+
+function fonction2(t){
+   return I*Math.sin(omega*t-phi/180*Math.PI);
+}
+
+
+//Permet de faire un arrondi.
+function arrondi(num){
+	if(num===0) return 0;
+	return Math.round((num)*Math.pow(10,1-Math.floor(Math.log10((num)))))/Math.pow(10,1-Math.floor(Math.log10((num))));
+}
+
+
+
+
+window.onload = function () {
+  
+  // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
+  /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
+  nbquestion=4;
+  theme="31";
+  nomExo="exo1";
+  //Titre de l'exercice
+  titre_texte="Régime sinusoïdal";
+  //Enoncé de l'exercice
+  enonce_texte="A partir de la courbe, déterminer les paramètres"
+  
+  // Ecriture des questions 
+  //QuestionX : énoncé de la question
+  //FbRepX : Feedback de la question
+  //RX : réponse de la question
+  //UnitéX : unité de la réponse
+  Question1=`Donner la fréquence du signal`;
+  R1=f;
+  FbRep1 =`$$f=\\frac{1}{T}=${f}Hz$$`;
+  Unite1=`\\(Hz\\)`;
+  
+  Question2=`Déterminer l'amplitude de la tension` ;
+  R2=V;
+  FbRep2 =`C'est la valeur maximale de la tension $$V_{max}=${R2} V$$`;
+  Unite2=`\\(V\\)`;
+	
+  Question3=`Déterminer la valeur efficace de la tension` ;
+  R3=arrondi(V/Math.sqrt(2));
+  FbRep3 =`$$V=\\frac{V_{max}}{\\sqrt{2}}=${R3} V$$`;
+  Unite3=`\\(V\\)`;
+  
+  Question4=`Déterminer le déphasage entre le courant et la tension` ;
+  R4=phi;
+  FbRep4 =`$$\\varphi=360\\frac{\\Delta t}{T}=${phi} °$$`;
+  Unite4=`\\(°\\)`;
+  
+  
+  //Ecriture du texte
+  document.getElementById("titre").innerHTML = titre_texte ;
+  document.getElementById("enonce").innerHTML = enonce_texte ;
+  document.getElementById("q1_texte").innerHTML = Question1 ;
+  document.getElementById("unite1").innerHTML = Unite1 ;
+  document.getElementById("q2_texte").innerHTML = Question2 ;
+  document.getElementById("unite2").innerHTML = Unite2 ;
+  document.getElementById("q3_texte").innerHTML = Question3 ;
+  document.getElementById("unite3").innerHTML = Unite3 ;
+  document.getElementById("q4_texte").innerHTML = Question4 ;
+  document.getElementById("unite4").innerHTML = Unite4 ;
+  MathJax.typeset();
+  
+  //Trace de la Courbe
+  tracerCourbe();
+  
+};
+
+/* VALIDATION DES REPONSES */
+function validerQ1() {
+  if (q1Done) return;
+  let r = document.getElementById("q1").value;
+  let fb = document.getElementById("fb1");
+  
+  if ((r >= 0.95*R1)&&(r <= 1.05*R1)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep1;
+  }
+  q1Done = true;
+  MathJax.typeset();
+}
+
+function validerQ2() {
+  if (q2Done) return;
+
+  let r = document.getElementById("q2").value;
+  let fb = document.getElementById("fb2");
+ 
+  if ((r >= 0.95*R2)&&(r <= 1.05*R2)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep2;
+  }
+  q2Done = true;
+  MathJax.typeset();
+}
+
+function validerQ3() {
+  if (q3Done) return;
+
+  let r = document.getElementById("q3").value;
+  let fb = document.getElementById("fb3");
+ 
+  if ((r >= 0.95*R3)&&(r <= 1.05*R3)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep3;
+  }
+  q3Done = true;
+  MathJax.typeset();
+}
+
+function validerQ4() {
+  if (q4Done) return;
+
+  let r = document.getElementById("q4").value;
+  let fb = document.getElementById("fb4");
+ 
+  if ((r >= 0.95*R4)&&(r <= 1.05*R4)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep4;
+  }
+  q4Done = true;
+  MathJax.typeset();
+}
+
+
+
+
+
+
+function envoyerScore() {
+
+  let scorePourcent = 0;
+
+  if (nbquestion > 0) {
+    scorePourcent = arrondi((score / nbquestion) * 100);
+  }
+
+  try {
+        // Fonction universelle pour trouver l'API SCORM
+        function findAPI(win) {
+            while (win) {
+                if (win.API_1484_11) return { api: win.API_1484_11, version: '2004' };
+                if (win.API) return { api: win.API, version: '1.2' };
+                if (win.parent === win) break;
+                win = win.parent;
+            }
+            return null;
+        }
+
+        let apiInfo = findAPI(window);
+
+        if (apiInfo) {
+            let api = apiInfo.api;
+
+            if (apiInfo.version === '2004') {
+                api.Initialize("");
+                api.SetValue("cmi.score.raw", scorePourcent);
+                api.SetValue("cmi.score.min", "0");
+                api.SetValue("cmi.score.max", "100");
+                api.SetValue("cmi.completion_status", "completed");
+                api.Commit("");
+                api.Terminate("");
+            } else { // SCORM 1.2
+                api.LMSInitialize("");
+                api.LMSSetValue("cmi.core.score.raw", scorePourcent);
+                api.LMSSetValue("cmi.core.score.min", "0");
+                api.LMSSetValue("cmi.core.score.max", "100");
+                api.LMSSetValue("cmi.core.lesson_status", "completed");
+                api.LMSCommit("");
+                api.LMSFinish("");
+            }
+
+            alert("Score envoyé à Moodle : " + scorePourcent + "%");
+
+        } else {
+            // Pas de SCORM détecté → mode local
+            sauvegarderScore(nomExo, scorePourcent);
+            alert("Score (mode local) : " + scorePourcent + "%");
+        }
+
+  } catch (e) {
+
+    console.log("Erreur SCORM :", e);
+	sauvegarderScore(nomExo, scorePourcent);
+    alert("Score (hors Moodle) : " + scorePourcent + "%");
+
+  }
+}
+
+function sauvegarderScore(theme, nomExo, scorePourcent) {
+    let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+    if (!scores[theme]) scores[theme] = {};
+    
+    if (!scores[theme][nomExo] || scorePourcent > scores[theme][nomExo]) {
+        scores[theme][nomExo] = scorePourcent;
+    }
+    localStorage.setItem("scoresApp", JSON.stringify(scores));
+}
+
+
+
+
+
+function tracerCourbe() {
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const pas = xmax/1000;
+
+  // Effacement
+  ctx.clearRect(0, 0, W, H);
+
+  // Origine du repère
+  const ox = 50;
+  const oy = H / 2;
+
+  // Échelles
+  const scaleX = (W - 80) / xmax; // pixels par seconde
+  const scaleY1 = (H-40)/2/ymax1; // pixels par unité 1
+  const scaleY2 = (H-40)/2/ymax2; //pixels par unité 2
+
+  /*************** GRILLE ***************/
+  ctx.strokeStyle = "#ddd";
+  ctx.lineWidth = 1;
+
+  // Verticales
+  for (let x = ox; x < W; x += scaleX*xmax / 4) {
+    ctx.beginPath();
+    ctx.moveTo(x, 20);
+    ctx.lineTo(x, H - 20);
+    ctx.stroke();
+  }
+
+  // Horizontales
+  for (let y = 20; y < H; y += scaleY1*ymax1/5) {
+    ctx.beginPath();
+    ctx.moveTo(ox, y);
+    ctx.lineTo(W - 20, y);
+    ctx.stroke();
+  }
+
+  /*************** AXES ***************/
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 2;
+
+  // Axe x
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(W - 20, oy);
+  ctx.stroke();
+
+  // Axe y
+  ctx.beginPath();
+  ctx.moveTo(ox, 20);
+  ctx.lineTo(ox, H - 20);
+  ctx.stroke();
+
+  /*************** COURBE 1 ***************/
+  ctx.strokeStyle = "blue";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  let first = true;
+
+  for (let t = 0; t <= xmax; t += pas) {
+    let x = ox + t * scaleX;
+    let y = oy - fonction1(t) * scaleY1;
+	if(y<=20){y=20;}
+	if(y>=H-20){y=H-20;}
+
+    if (first) {
+      ctx.moveTo(x, y);
+      first = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+
+  ctx.stroke();
+  
+  /*************** COURBE 2 ***************/
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  first = true;
+
+  for (let t = 0; t <= xmax; t += pas) {
+    let x = ox + t * scaleX;
+    let y = oy -fonction2(t)* scaleY2;
+	if(y<=20){y=20;}
+	if(y>=H-20){y=H-20;}
+
+    if (first) {
+      ctx.moveTo(x, y);
+      first = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+
+  ctx.stroke();
+  
+  /*************** TITRES DES AXES ***************/
+  ctx.fillStyle = "black";
+  ctx.font = "14px Arial";
+
+  // Axe x
+  ctx.fillText(TitreAxeX, W / 2 - 40, H - 5);
+  // courbe 1
+  ctx.fillStyle = "blue";
+  ctx.fillText(NomCourbe1, ox, H - 5);
+  ctx.fillText(`${ymax1}`, ox, 15);
+  // courbe 2
+  ctx.fillStyle = "red";
+  ctx.fillText(NomCourbe2, W-150, H - 5);
+  ctx.fillText(`${ymax2}`, W-150, 15);
+  // Axe y (rotation)
+  ctx.fillStyle = "black";
+  ctx.fillText(`${xmax}`, W-40, oy-5);
+  
+  ctx.save();
+  ctx.translate(15, H / 2 + 40);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(TitreAxeY, 0, 0);
+  ctx.restore();
+    
+}
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
