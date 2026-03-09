@@ -17,13 +17,17 @@
 
 <div class="enonce">
   <p>Ci-dessous une liste d'exercices pour s'entrainer pour la physique en BTS Electrotechnique</p>
+  
   <div class="progress-global">
   <strong>Progression générale :</strong>
   <div class="barre">
     <div id="barGlobal" class="remplissage">0%</div>
   </div>
+  </div>
+  <p id="nbExo"></p>
+
 </div>
-</div>
+
 
 <table>
 <tr>
@@ -132,6 +136,7 @@
 <script>
 window.onload = function () {
 	majBarres();
+	document.getElementById("nbExo").innerHTML = "Nombre d'exercices disponibles : <strong>" + nbExercices()+'</strong> exercices';
 }
 </script>
 

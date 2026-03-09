@@ -13,7 +13,7 @@
 
 <!-- Contenu principal -->
 <div id="main">
-  <iframe id="zoneSimu" width="100%" height="700px"></iframe>
+  <iframe id="zoneSimu"></iframe>
 </div>
 <!-- Bouton Sommaire -->
 <button onclick="Sommaire()">Sommaire</button>
@@ -24,6 +24,8 @@
 window.onload = function () {
 	document.getElementById("zoneSimu").src = `Sommaire.html`;
 }
+
+
 function Sommaire(dossier){
   document.getElementById("zoneSimu").src = `Sommaire.html`;
 }

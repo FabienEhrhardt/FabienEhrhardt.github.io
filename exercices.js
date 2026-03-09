@@ -23,18 +23,18 @@ const listeExercices = [
         exercices: [
             { nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
+			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
+			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" }
         ]
     },
 	{
         theme: "32",
         exercices: [
-            {},
         ]
     },
 	{
         theme: "33",
         exercices: [
-            {},
         ]
     },
 	{

@@ -4,11 +4,28 @@ b<style>
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+html {
+  margin: 0;
+  height: 100%;
+}
+
+#main {
+  height: 90vh;   /* prend 90% de la hauteur de l'écran */
+  width: 100%;
+}
+
+#zoneSimu {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+
 body {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background: linear-gradient(135deg, #f4f6f9, #e9eef5);
-  padding: 20px;
   margin: 0;
+  height: 100%;
 }
 
 /* Conteneur principal */
@@ -91,9 +108,8 @@ button:hover {
 /* Bouton final */
 button:last-of-type {
   display: block;
-  margin: 25px auto 0;
   font-size: 16px;
-  padding: 10px 20px;
+  margin: 5px auto;
   background: #28a745;
 }
 

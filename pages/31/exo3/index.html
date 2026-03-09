@@ -98,18 +98,39 @@ let nbquestion;
 //Paramètre de l'exercice
 let R=10*(Math.floor(Math.random() * 10) + 1); //valeur de R en Ohm
 let L=10*(Math.floor(Math.random() * 10) + 1); //valeur de L en mH
+let C=10*(Math.floor(Math.random() * 10) + 4); //valeur de C en µF
 let f=50; // 
 let omega= 2 * Math.PI*f; // pulsation rad/s
-let Z=Math.sqrt(R*R+L*L*1e-6*omega*omega); //Impédance
+let Z=Math.sqrt(R*R+(L*omega/1000-1e6/(C*omega))*(L*omega/1000-1e6/(C*omega))); //Impédance
 let I=0.5*(Math.floor(Math.random() * 10) + 1); //valeur de I en mA
 let VR=R*I;
 let VL=L/1000*omega*I;
-let V=Math.sqrt(VR*VR+VL*VL);
-let phi =180/Math.PI*Math.atan(VL/VR); //phi
-
+let VC=1e6/C/omega*I;
+let V=Math.sqrt(VR*VR+(VL-VC)*(VL-VC));
+let phi =180/Math.PI*Math.atan((VL-VC)/VR); //phi
+let alea=(Math.floor(Math.random() * 2) + 1);
+let Nom, phit;
+switch(alea)
+   {
+   case 1 :
+	Nom='la résistance';
+	phit=0;	
+	break;
+ 
+   case 2 :
+	Nom='la bobine';
+	phit=90;	
+	break;
+   
+   default :
+    Nom='le condensateur';
+	phit=-90;	
+	break;
+   }
 
 let echellei = superarrondi(I/4); //Echelle pour l'axe i
-let echellev = superarrondi(Math.max(VR,VL)/4); //Echelle pour l'axe v
+let echellev = superarrondi(Math.max(VR,VL,VC)/4); //Echelle pour l'axe v
+
 
 
 
@@ -130,43 +151,62 @@ window.onload = function () {
   /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
   nbquestion=6;
   theme="31";
-  nomExo="exo2";
+  nomExo="exo3";
   //Titre de l'exercice
-  titre_texte="Tracé du diagramme de Fresnel pour circuit RL série";
+  titre_texte="Tracé du diagramme de Fresnel pour circuit RLC série";
   //Enoncé de l'exercice
-  enonce_texte=`On suppose avoir un circuit RL série avec une résistance de R=${R} \\(\\Omega\\) et une bobine de L=${L} mH. Ce circuit est alimenté par un courant de valeur efficace I=${I} A et de fréquence f=50Hz`;
+  enonce_texte=`On suppose avoir un circuit RLC série avec une résistance de R=${R} \\(\\Omega\\), une bobine de L=${L} mH et un condensateur de C=${C} µF. Ce circuit est alimenté par un courant de valeur efficace I=${I} A et de fréquence f=50Hz`;
   
   // Ecriture des questions 
   //QuestionX : énoncé de la question
   //FbRepX : Feedback de la question
   //RX : réponse de la question
   //UnitéX : unité de la réponse
-  Question1=`Donner la pulsation du signal`;
-  R1=arrondi(omega);
-  FbRep1 =`$$\\omega=2 \\pi f= ${R1} rad/s$$`;
-  Unite1=`\\(rad/s\\)`;
+  Question1=`Déterminer la valeur efficace de la tension sur le condensateur.`;
+  R1=arrondi(VC);
+  FbRep1 =`$$V_C=\\frac{1}{C \\omega} I=${R1} V$$`;
+  Unite1=`\\(V\\)`;
   
-  Question2=`Déterminer la valeur efficace de la tension sur la résistance` ;
+  Question2=`Déterminer la valeur efficace de la tension sur la résistance.` ;
   R2=arrondi(VR);
   FbRep2 =`$$V_R=RI=${R2} V$$`;
   Unite2=`\\(V\\)`;
 	
-  Question3=`Déterminer la valeur efficace de la tension sur la bobine` ;
+  Question3=`Déterminer la valeur efficace de la tension sur la bobine.` ;
   R3=arrondi(VL);
   FbRep3 =`$$V_L=L \\omega I=${R3} V$$`;
   Unite3=`\\(V\\)`;
   
-  Question4=`Déterminer le déphasage entre le courant et la tension dans la bobine` ;
-  R4=90;
-  FbRep4 =`$$\\varphi=90 °$$`;
+  Question4=`Déterminer le déphasage entre le courant et la tension dans ${Nom}.` ;
+  R4=phit;
+  FbRep4 =`
+  <table class="feedback-table">
+<tr>
+  <th>Type de composant</th>
+  <th>Déphasage \\(\\varphi\\)</th>
+</tr>
+<tr>
+  <td>Résistance</td>
+  <td>\\(\\varphi=0\\)°</td>
+</tr>
+<tr>
+  <td>Bobine</td>
+  <td>\\(\\varphi=90\\)°</td>
+</tr>
+<tr>
+  <td>Condensateur</td>
+  <td>\\(\\varphi=-90\\)°</td>
+</tr>
+</table>
+`;
   Unite4=`\\(°\\)`;
   
-  Question5=`Déterminer la valeur efficace de la tension délivrée par le générateur \\(V\\)` ;
+  Question5=`Déterminer la valeur efficace de la tension délivrée par le générateur \\(V\\).` ;
   R5=arrondi(V);
   FbRep5 =`On mesure sur le graphique \\(V\\)=${R5} V`;
   Unite5=`\\(V\\)`;
   
-  Question6=`Déterminer le déphasage entre le courant et la tension délivrée par le générateur` ;
+  Question6=`Déterminer le déphasage entre le courant et la tension délivrée par le générateur.` ;
   R6=arrondi(phi);
   FbRep6 =`On mesure sur le graphique \\(\\varphi\\)=${R6} °`;
   Unite6=`\\(°\\)`;
@@ -191,6 +231,7 @@ window.onload = function () {
   
   //Trace de la Courbe
   initialisationFresnel();
+  
   
 };
 
@@ -407,10 +448,11 @@ function tracerCourbe(){
   /* Tracé des vecteurs */
   let pos={x:0,y:0};  
   
-  pos=tracerVecteur(0,0,VR,0,'VR','black','v');
+  pos=tracerVecteur(0,0,VR,0,'VR','blue','v');
   pos=tracerVecteur(pos.x,pos.y,VL,90,'VL','red','v');
-  pos=tracerVecteur(0,0,V,phi,'V','blue','v');
-  tracerVecteur(0,0,I,0,'I','green','i');
+  pos=tracerVecteur(pos.x,pos.y,VC,-90,'VC','green','v');
+  pos=tracerVecteur(0,0,V,phi,'V','black','v');
+  tracerVecteur(0,0,I,0,'I','black','i');
 }
 
 

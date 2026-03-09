@@ -96,6 +96,29 @@ function progressionGlobale() {
     return count > 0 ? Math.round(total / count) : 0;
 }
 
+function nbExercices() {
+
+    let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+
+    let total = 0;
+    let count = 0;
+
+    listeExercices.forEach(themeObj => {
+
+        themeObj.exercices.forEach(exo => {
+
+            count++;
+
+        });
+
+    });
+
+    return count;
+}
+
+
+
+
 function majBarres() {
 	updateBar("B0", progressionTheme("0"));
 	updateBar("B1", progressionTheme("1"));
