@@ -6,8 +6,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script src="scorm.js"></script>
+<script src="courbes.js"></script>
 <script src="base.js"></script>
-<script src="fresnel.js"></script>
 <link rel="stylesheet" href="style.css">
 
 
@@ -76,6 +76,15 @@
   <div id="fb6" class="feedback"></div>
 </div>
 
+<div class="question">
+  <p><b>Question 7 :</b> <span id="q7_texte"></span></p>
+  <input type="number" id="q7">
+  <span id="unite7"></span>
+  <button onclick="validerQ7()">Valider</button>
+  <div id="fb7" class="feedback"></div>
+</div>
+
+
 <button onclick="envoyerScore()">Envoyer le résultat</button>
 
 </div>
@@ -88,171 +97,112 @@ let q3Done = false;
 let q4Done = false;
 let q5Done = false;
 let q6Done = false;
+let q7Done = false;
 
 
 let titre_texte, enonce_texte,nomExo,theme;
-let Question1,Question2,Question3,Question4,Question5,Question6;
-let R1,R2,R3,R4,R5,R6;
-let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6;
-let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6;
+let Question1,Question2,Question3,Question4,Question5,Question6,Question7;
+let R1,R2,R3,R4,R5,R6,R7;
+let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6,Unite7;
+let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6,FpRep7;
 let nbquestion;
 
-//Paramètre de l'exercice
-let Z1=10*(Math.floor(Math.random() * 10) + 1); //valeur de Z1 en Ohm
-let Z2=10*(Math.floor(Math.random() * 10) + 1); //valeur de Z2 en Ohm
-let f=50; // 
-let omega= 2 * Math.PI*f; // pulsation rad/s
-let I=0.5*(Math.floor(Math.random() * 10) + 1); //valeur de I en mA
 
-let alea1=(Math.floor(Math.random() * 3) + 1);
-let Nom1,valeur1,V1,phi1; //valeur1 valeur du composant
-switch(alea1)
-   {
-   case 1 :
-    valeur1=Z1; 
-	Nom1=`une résistance de résistance ${valeur1} \\(\\Omega\\)`;
-	phi1=0;
-    V1=Z1*I;	
-	break;
- 
-   case 2 :
-	valeur1=arrondi(Z1/omega*1000); 
-	Nom1=`une bobine d'inductance ${valeur1} \\(mH\\)`;
-	phi1=90;
-    V1=Z1*I;	
-	break;
-   
-   default :
-    valeur1=arrondi(1/Z1/omega*1e6); 
-	Nom1=`un condensateur de capacité ${valeur1} \\(\\mu F\\)`;
-	phi1=-90;
-    V1=Z1*I;	
-	break;
-   }
+// Paramètres du signal
 
-let alea2=(Math.floor(Math.random() * 3) + 1);
-let Nom2,valeur2,V2,phi2; //valeur1 valeur du composant
-switch(alea2)
-   {
-   case 1 :
-    valeur2=Z2; 
-	Nom2=`une résistance de résistance ${valeur2} \\(\\Omega\\)`;
-	phi2=0;
-    V2=Z2*I;	
-	break;
- 
-   case 2 :
-	valeur2=arrondi(Z2/omega*1000); 
-	Nom2=`une bobine d'inductance ${valeur2} \\(mH\\)`;
-	phi2=90;
-    V2=Z2*I;	
-	break;
-   
-   default :
-    valeur2=arrondi(1/Z2/omega*1e6); 
-	Nom2=`un condensateur de capacité ${valeur2} \\(\\mu F\\)`	;
-	phi2=-90;
-    V2=Z2*I;	
-	break;
-   }
+let T=(Math.floor(Math.random() * 10) + 1)/1000;
+let f=1/T;
+let V = 50*(Math.floor(Math.random() * 5) + 1); // amplitude
 
-let Z=Math.sqrt(Math.pow((Z1*Math.cos(phi1*3.14159/180)+Z2*Math.cos(phi2*3.14159/180)),2)+Math.pow((Z1*Math.sin(phi1*3.14159/180)+Z2*Math.sin(phi2*3.14159/180)),2)); //Impédance
-let V=Z*I;
-let phi =180/Math.PI*Math.atan((Z1*Math.sin(phi1*3.14159/180)+Z2*Math.sin(phi2*3.14159/180))/(Z1*Math.cos(phi1*3.14159/180)+Z2*Math.cos(phi2*3.14159/180))); //phi
+let alpha=(Math.floor(Math.random() * 9)+0.5)/10;
+let alphaT=alpha*T;
+let I0=(Math.floor(Math.random() * 5) + 1); //valeur moyenne de i
+//let DeltaI=V*(1-alpha)*alpha*T/L;
+let DeltaI=2*(Math.floor(Math.random() * 8) + 2)/10*I0;
+let L=V*(1-alpha)*alpha*T/DeltaI;
+let Imin=I0-DeltaI/2;
+let Imax=I0+DeltaI/2;
 
+//Paramètre de la courbe
+let NomCourbe1 = "tension v(t) (V)";
+let NomCourbe2 = "courant i(t) (A)";
+let TitreAxeX = "Temps t (s)";
+let TitreAxeY = "Amplitude";
+let xmax = superarrondi(2*T); //valeur maximale sur l'axe X
+let ymax1 = superarrondi(V); //valeur maximale sue l'axe Y1
+let ymax2 = superarrondi(Imax);; //valeur maximale sue l'axe Y2
 
-let echellei = superarrondi(I/4); //Echelle pour l'axe i
-let echellev = superarrondi(Math.max(V,V1,V2)/4); //Echelle pour l'axe v
+function fonction1(t){
+	let vc;
+	if(t%T<alphaT){vc=V;}
+	else vc=0;
+   return vc;
+}
+
+function fonction2(t){
+   let ic;
+   let tau=t%T;
+	if(tau<alphaT){ic=Imin+V*(1-alpha)*tau/L;}
+	else ic=Imax-alpha*V/L*(tau-alphaT);
+   return ic;
+}
 
 window.onload = function () {
   
   // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
   /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
-  nbquestion=6;
+  nbquestion=7;
   theme="31";
-  nomExo="exo4";
+  nomExo="exo1";
   //Titre de l'exercice
-  titre_texte="Tracé du diagramme de Fresnel pour circuit avec 2 composants en série";
+  titre_texte="Hacheur série en conduction continue - étude des courbes";
   //Enoncé de l'exercice
-  enonce_texte=`On suppose avoir un circuit avec 2 composants en série.<br>
-  Le composant 1 est `+Nom1+`.<br>
-  Le composant 2 est `+Nom2+`.`;
+  enonce_texte="A partir de la courbe, déterminer les paramètres"
   
   // Ecriture des questions 
   //QuestionX : énoncé de la question
   //FbRepX : Feedback de la question
   //RX : réponse de la question
   //UnitéX : unité de la réponse
-  Question1=`Déterminer la valeur efficace de la tension sur le composant 1.`;
-  R1=arrondi(V1);
-  FbRep1 =`
-  <table class="feedback-table">
-<tr>
-  <th>Type de composant</th>
-  <th>Relation I-V</th>
-</tr>
-<tr>
-  <td>Résistance</td>
-  <td>\\(V=RI\\)</td>
-</tr>
-<tr>
-  <td>Bobine</td>
-  <td>\\(V=L \\omega I\\)</td>
-</tr>
-<tr>
-  <td>Condensateur</td>
-  <td>\\(V=\\frac{1}{C \\omega} I\\)</td>
-</tr>
-</table>
-\\(V_1=${V1} V\\)
-`;
+ Question1=`Déterminer la valeur maximale de la tension v`;
+  R1=arrondi(V);
+  FbRep1 =`On la trouve par lecture graphique \\(V_{max}=${R1} V\\)`;
   Unite1=`\\(V\\)`;
   
-  Question2=`Déterminer la valeur efficace de la tension sur le composant 1.`;
-  R2=arrondi(V2);
-  FbRep2 =`C'est le même tableau !
-  \\(V_2=${V2} V\\)`;
+  Question2=`Déterminer la valeur moyenne de la tension v`;
+  R2=arrondi(alpha*V);
+  FbRep2 =`On utilise la méthode des aires.<br>
+  1. On calcule l'aire \\(A= \\alpha T V_{max}\\) <br>
+  2. On utilise la formule \\(V_{moy}=\\frac{A}{T}=\\alpha V_{max}=${R2} V\\)`;
   Unite2=`\\(V\\)`;
-	
-  Question3=`Déterminer le déphasage entre le courant et la tension pour le composant 1.` ;
-  R3=arrondi(phi1);
-  FbRep3 =`
-  <table class="feedback-table">
-<tr>
-  <th>Type de composant</th>
-  <th>Déphasage \\(\\varphi\\)</th>
-</tr>
-<tr>
-  <td>Résistance</td>
-  <td>\\(\\varphi=0\\)°</td>
-</tr>
-<tr>
-  <td>Bobine</td>
-  <td>\\(\\varphi=90\\)°</td>
-</tr>
-<tr>
-  <td>Condensateur</td>
-  <td>\\(\\varphi=-90\\)°</td>
-</tr>
-</table>
-\\(\\varphi_1=${R3}\\)°`;
-  Unite3=`\\(°\\)`;
   
-  Question4=`Déterminer le déphasage entre le courant et la tension pour le composant 2.` ;
-  R4=arrondi(phi2);
-  FbRep4 =`C'est le même tableau!
-  \\(\\varphi_2=${R4}\\)°`;
-  Unite4=`\\(°\\)`;
+  Question3=`Déterminer la valeur maximale du courant` ;
+  R3=arrondi(Imax);
+  FbRep3 =`On mesure sur la courbe la valeur du maximum pour le courant (à \\(t=\\alpha T\\)) et on trouve \\(I_{max}=${R3} A\\)`;
+  Unite3=`\\(A\\)`;
   
-  Question5=`Déterminer la valeur efficace de la tension délivrée par le générateur \\(V\\).` ;
-  R5=arrondi(V);
-  FbRep5 =`On mesure sur le graphique \\(V\\)=${R5} V`;
-  Unite5=`\\(V\\)`;
+  Question4=`Déterminer la valeur de l'ondulation de courant \\(\\Delta I\\)` ;
+  R4=arrondi(DeltaI);
+  FbRep4 =`On mesure \\(I_{max}\\) et \\(I_{min}\\) et on fait \\(\\Delta I=I_{max}-I_{min}=${R4} A\\)`;
+  Unite4=`\\(A\\)`;
   
-  Question6=`Déterminer le déphasage entre le courant et la tension délivrée par le générateur.` ;
-  R6=arrondi(phi);
-  FbRep6 =`On mesure sur le graphique \\(\\varphi\\)=${R6} °`;
-  Unite6=`\\(°\\)`;
+  Question5=`Déterminer la période du signal` ;
+  R5=arrondi(T);
+  FbRep5 =`On mesure la durée d'une période du signal \\(T=${R5} s\\)`;
+  Unite5=`\\(s\\)`;
+  
+  Question6=`Déterminer la valeur moyenne du courant` ;
+  R6=arrondi(I0);
+  FbRep6 =`On utilise la méthode des aires.<br>
+  1. On calcule l'aire, pour ce faire on découpe l'aire en un rectangle et un triangle \\(A= T \\times I_{min} + \\frac{(I_{max}-I_{min}) T}{2}=\\frac{(I_{max}-I_{min})T}{2}\\) <br>
+  2. On utilise la formule \\(I_{moy}=\\frac{A}{T}=\\frac{I_{max}+I_{min}}{2}=${R6} A\\)`;
+  Unite6=`\\(A\\)`;
+  
+  Question7=`Déterminer la puissance fournie par le hacheur` ;
+  R7=arrondi(I0*alpha*V);
+  FbRep7 =`Pour calculer une puissance en continue \\(P=V_{moy}I_{moy}=${R7} W\\)`;
+  Unite7=`\\(W\\)`;
+    
   
   
   //Ecriture du texte
@@ -270,11 +220,12 @@ window.onload = function () {
   document.getElementById("unite5").innerHTML = Unite5 ;
   document.getElementById("q6_texte").innerHTML = Question6 ;
   document.getElementById("unite6").innerHTML = Unite6 ;
+  document.getElementById("q7_texte").innerHTML = Question7 ;
+  document.getElementById("unite7").innerHTML = Unite7 ;
   MathJax.typeset();
   
   //Trace de la Courbe
-  initialisationFresnel();
-  
+  tracerCourbe("graph");
   
 };
 
@@ -284,7 +235,7 @@ function validerQ1() {
   let r = document.getElementById("q1").value;
   let fb = document.getElementById("fb1");
   
-  if ((Math.abs(r - R1) <= 0.05 * Math.abs(R1))) {
+  if ((r >= 0.95*R1)&&(r <= 1.05*R1)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
   } else {
@@ -300,7 +251,7 @@ function validerQ2() {
   let r = document.getElementById("q2").value;
   let fb = document.getElementById("fb2");
  
-  if ((Math.abs(r - R2) <= 0.05 * Math.abs(R2))) {
+  if ((r >= 0.95*R2)&&(r <= 1.05*R2)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
   } else {
@@ -316,7 +267,7 @@ function validerQ3() {
   let r = document.getElementById("q3").value;
   let fb = document.getElementById("fb3");
  
-  if ((Math.abs(r - R3) <= 0.05 * Math.abs(R3))) {
+  if ((r >= 0.95*R3)&&(r <= 1.05*R3)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
   } else {
@@ -332,7 +283,7 @@ function validerQ4() {
   let r = document.getElementById("q4").value;
   let fb = document.getElementById("fb4");
  
-  if ((Math.abs(r - R4) <= 0.05 * Math.abs(R4))) {
+  if ((r >= 0.95*R4)&&(r <= 1.05*R4)) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
   } else {
@@ -356,7 +307,6 @@ function validerQ5() {
   }
   q5Done = true;
   MathJax.typeset();
-  tracerCourbe();
 }
 
 function validerQ6() {
@@ -375,15 +325,26 @@ function validerQ6() {
   MathJax.typeset();
 }
 
-function tracerCourbe(){
-  /* Tracé des vecteurs */
-  let pos={x:0,y:0};  
-  
-  pos=tracerVecteur(0,0,V1,phi1,'V1','blue','v');
-  pos=tracerVecteur(pos.x,pos.y,V2,phi2,'V2','red','v');
-  pos=tracerVecteur(0,0,V,phi,'V','black','v');
-  tracerVecteur(0,0,I,0,'I','black','i');
+function validerQ7() {
+  if (q7Done) return;
+
+  let r = document.getElementById("q7").value;
+  let fb = document.getElementById("fb7");
+ 
+  if ((Math.abs(r - R7) <= 0.05 * Math.abs(R7))) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep7;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep7;
+  }
+  q7Done = true;
+  MathJax.typeset();
 }
+
+
+
+
+
 
 
 

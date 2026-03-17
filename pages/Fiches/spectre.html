@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Analyseur d'harmoniques</title>
+<style>
+body{
+    background:#777;
+    font-family:Arial;
+}
+canvas{
+    background:#ddd;
+    border:2px solid #444;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="analyseur" width="600" height="400"></canvas>
+
+<script>
+
+// ---------------- PARAMETRES ----------------
+
+// valeurs des harmoniques en %
+let harmonics = [
+100, 50, 35, 2, 25, 3, 18, 2, 10, 2,
+9, 1, 6, 1, 5, 2, 8, 2, 4, 2,
+6, 2, 4, 1, 2
+];
+
+// paramètres affichés
+let I1 = 804;     // mA
+let THD = 23.4;   // %
+let Iad = 188;    // mA
+
+// --------------------------------------------
+
+const canvas = document.getElementById("analyseur");
+const ctx = canvas.getContext("2d");
+
+function draw(){
+
+ctx.clearRect(0,0,600,400);
+
+// fond graphique
+ctx.fillStyle = "white";
+ctx.fillRect(40,120,520,220);
+
+// axes
+ctx.strokeStyle="black";
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.moveTo(40,120);
+ctx.lineTo(40,340);
+ctx.lineTo(560,340);
+ctx.stroke();
+
+// graduations
+ctx.font="12px Arial";
+ctx.fillStyle="black";
+
+ctx.fillText("0",20,340);
+ctx.fillText("50",15,240);
+ctx.fillText("100",10,130);
+ctx.beginPath();
+ctx.moveTo(35,240);
+ctx.lineTo(45,240);
+ctx.moveTo(35,140);
+ctx.lineTo(45,140);
+ctx.moveTo(65,100);
+ctx.lineTo(70,105);
+ctx.lineTo(65,110);
+ctx.stroke();
+
+
+
+// barres harmoniques
+let barWidth = 14;
+let spacing = 6;
+let baseX = 60;
+ctx.fillStyle="black";
+ctx.fillText('DC', baseX-20,355);
+
+for(let i=0;i<25;i++){
+
+    let value = harmonics[i];
+    let height = value*2; // échelle
+
+    ctx.fillStyle="green";
+
+    ctx.fillRect(
+        baseX + i*(barWidth+spacing),
+        340-height,
+        barWidth,
+        height
+    );
+
+    // numéro harmonique
+    ctx.fillStyle="black";
+    ctx.fillText(i+1, baseX + i*(barWidth+spacing)+2 ,355);
+}
+
+// affichage texte haut écran
+
+ctx.font="20px Arial";
+
+ctx.fillText("A-h01",20,40);
+
+ctx.font="18px Arial";
+
+ctx.fillText(I1 + " mA",300,40);
+ctx.fillText("+000°",450,40);
+
+ctx.fillText("THD " + THD + " %",450,70);
+ctx.fillText("Ad " + Iad + " mA",450,95);
+
+}
+
+// dessin initial
+draw();
+
+</script>
+
+</body>
+</html>

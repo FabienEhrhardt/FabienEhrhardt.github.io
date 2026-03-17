@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+body{
+background:#555;
+font-family:Arial;
+color:white;
+}
+
+canvas{
+background:black;
+border:2px solid #333;
+}
+
+.panel{
+margin-top:10px;
+}
+
+button{
+width:30px;
+height:25px;
+margin:2px;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="scope" width="600" height="400"></canvas>
+
+<div class="panel">
+<table>
+	<tr> 
+		<td>Time/div :</td>
+		<td>
+			<button onclick="timeScale/=2">-</button>
+			<button onclick="timeScale*=2">+</button>
+			<span id="timeVal"></span>
+		</td>
+	</tr>
+	<tr>
+		<td>CH1 V/div :</td>
+		<td>
+			<button onclick="scale1/=2">-</button>
+			<button onclick="scale1*=2">+</button>
+			<span id="v1Val"></span>
+		</td>
+	</tr>
+	<tr>
+		<td>CH2 V/div :</td>
+		<td>
+			<button onclick="scale2/=2">-</button>
+			<button onclick="scale2*=2">+</button>
+			<span id="v2Val"></span>
+		</td>
+	</tr>
+	<tr>
+		<td>Trigger level :</td>
+		<td>
+			<button onclick="triggerLevel-=0.5">-</button>
+			<button onclick="triggerLevel+=0.5">+</button>
+			<span id="trigVal"></span>
+		</td>
+	</tr>
+	<tr>
+		<td>Trigger slope :</td>
+		<td>
+			<button onclick="triggerSlope=1">↑</button>
+			<button onclick="triggerSlope=-1">↓</button>
+		</td>
+	</tr>
+	<tr>
+		<td>Curseur voie A :</td>
+		<td><input type="range" id="tracker" min="0" max="1" step="0.001" value="0.5" oninput="updateTracker(this.value)"></td>
+		<td><span id="trackerVal"></span></td>
+	</tr>
+</table>
+</div>
+
+<script>
+
+// ==========================
+// fonctions signal
+// ==========================
+
+function f1(t){
+return 5*Math.sin(2*Math.PI*50*t)
+}
+
+function f2(t){
+return 2*Math.sin(2*Math.PI*50*t + Math.PI/3)
+}
+
+// ==========================
+// paramètres oscilloscope
+// ==========================
+
+let timeScale = 0.002      // s/div
+let scale1 = 2             // V/div
+let scale2 = 1             // V/div
+
+let triggerLevel = 0
+let triggerSlope = 1
+
+const canvas = document.getElementById("scope")
+const ctx = canvas.getContext("2d")
+
+const width = canvas.width
+const height = canvas.height
+
+const divX = 10
+const divY = 8
+
+// ==========================
+// recherche curseur
+// ==========================
+
+function updateTracker(val){
+
+tracker = parseFloat(val)
+
+}
+
+function drawTracker(){
+
+let x = tracker * width
+
+ctx.strokeStyle="red"
+ctx.lineWidth=1
+
+ctx.beginPath()
+ctx.moveTo(x,0)
+ctx.lineTo(x,height)
+ctx.stroke()
+
+// calcul du temps
+
+let t0 = findTrigger()
+
+let t = t0 + tracker*(timeScale*divX)
+
+let value = f1(t)
+
+// position du point sur CH1
+
+let y = height/2 - value/scale1*(height/divY)
+
+ctx.fillStyle="red"
+
+ctx.beginPath()
+ctx.arc(x,y,4,0,Math.PI*2)
+ctx.fill()
+
+// texte
+
+ctx.fillStyle="white"
+
+document.getElementById("trackerVal").innerText =
+"t = "+(t*1000).toFixed(2)+" ms   CH1 = "+value.toFixed(2)+" V"
+
+}
+
+
+// ==========================
+// recherche trigger
+// ==========================
+function findTrigger(){
+
+let dt = timeScale/200
+let t=0
+
+for(let i=0;i<10000;i++){
+
+let v1=f1(t)
+let v2=f1(t+dt)
+
+if(triggerSlope>0){
+
+if(v1<triggerLevel && v2>=triggerLevel)
+return t
+
+}
+else{
+
+if(v1>triggerLevel && v2<=triggerLevel)
+return t
+
+}
+
+t+=dt
+}
+
+return 0
+}
+
+// ==========================
+// dessin grille
+// ==========================
+
+function drawGrid(){
+
+ctx.strokeStyle="#0a0"
+ctx.lineWidth=1
+
+let dx=width/divX
+let dy=height/divY
+
+for(let i=0;i<=divX;i++){
+
+ctx.beginPath()
+ctx.moveTo(i*dx,0)
+ctx.lineTo(i*dx,height)
+ctx.stroke()
+
+}
+
+for(let i=0;i<=divY;i++){
+
+ctx.beginPath()
+ctx.moveTo(0,i*dy)
+ctx.lineTo(width,i*dy)
+ctx.stroke()
+
+}
+
+}
+
+// ==========================
+// dessin signaux
+// ==========================
+
+function drawSignals(){
+
+let dt = timeScale/divX/50
+
+let t0 = findTrigger()
+
+ctx.lineWidth=2
+
+// CH1
+ctx.strokeStyle="yellow"
+ctx.beginPath()
+
+for(let x=0;x<width;x++){
+
+let t=t0 + x*(timeScale*divX/width)
+
+let v=f1(t)
+
+let y=height/2 - v/scale1*(height/divY)
+
+if(x===0) ctx.moveTo(x,y)
+else ctx.lineTo(x,y)
+
+}
+
+ctx.stroke()
+
+// CH2
+
+ctx.strokeStyle="cyan"
+ctx.beginPath()
+
+for(let x=0;x<width;x++){
+
+let t=t0 + x*(timeScale*divX/width)
+
+let v=f2(t)
+
+let y=height/2 - v/scale2*(height/divY)
+
+if(x===0) ctx.moveTo(x,y)
+else ctx.lineTo(x,y)
+
+}
+
+ctx.stroke()
+
+}
+
+// ==========================
+// affichage texte
+// ==========================
+
+function drawText(){
+
+ctx.fillStyle="white"
+ctx.font="14px Arial"
+
+ctx.fillText("CH1",10,20)
+ctx.fillText("CH2",10,40)
+
+}
+
+// ==========================
+// affichage valeurs
+// ==========================
+
+function updateDisplay(){
+
+document.getElementById("timeVal").innerText =
+(timeScale*1000).toFixed(2)+" ms/div"
+
+document.getElementById("v1Val").innerText =
+scale1.toFixed(2)+" V/div"
+
+document.getElementById("v2Val").innerText =
+scale2.toFixed(2)+" V/div"
+
+document.getElementById("trigVal").innerText =
+triggerLevel.toFixed(2)+" V"
+
+}
+
+// ==========================
+// boucle dessin
+// ==========================
+
+function draw(){
+
+ctx.clearRect(0,0,width,height)
+
+drawGrid()
+
+drawSignals()
+
+drawText()
+
+updateDisplay()
+
+requestAnimationFrame(draw)
+
+drawTracker()
+
+}
+
+draw()
+
+</script>
+
+</body>
+</html>

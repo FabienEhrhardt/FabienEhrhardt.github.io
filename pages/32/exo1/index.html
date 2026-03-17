@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script src="scorm.js"></script>
 <script src="base.js"></script>
-<script src="fresnel.js"></script>
+<script src="spectre.js"></script>
 <link rel="stylesheet" href="style.css">
 
 
@@ -76,6 +76,15 @@
   <div id="fb6" class="feedback"></div>
 </div>
 
+<div class="question">
+  <p><b>Question 7 :</b> <span id="q7_texte"></span></p>
+  <input type="number" id="q7">
+  <span id="unite7"></span>
+  <button onclick="validerQ7()">Valider</button>
+  <div id="fb7" class="feedback"></div>
+</div>
+
+
 <button onclick="envoyerScore()">Envoyer le résultat</button>
 
 </div>
@@ -88,171 +97,106 @@ let q3Done = false;
 let q4Done = false;
 let q5Done = false;
 let q6Done = false;
+let q7Done = false;
 
 
 let titre_texte, enonce_texte,nomExo,theme;
-let Question1,Question2,Question3,Question4,Question5,Question6;
-let R1,R2,R3,R4,R5,R6;
-let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6;
-let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6;
+let Question1,Question2,Question3,Question4,Question5,Question6,Question7;
+let R1,R2,R3,R4,R5,R6,R7;
+let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6,Unite7;
+let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6,FpRep7;
 let nbquestion;
 
-//Paramètre de l'exercice
-let Z1=10*(Math.floor(Math.random() * 10) + 1); //valeur de Z1 en Ohm
-let Z2=10*(Math.floor(Math.random() * 10) + 1); //valeur de Z2 en Ohm
-let f=50; // 
-let omega= 2 * Math.PI*f; // pulsation rad/s
-let I=0.5*(Math.floor(Math.random() * 10) + 1); //valeur de I en mA
+// ---------------- PARAMETRES ----------------
+/*
+// valeurs des harmoniques en %
+let harmonics = [
+100, 50, 35, 2, 25, 3, 18, 2, 10, 2,
+9, 1, 6, 1, 5, 2, 8, 2, 4, 2,
+6, 2, 4, 1, 2
+];
 
-let alea1=(Math.floor(Math.random() * 3) + 1);
-let Nom1,valeur1,V1,phi1; //valeur1 valeur du composant
-switch(alea1)
-   {
-   case 1 :
-    valeur1=Z1; 
-	Nom1=`une résistance de résistance ${valeur1} \\(\\Omega\\)`;
-	phi1=0;
-    V1=Z1*I;	
-	break;
- 
-   case 2 :
-	valeur1=arrondi(Z1/omega*1000); 
-	Nom1=`une bobine d'inductance ${valeur1} \\(mH\\)`;
-	phi1=90;
-    V1=Z1*I;	
-	break;
-   
-   default :
-    valeur1=arrondi(1/Z1/omega*1e6); 
-	Nom1=`un condensateur de capacité ${valeur1} \\(\\mu F\\)`;
-	phi1=-90;
-    V1=Z1*I;	
-	break;
-   }
+// paramètres affichés
+let I1 = 804;     // mA
+let THD = 23.4;   // %
+let Iad = 188;    // mA
 
-let alea2=(Math.floor(Math.random() * 3) + 1);
-let Nom2,valeur2,V2,phi2; //valeur1 valeur du composant
-switch(alea2)
-   {
-   case 1 :
-    valeur2=Z2; 
-	Nom2=`une résistance de résistance ${valeur2} \\(\\Omega\\)`;
-	phi2=0;
-    V2=Z2*I;	
-	break;
- 
-   case 2 :
-	valeur2=arrondi(Z2/omega*1000); 
-	Nom2=`une bobine d'inductance ${valeur2} \\(mH\\)`;
-	phi2=90;
-    V2=Z2*I;	
-	break;
-   
-   default :
-    valeur2=arrondi(1/Z2/omega*1e6); 
-	Nom2=`un condensateur de capacité ${valeur2} \\(\\mu F\\)`	;
-	phi2=-90;
-    V2=Z2*I;	
-	break;
-   }
+// --------------------------------------------
+*/
 
-let Z=Math.sqrt(Math.pow((Z1*Math.cos(phi1*3.14159/180)+Z2*Math.cos(phi2*3.14159/180)),2)+Math.pow((Z1*Math.sin(phi1*3.14159/180)+Z2*Math.sin(phi2*3.14159/180)),2)); //Impédance
-let V=Z*I;
-let phi =180/Math.PI*Math.atan((Z1*Math.sin(phi1*3.14159/180)+Z2*Math.sin(phi2*3.14159/180))/(Z1*Math.cos(phi1*3.14159/180)+Z2*Math.cos(phi2*3.14159/180))); //phi
+let harmonics = [
+0,100, 0, 35, 0, 25, 0, 18, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0
+];
 
 
-let echellei = superarrondi(I/4); //Echelle pour l'axe i
-let echellev = superarrondi(Math.max(V,V1,V2)/4); //Echelle pour l'axe v
+for(let i=2;i<harmonics.length;i++){
+	if((i) % 2 === 1){harmonics[i]=9*(Math.floor(Math.random() * 10));} //n%2===1 vérifie que l'entier est impair
+	else{harmonics[i]=0;}
+}
+
+let I1=Math.floor(Math.random() * 100)*Math.pow(10,Math.floor(Math.random() * 3)-2);
+let I=IeffCalc(harmonics);
+let Iad=IadCalc(harmonics);
+let THD=THDCalc(harmonics);
+let Top3Harm=top3(harmonics);
+
 
 window.onload = function () {
   
   // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
   /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
-  nbquestion=6;
-  theme="31";
-  nomExo="exo4";
+  nbquestion=7;
+  theme="32";
+  nomExo="exo1";
   //Titre de l'exercice
-  titre_texte="Tracé du diagramme de Fresnel pour circuit avec 2 composants en série";
+  titre_texte="Etude du spectre d'un signal avec harmoniques";
   //Enoncé de l'exercice
-  enonce_texte=`On suppose avoir un circuit avec 2 composants en série.<br>
-  Le composant 1 est `+Nom1+`.<br>
-  Le composant 2 est `+Nom2+`.`;
+  enonce_texte=`Répondez aux questions à l'aide du spectre`;
   
   // Ecriture des questions 
   //QuestionX : énoncé de la question
   //FbRepX : Feedback de la question
   //RX : réponse de la question
   //UnitéX : unité de la réponse
-  Question1=`Déterminer la valeur efficace de la tension sur le composant 1.`;
-  R1=arrondi(V1);
-  FbRep1 =`
-  <table class="feedback-table">
-<tr>
-  <th>Type de composant</th>
-  <th>Relation I-V</th>
-</tr>
-<tr>
-  <td>Résistance</td>
-  <td>\\(V=RI\\)</td>
-</tr>
-<tr>
-  <td>Bobine</td>
-  <td>\\(V=L \\omega I\\)</td>
-</tr>
-<tr>
-  <td>Condensateur</td>
-  <td>\\(V=\\frac{1}{C \\omega} I\\)</td>
-</tr>
-</table>
-\\(V_1=${V1} V\\)
-`;
-  Unite1=`\\(V\\)`;
   
-  Question2=`Déterminer la valeur efficace de la tension sur le composant 1.`;
-  R2=arrondi(V2);
-  FbRep2 =`C'est le même tableau !
-  \\(V_2=${V2} V\\)`;
-  Unite2=`\\(V\\)`;
-	
-  Question3=`Déterminer le déphasage entre le courant et la tension pour le composant 1.` ;
-  R3=arrondi(phi1);
-  FbRep3 =`
-  <table class="feedback-table">
-<tr>
-  <th>Type de composant</th>
-  <th>Déphasage \\(\\varphi\\)</th>
-</tr>
-<tr>
-  <td>Résistance</td>
-  <td>\\(\\varphi=0\\)°</td>
-</tr>
-<tr>
-  <td>Bobine</td>
-  <td>\\(\\varphi=90\\)°</td>
-</tr>
-<tr>
-  <td>Condensateur</td>
-  <td>\\(\\varphi=-90\\)°</td>
-</tr>
-</table>
-\\(\\varphi_1=${R3}\\)°`;
-  Unite3=`\\(°\\)`;
+  Question1=`Déterminer la valeur efficace du fondamental du courant`;
+  R1=arrondi(I1);
+  FbRep1 =`C'est le courant indiqué en face de A-h01 \\(I_1=${R1} A\\)`;
+  Unite1=`\\(A\\)`;
   
-  Question4=`Déterminer le déphasage entre le courant et la tension pour le composant 2.` ;
-  R4=arrondi(phi2);
-  FbRep4 =`C'est le même tableau!
-  \\(\\varphi_2=${R4}\\)°`;
-  Unite4=`\\(°\\)`;
+  Question2=`Déterminer la valeur maximale du fondamental du courant`;
+  R2=arrondi(Math.sqrt(2)*I1);
+  FbRep2 =`\\(I_{1max}=\\sqrt{2} I_1=${R2} A\\)`;
+  Unite2=`\\(A\\)`;
   
-  Question5=`Déterminer la valeur efficace de la tension délivrée par le générateur \\(V\\).` ;
-  R5=arrondi(V);
-  FbRep5 =`On mesure sur le graphique \\(V\\)=${R5} V`;
-  Unite5=`\\(V\\)`;
+  Question3=`Déterminer le rang de l'harmonique le plus important` ;
+  R3=top3(harmonics)[0];
+  FbRep3 =`On regarde sur l'écran l'harmonique le plus important et on regarde son rang (abscisse du spectre) n=${R3}`;
+  Unite3=`\\(\\)`;
   
-  Question6=`Déterminer le déphasage entre le courant et la tension délivrée par le générateur.` ;
-  R6=arrondi(phi);
-  FbRep6 =`On mesure sur le graphique \\(\\varphi\\)=${R6} °`;
-  Unite6=`\\(°\\)`;
+  Question4=`Déterminer la valeur efficace de l'harmonique le plus important` ;
+  R4=arrondi(I1/100*harmonics[top3(harmonics)[0]]);
+  FbRep4 =`On regarde sur l'écran l'harmonique le plus important et on fait un produit en croix avec \\(I_1\\) : \\(I_{${R3}}=${R4} A\\)`;
+  Unite4=`\\(A\\)`;
+  
+  Question5=`Déterminer la fréquence de l'harmonique de courant le plus important.` ;
+  R5=50*top3(harmonics)[0];
+  FbRep5 =`\\(f_{${top3(harmonics)[0]}}=${top3(harmonics)[0]}*50=${R5} Hz\\)`;
+  Unite5=`\\(Hz\\)`;
+  
+  Question6=`Déterminer le THD à partir des troix harmoniques les plus importants.` ;
+  R6=arrondi(Math.sqrt(harmonics[Top3Harm[0]]*harmonics[Top3Harm[0]]+harmonics[Top3Harm[1]]*harmonics[Top3Harm[1]]+harmonics[Top3Harm[2]]*harmonics[Top3Harm[2]]));
+  FbRep6 =`\\(THD=\\frac{\\sqrt{I_{${top3(harmonics)[0]}}^2+I_{${top3(harmonics)[1]}}^2+I_{${top3(harmonics)[2]}}^2}}{I_1}=${R6} \\%\\)`;
+  Unite6=`\\(\\%\\)`;
+  
+  Question7=`Déterminer la valeur efficace du courant.` ;
+  R7=arrondi(I);
+  FbRep7 =`On mesure tous les harmoniques \\(I=\\sqrt{I_1^2+I_3^2+I_5^2+I_7^2+I_9^2+I_{11}^2+I_{13}^2+I_{15}^2+I_{17}^2+I_{19}^2+I_{21}^2+I_{23}^2+I_{25}^2}=${R7} A\\)`;
+  Unite7=`\\(A\\)`;
+    
+  
   
   
   //Ecriture du texte
@@ -270,12 +214,12 @@ window.onload = function () {
   document.getElementById("unite5").innerHTML = Unite5 ;
   document.getElementById("q6_texte").innerHTML = Question6 ;
   document.getElementById("unite6").innerHTML = Unite6 ;
+  document.getElementById("q7_texte").innerHTML = Question7 ;
+  document.getElementById("unite7").innerHTML = Unite7 ;
   MathJax.typeset();
   
-  //Trace de la Courbe
-  initialisationFresnel();
-  
-  
+  //Trace du spectre
+  SpectreHarmoniques("graph");
 };
 
 /* VALIDATION DES REPONSES */
@@ -356,7 +300,6 @@ function validerQ5() {
   }
   q5Done = true;
   MathJax.typeset();
-  tracerCourbe();
 }
 
 function validerQ6() {
@@ -375,16 +318,21 @@ function validerQ6() {
   MathJax.typeset();
 }
 
-function tracerCourbe(){
-  /* Tracé des vecteurs */
-  let pos={x:0,y:0};  
-  
-  pos=tracerVecteur(0,0,V1,phi1,'V1','blue','v');
-  pos=tracerVecteur(pos.x,pos.y,V2,phi2,'V2','red','v');
-  pos=tracerVecteur(0,0,V,phi,'V','black','v');
-  tracerVecteur(0,0,I,0,'I','black','i');
-}
+function validerQ7() {
+  if (q7Done) return;
 
+  let r = document.getElementById("q7").value;
+  let fb = document.getElementById("fb7");
+ 
+  if ((Math.abs(r - R7) <= 0.05 * Math.abs(R7))) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep7;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep7;
+  }
+  q7Done = true;
+  MathJax.typeset();
+}
 
 
 

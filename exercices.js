@@ -3,19 +3,22 @@ const listeExercices = [
     {
         theme: "0",
         exercices: [
+			{ nom: "exo1", titre: "Conversion - Puissance de 10" },
 
         ]
     },
 	{
         theme: "1",
         exercices: [
+			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" },
+
 
         ]
     },
 	{
         theme: "2",
         exercices: [
-			{ nom: "exo1", titre: "Etude de la réponse indicielle d'un système du premier ordre" }
+			{ nom: "exo1", titre: "Etude de la réponse indicielle d'un système du premier ordre" },
         ]
     },
 	{
@@ -24,29 +27,32 @@ const listeExercices = [
             { nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
 			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
-			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" }
+			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" },
         ]
     },
 	{
         theme: "32",
         exercices: [
+			{ nom: "exo1", titre: "Etude du spectre d'un signal avec harmoniques" },
         ]
     },
 	{
         theme: "33",
         exercices: [
+			{ nom: "exo1", titre: "Hacheur série en conduction continue - étude des courbes" },
+		
         ]
     },
 	{
         theme: "41",
         exercices: [
-		
+			{ nom: "exo1", titre: "Profil de vitesse d'un véhicule" },
         ]
     },
 	{
         theme: "42",
         exercices: [
-		
+			{ nom: "exo1", titre: "Alimentation d'une turbine hydraulique" },
         ]
     },
     {

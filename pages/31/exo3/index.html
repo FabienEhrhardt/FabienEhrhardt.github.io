@@ -137,7 +137,11 @@ let echellev = superarrondi(Math.max(VR,VL,VC)/4); //Echelle pour l'axe v
 //Permet de faire un arrondi.
 function arrondi(num){
 	if(num===0) return 0;
-	return Math.round((num)*Math.pow(10,1-Math.floor(Math.log10((num)))))/Math.pow(10,1-Math.floor(Math.log10((num))));
+	let signe = Math.sign(num);
+	num = Math.abs(num); // permet de ne pas être embêter par le signe
+
+	let facteur = Math.pow(10, 2 - Math.floor(Math.log10(num)));
+	return signe * Math.round(num * facteur) / facteur;
 }
 
 function superarrondi(num){
@@ -241,7 +245,7 @@ function validerQ1() {
   let r = document.getElementById("q1").value;
   let fb = document.getElementById("fb1");
   
-  if ((r >= 0.95*R1)&&(r <= 1.05*R1)) {
+  if ((Math.abs(r - R1) <= 0.05 * Math.abs(R1))) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
   } else {
@@ -257,7 +261,7 @@ function validerQ2() {
   let r = document.getElementById("q2").value;
   let fb = document.getElementById("fb2");
  
-  if ((r >= 0.95*R2)&&(r <= 1.05*R2)) {
+  if ((Math.abs(r - R2) <= 0.05 * Math.abs(R2))) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
   } else {
@@ -273,7 +277,7 @@ function validerQ3() {
   let r = document.getElementById("q3").value;
   let fb = document.getElementById("fb3");
  
-  if ((r >= 0.95*R3)&&(r <= 1.05*R3)) {
+  if ((Math.abs(r - R3) <= 0.05 * Math.abs(R3))) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
   } else {
@@ -289,7 +293,7 @@ function validerQ4() {
   let r = document.getElementById("q4").value;
   let fb = document.getElementById("fb4");
  
-  if ((r >= 0.95*R4)&&(r <= 1.05*R4)) {
+  if ((Math.abs(r - R4) <= 0.05 * Math.abs(R4))) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
   } else {
@@ -305,7 +309,7 @@ function validerQ5() {
   let r = document.getElementById("q5").value;
   let fb = document.getElementById("fb5");
  
-  if ((r >= 0.95*R5)&&(r <= 1.05*R5)) {
+  if ((Math.abs(r - R5) <= 0.05 * Math.abs(R5))) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep5;
   } else {
@@ -322,7 +326,7 @@ function validerQ6() {
   let r = document.getElementById("q6").value;
   let fb = document.getElementById("fb6");
  
-  if ((r >= 0.95*R6)&&(r <= 1.05*R6)) {
+  if ((Math.abs(r - R6) <= 0.05 * Math.abs(R6))) {
     score++;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep6;
   } else {

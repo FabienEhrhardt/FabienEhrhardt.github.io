@@ -7,7 +7,6 @@
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script src="scorm.js"></script>
 <script src="base.js"></script>
-<script src="fresnel.js"></script>
 <link rel="stylesheet" href="style.css">
 
 
@@ -23,8 +22,15 @@
   <p><b>Enoncé :</b> <span id="enonce"></span></p>
 </div>
 
-<!-- Courbe --> 
-<canvas id="graph" width="600" height="400" style="border:1px solid black;"></canvas>
+<!-- Si besoin d'aide
+<div class="question">
+  <p><b>Aide :</b> Vous pouvez consulter le rappel de cours ci-dessous. 
+Les prochaines réponses correctes ne rapporteront que la moitié des points.</p>
+  <button onclick="aide()">Tableau de conversion</button>
+  <div id="Aide" class="feedback"></div>
+</div> 
+-->
+
 
 
 <!-- Questions --> 
@@ -88,6 +94,7 @@ let q3Done = false;
 let q4Done = false;
 let q5Done = false;
 let q6Done = false;
+let qQuestion = 1; // coefficient pour le résultat
 
 
 let titre_texte, enonce_texte,nomExo,theme;
@@ -97,162 +104,123 @@ let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6;
 let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6;
 let nbquestion;
 
-//Paramètre de l'exercice
-let Z1=10*(Math.floor(Math.random() * 10) + 1); //valeur de Z1 en Ohm
-let Z2=10*(Math.floor(Math.random() * 10) + 1); //valeur de Z2 en Ohm
-let f=50; // 
-let omega= 2 * Math.PI*f; // pulsation rad/s
-let I=0.5*(Math.floor(Math.random() * 10) + 1); //valeur de I en mA
+// Paramètres de l'exercice
+let pu1=(Math.floor(Math.random() *100 ) + 1)*100; // Puissance en W
+let eta1=(Math.floor(Math.random() * 50) + 50); // rendement 1
+let eta2=(Math.floor(Math.random() * 50) + 50); //rendement 2
+let dt=(Math.floor(Math.random() * 72))/2; // temps en h
 
-let alea1=(Math.floor(Math.random() * 3) + 1);
-let Nom1,valeur1,V1,phi1; //valeur1 valeur du composant
-switch(alea1)
-   {
-   case 1 :
-    valeur1=Z1; 
-	Nom1=`une résistance de résistance ${valeur1} \\(\\Omega\\)`;
-	phi1=0;
-    V1=Z1*I;	
-	break;
- 
-   case 2 :
-	valeur1=arrondi(Z1/omega*1000); 
-	Nom1=`une bobine d'inductance ${valeur1} \\(mH\\)`;
-	phi1=90;
-    V1=Z1*I;	
-	break;
-   
-   default :
-    valeur1=arrondi(1/Z1/omega*1e6); 
-	Nom1=`un condensateur de capacité ${valeur1} \\(\\mu F\\)`;
-	phi1=-90;
-    V1=Z1*I;	
-	break;
-   }
-
-let alea2=(Math.floor(Math.random() * 3) + 1);
-let Nom2,valeur2,V2,phi2; //valeur1 valeur du composant
-switch(alea2)
-   {
-   case 1 :
-    valeur2=Z2; 
-	Nom2=`une résistance de résistance ${valeur2} \\(\\Omega\\)`;
-	phi2=0;
-    V2=Z2*I;	
-	break;
- 
-   case 2 :
-	valeur2=arrondi(Z2/omega*1000); 
-	Nom2=`une bobine d'inductance ${valeur2} \\(mH\\)`;
-	phi2=90;
-    V2=Z2*I;	
-	break;
-   
-   default :
-    valeur2=arrondi(1/Z2/omega*1e6); 
-	Nom2=`un condensateur de capacité ${valeur2} \\(\\mu F\\)`	;
-	phi2=-90;
-    V2=Z2*I;	
-	break;
-   }
-
-let Z=Math.sqrt(Math.pow((Z1*Math.cos(phi1*3.14159/180)+Z2*Math.cos(phi2*3.14159/180)),2)+Math.pow((Z1*Math.sin(phi1*3.14159/180)+Z2*Math.sin(phi2*3.14159/180)),2)); //Impédance
-let V=Z*I;
-let phi =180/Math.PI*Math.atan((Z1*Math.sin(phi1*3.14159/180)+Z2*Math.sin(phi2*3.14159/180))/(Z1*Math.cos(phi1*3.14159/180)+Z2*Math.cos(phi2*3.14159/180))); //phi
+let pa1=pu1/eta1*100;
+let pu2=pu1*eta2/100;
+let Ea1=pa1*dt/1000; //Energie en kWh
 
 
-let echellei = superarrondi(I/4); //Echelle pour l'axe i
-let echellev = superarrondi(Math.max(V,V1,V2)/4); //Echelle pour l'axe v
+let AideFeedback =`
+  <table class="feedback-table">
+<tr>
+  <td>Nom</td>
+  <td>Tera</td>
+  <td>Giga</td>
+  <td>Mega</td>
+  <td>kilo</td>
+  <td>hecto</td>
+  <td>déca</td>
+  <td></td>
+  <td>déci</td>
+  <td>centi</td>
+  <td>milli</td>
+  <td>micro</td>
+  <td>nano</td>
+  <td>femto</td>  
+</tr>
+<tr>
+  <td>Symbole</td>
+  <td>T</td>
+  <td>G</td>
+  <td>M</td>
+  <td>k</td>
+  <td>h</td>
+  <td>da</td>
+  <td></td>
+  <td>d</td>
+  <td>c</td>
+  <td>m</td>
+  <td>µ</td>
+  <td>n</td>
+  <td>f</td>  
+</tr>
+<tr>
+  <td>Puissance de 10</td>
+  <td>\\(10^{12}\\)</td>
+  <td>\\(10^{9}\\)</td>
+  <td>\\(10^{6}\\)</td>
+  <td>\\(10^{3}\\)</td>
+  <td>\\(10^{2}\\)</td>
+  <td>\\(10^{1}\\)</td>
+  <td>\\(10^{0}\\)</td>
+  <td>\\(10^{-1}\\)</td>
+  <td>\\(10^{-2}\\)</td>
+  <td>\\(10^{-3}\\)</td>
+  <td>\\(10^{-6}\\)</td>
+  <td>\\(10^{-9}\\)</td>
+  <td>\\(10^{-12}\\)</td>
+</tr>`
+;
+
 
 window.onload = function () {
   
   // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
   /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
   nbquestion=6;
-  theme="31";
-  nomExo="exo4";
+  theme="0";
+  nomExo="exo1";
   //Titre de l'exercice
-  titre_texte="Tracé du diagramme de Fresnel pour circuit avec 2 composants en série";
+  titre_texte="Chaine d'énergie - Rendements";
   //Enoncé de l'exercice
-  enonce_texte=`On suppose avoir un circuit avec 2 composants en série.<br>
-  Le composant 1 est `+Nom1+`.<br>
-  Le composant 2 est `+Nom2+`.`;
+  enonce_texte=`On suppose un système global composé de deux sous systèmes en cascade <br>
+  Le premier sous système possède un rendement de \\(\\eta_1=${eta1} \\%\\). <br>
+  Le deuxième sous système possède un rendement de \\(\\eta_2=${eta2} \\%\\). <br>
+  La puissance fournie par le premier sous système est de \\(P_{u1}=${pu1} W\\). <br>
+  Le temps de fonctionnement est de \\(\\Delta t=${dt} h\\).
+  `;
   
   // Ecriture des questions 
   //QuestionX : énoncé de la question
   //FbRepX : Feedback de la question
   //RX : réponse de la question
   //UnitéX : unité de la réponse
-  Question1=`Déterminer la valeur efficace de la tension sur le composant 1.`;
-  R1=arrondi(V1);
-  FbRep1 =`
-  <table class="feedback-table">
-<tr>
-  <th>Type de composant</th>
-  <th>Relation I-V</th>
-</tr>
-<tr>
-  <td>Résistance</td>
-  <td>\\(V=RI\\)</td>
-</tr>
-<tr>
-  <td>Bobine</td>
-  <td>\\(V=L \\omega I\\)</td>
-</tr>
-<tr>
-  <td>Condensateur</td>
-  <td>\\(V=\\frac{1}{C \\omega} I\\)</td>
-</tr>
-</table>
-\\(V_1=${V1} V\\)
-`;
-  Unite1=`\\(V\\)`;
+  Question1=`Déterminer la puissance utile en sortie du système.`;
+  R1=arrondi(pu2);
+  FbRep1 =`\\(P_{u2}=\\eta_2 P_{a2}=${R1} W\\)`;
+  Unite1=`W`;
   
-  Question2=`Déterminer la valeur efficace de la tension sur le composant 1.`;
-  R2=arrondi(V2);
-  FbRep2 =`C'est le même tableau !
-  \\(V_2=${V2} V\\)`;
-  Unite2=`\\(V\\)`;
+  Question2=`Déterminer la puissance absorbée par le système.`;
+  R2=arrondi(pa1);
+  FbRep2 =`\\(P_{a1}=\\frac{P{u1}}{\\eta_1}=${R2} W\\)`;
+  Unite2=`W`;
 	
-  Question3=`Déterminer le déphasage entre le courant et la tension pour le composant 1.` ;
-  R3=arrondi(phi1);
-  FbRep3 =`
-  <table class="feedback-table">
-<tr>
-  <th>Type de composant</th>
-  <th>Déphasage \\(\\varphi\\)</th>
-</tr>
-<tr>
-  <td>Résistance</td>
-  <td>\\(\\varphi=0\\)°</td>
-</tr>
-<tr>
-  <td>Bobine</td>
-  <td>\\(\\varphi=90\\)°</td>
-</tr>
-<tr>
-  <td>Condensateur</td>
-  <td>\\(\\varphi=-90\\)°</td>
-</tr>
-</table>
-\\(\\varphi_1=${R3}\\)°`;
-  Unite3=`\\(°\\)`;
+  Question3=`Déterminer le rendement global du système.`;
+  R3=arrondi(eta1*eta2/100);
+  FbRep3 =`\\(\\eta_g=\\eta_1 \\times \\eta_2=${R3} \\%\\)`;
+  Unite3=`%`;
   
-  Question4=`Déterminer le déphasage entre le courant et la tension pour le composant 2.` ;
-  R4=arrondi(phi2);
-  FbRep4 =`C'est le même tableau!
-  \\(\\varphi_2=${R4}\\)°`;
-  Unite4=`\\(°\\)`;
+  Question4=`Détetrminer les pertes globales du système \\(P_{pertes}\\)`;
+  R4=arrondi(pa1-pu2);
+  FbRep4 =`\\(P_{pertes}=P_{a1}-P_{u2}=${R4} W\\)`;
+  Unite4=`W`;
   
-  Question5=`Déterminer la valeur efficace de la tension délivrée par le générateur \\(V\\).` ;
-  R5=arrondi(V);
-  FbRep5 =`On mesure sur le graphique \\(V\\)=${R5} V`;
-  Unite5=`\\(V\\)`;
+  Question5=`Déterminer l'énergie absorbée par le système.`;
+  R5=arrondi(pa1*dt/1000);
+  FbRep5 =`\\(E_a=P_a \\times \\Delta t=${R5} kWh\\)`;
+  Unite5=`kWh`;
   
-  Question6=`Déterminer le déphasage entre le courant et la tension délivrée par le générateur.` ;
-  R6=arrondi(phi);
-  FbRep6 =`On mesure sur le graphique \\(\\varphi\\)=${R6} °`;
-  Unite6=`\\(°\\)`;
+  Question6=`Déterminer l'énergie fournie par le système.`;
+  R6=arrondi(pu2*dt/1000);
+  FbRep6 =`\\(E_u=\\eta_g \\times E_a=${R6} kWh\\)`;
+  Unite6=`kWh`;
+  
+  
   
   
   //Ecriture du texte
@@ -271,11 +239,7 @@ window.onload = function () {
   document.getElementById("q6_texte").innerHTML = Question6 ;
   document.getElementById("unite6").innerHTML = Unite6 ;
   MathJax.typeset();
-  
-  //Trace de la Courbe
-  initialisationFresnel();
-  
-  
+
 };
 
 /* VALIDATION DES REPONSES */
@@ -285,7 +249,7 @@ function validerQ1() {
   let fb = document.getElementById("fb1");
   
   if ((Math.abs(r - R1) <= 0.05 * Math.abs(R1))) {
-    score++;
+    score=score+qQuestion;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep1;
@@ -301,7 +265,7 @@ function validerQ2() {
   let fb = document.getElementById("fb2");
  
   if ((Math.abs(r - R2) <= 0.05 * Math.abs(R2))) {
-    score++;
+    score=score+qQuestion;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep2;
@@ -317,7 +281,7 @@ function validerQ3() {
   let fb = document.getElementById("fb3");
  
   if ((Math.abs(r - R3) <= 0.05 * Math.abs(R3))) {
-    score++;
+    score=score+qQuestion;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep3;
@@ -333,7 +297,7 @@ function validerQ4() {
   let fb = document.getElementById("fb4");
  
   if ((Math.abs(r - R4) <= 0.05 * Math.abs(R4))) {
-    score++;
+    score=score+qQuestion;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep4;
@@ -349,14 +313,13 @@ function validerQ5() {
   let fb = document.getElementById("fb5");
  
   if ((Math.abs(r - R5) <= 0.05 * Math.abs(R5))) {
-    score++;
+    score=score+qQuestion;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep5;
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep5;
   }
   q5Done = true;
   MathJax.typeset();
-  tracerCourbe();
 }
 
 function validerQ6() {
@@ -366,7 +329,7 @@ function validerQ6() {
   let fb = document.getElementById("fb6");
  
   if ((Math.abs(r - R6) <= 0.05 * Math.abs(R6))) {
-    score++;
+    score=score+qQuestion;
     fb.innerHTML = "✅ Bonne réponse<br>"+FbRep6;
   } else {
     fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep6;
@@ -375,14 +338,11 @@ function validerQ6() {
   MathJax.typeset();
 }
 
-function tracerCourbe(){
-  /* Tracé des vecteurs */
-  let pos={x:0,y:0};  
-  
-  pos=tracerVecteur(0,0,V1,phi1,'V1','blue','v');
-  pos=tracerVecteur(pos.x,pos.y,V2,phi2,'V2','red','v');
-  pos=tracerVecteur(0,0,V,phi,'V','black','v');
-  tracerVecteur(0,0,I,0,'I','black','i');
+function aide() {
+  let fb = document.getElementById("Aide");
+  fb.innerHTML = AideFeedback;
+  qQuestion = 0.5;
+  MathJax.typeset();
 }
 
 

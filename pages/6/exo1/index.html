@@ -94,7 +94,7 @@ let Iopt=Icc-Vopt/Rp; //courant optimal
 let Ropt=Vopt/Iopt; //résistance pour avoir le point optimal
 let Ich;
 
-if(Rch>Ropt){Ich=Voc/(1+Rch/Rs);} else{Ich=Icc/(1+Rch/Rp);}
+if(Rch>Ropt){Ich=Voc/(Rs+Rch);} else{Ich=Icc/(1+Rch/Rp);}
 
 let omega = 2 * Math.PI*f; // pulsation rad/s
 let xmax = 100; //valeur maximale sur l'axe X
@@ -155,7 +155,7 @@ window.onload = function () {
 	
   Question3=`Estimer la puissance maximale` ;
   R3=arrondi(Iopt*Vopt);
-  FbRep3 =`Il faut estimer la tension \\(V_{opt} \\) et le courant optimal \\(I_{opt} \\)$$P=V_{opt}\\times V_{opt}=${R3} W$$`;
+  FbRep3 =`Il faut estimer la tension \\(V_{opt} \\) et le courant optimal \\(I_{opt} \\)$$P=V_{opt}\\times I_{opt}=${R3} W$$`;
   Unite3=`\\(W\\)`;
   
   Question4=`Déterminer le courant lorsque l'on branche la charge sur le panneau solaire` ;
