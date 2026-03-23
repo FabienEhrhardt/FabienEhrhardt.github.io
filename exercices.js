@@ -4,15 +4,12 @@ const listeExercices = [
         theme: "0",
         exercices: [
 			{ nom: "exo1", titre: "Conversion - Puissance de 10" },
-
         ]
     },
 	{
         theme: "1",
         exercices: [
 			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" },
-
-
         ]
     },
 	{
@@ -28,6 +25,8 @@ const listeExercices = [
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
 			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
 			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" },
+			{ nom: "exo5", titre: "Calcul de puissance en monophasé" },
+			{ nom: "exo6", titre: "Bilan de puissance en monophasé" },
         ]
     },
 	{
@@ -53,6 +52,8 @@ const listeExercices = [
         theme: "42",
         exercices: [
 			{ nom: "exo1", titre: "Alimentation d'une turbine hydraulique" },
+			{ nom: "exo2", titre: "Pompe centrifuge - Courbe HMT = f(Q)" },
+			{ nom: "exo3", titre: "Écoulement dans une conduite - Abaque de pertes de charge et Bernoulli" }
         ]
     },
     {
@@ -77,7 +78,9 @@ const listeExercices = [
 	{
         theme: "8",
         exercices: [
-            { nom: "exo1", titre: "Performances d'un asservissement" }
+            { nom: "exo2", titre: "Capteur 4-20 mA - Étalonnage" },
+			{ nom: "exo1", titre: "Performances d'un asservissement" }
+			
         ]
     }
 ];

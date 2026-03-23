@@ -133,9 +133,6 @@ function majBarres() {
 	updateBar("B7", progressionTheme("7"));
 	updateBar("B8", progressionTheme("8"));
 	updateBar("barGlobal", progressionGlobale());
-	
-	
-		
 }
 
 function majBarresExo(theme) {
@@ -143,6 +140,7 @@ function majBarresExo(theme) {
   let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
   // Récupère toutes les barres présentes dans le HTML
   let barres = document.querySelectorAll(".remplissage");
+  //let barres = document.querySelectorAll(".barre-exo");
   barres.forEach(function(bar) {
 
     let id = bar.id;
