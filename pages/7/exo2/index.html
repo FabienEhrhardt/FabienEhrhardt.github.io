@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test SCORM - BTS Electrotechnique</title>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="scorm.js"></script>
+
+<link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+<div class="container">
+
+<!-- Titre --> 
+<h2><span id="titre"></h2>
+
+<div class="enonce">
+  <p><b>Enoncé :</b> <span id="enonce"></span></p>
+</div>
+
+<!-- Courbe --> 
+<canvas id="graph" width="600" height="400" style="border:1px solid black;"></canvas>
+
+
+<!-- Questions --> 
+<div class="question">
+  <p><b>Question 1 :</b> <span id="q1_texte"></span></p>
+  <input type="number" id="q1">
+  <span id="unite1"></span>
+  <button onclick="validerQ1()">Valider</button>
+  <div id="fb1" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 2 :</b> <span id="q2_texte"></span></p>
+  <input type="number" id="q2">
+  <span id="unite2"></span>
+  <button onclick="validerQ2()">Valider</button>
+  <div id="fb2" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 3 :</b> <span id="q3_texte"></span></p>
+  <input type="number" id="q3">
+  <span id="unite3"></span>
+  <button onclick="validerQ3()">Valider</button>
+  <div id="fb3" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 4 :</b> <span id="q4_texte"></span></p>
+  <input type="number" id="q4">
+  <span id="unite4"></span>
+  <button onclick="validerQ4()">Valider</button>
+  <div id="fb4" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 5 :</b> <span id="q5_texte"></span></p>
+  <input type="number" id="q5">
+  <span id="unite5"></span>
+  <button onclick="validerQ5()">Valider</button>
+  <div id="fb5" class="feedback"></div>
+</div>
+
+
+
+
+
+<button onclick="envoyerScore()">Envoyer le résultat</button>
+
+</div>
+
+<script>
+let score = 0;
+let q1Done = false;
+let q2Done = false;
+let q3Done = false;
+let q4Done = false;
+let q5Done = false;
+
+let titre_texte, enonce_texte,nomExo,theme;
+let Question1,Question2,Question3,Question4,Question5;
+let R1,R2,R3,R4,R5;
+let Unite1, Unite2, Unite3,Unite4,Unite5;
+let FbRep1, FbRep2,FbRep3,FpRep4,FbRep5;
+let nbquestion;
+
+
+// Paramètres du signal
+
+let R=0.1*(Math.floor(Math.random() * 10) + 1);
+let Lf=0.001*(Math.floor(Math.random() * 10) + 1);
+let V=230; // Tension simple
+let p=(Math.floor(Math.random() * 3) + 1); // paires de pôles;
+let f=50;
+let ns=60*f/p;
+let P=(Math.floor(Math.random() * 55) + 1);; //Puissance du moteur en kW
+let gn=0.005*(Math.floor(Math.random() * 20) + 1); // glissement nominal
+let nn=(1-gn)*ns;// vitesse nominale
+let Cn=P*1000/2/3.14159/nn*60;
+let Kcouple=Cn/(ns-nn);
+let typedecouple=(Math.floor(Math.random() * 4) + 1);
+let C1=Cn/3; //couple constant de levage
+let C2=Cn/3/ns; // Coefficient de couple de convoyage
+let C3=Cn/3/ns/ns; // Coefficient de couple de ventillation
+let C4=Cn/3*ns; //coefficient de couple de percage
+
+let gmax=R/2/3.14159/f/Lf;
+let Cmax=3*V*V*R/gmax/(2*3.14159*f/p*(R*R/gmax/gmax+Lf*Lf*4*3.14159*3.14159*f*f));
+let n; // n au fonctionnement
+let C; // C au fonctionnement
+let gf; //g au fonctionnement
+
+let K=3*V*V/R/(2*3.14159*f/p); // pente de courbe dans partie linéaire
+let Cd=3*V*V*R/1/(2*3.14159*f/p*(R*R/1/1+Lf*Lf*4*3.14159*3.14159*f*f));
+let Delta;
+
+switch(typedecouple)
+   {
+   case 1 :
+	n=ns-C1/Kcouple; // on simplifie un peu en étant dans la zone linéaire pour déterminer n
+	
+	break;
+ 
+   case 2 :
+	n=ns/(1+C2/Kcouple); // on simplifie un peu en étant dans la zone linéaire pour déterminer n
+	break;
+   
+   case 3 :
+    Delta=Kcouple*Kcouple+4*C3*Kcouple*ns;
+	n=(-Kcouple+Math.sqrt(Delta))/(2*C3);
+	break;
+   
+   default :
+	Delta=Kcouple*Kcouple*ns*ns-4*Kcouple*C4;
+	n=(+Kcouple*ns+Math.sqrt(Delta))/(2*Kcouple);
+	break;
+   }
+
+C=Kcouple*(ns-n);
+
+let nA=n;
+let CA=C;
+
+let f2=5*(Math.floor(Math.random() * 6) + 3);
+let ns2=60*f2/p;
+let nB,CB;
+switch(typedecouple)
+   {
+   case 1 :
+	n=ns2-C1/Kcouple; // on simplifie un peu en étant dans la zone linéaire pour déterminer n
+	
+	break;
+ 
+   case 2 :
+	n=ns2/(1+C2/Kcouple); // on simplifie un peu en étant dans la zone linéaire pour déterminer n
+	break;
+   
+   case 3 :
+    Delta=Kcouple*Kcouple+4*C3*Kcouple*ns2;
+	n=(-Kcouple+Math.sqrt(Delta))/(2*C3);
+	break;
+   
+   default :
+	Delta=Kcouple*Kcouple*ns2*ns2-4*Kcouple*C4;
+	n=(+Kcouple*ns2+Math.sqrt(Delta))/(2*Kcouple);
+	break;
+   }
+
+C=Kcouple*(ns2-n);
+CB=C; // valeur à la nouvelle fréquence
+nB=n;
+
+let xmax = 3000; //valeur maximale sur l'axe X
+let NomCourbe1 = "Couple moteur (Nm)";
+let NomCourbe2 = "Couple charge (Nm)";
+let TitreAxeX = "Vitesse n (tr/min)";
+let TitreAxeY = "Couple (Nm)";
+let ymax1 = superarrondi(1.2*Cn); //valeur maximale sue l'axe Y1
+let ymax2 = superarrondi(1.2*Cn); //valeur maximale sue l'axe Y2
+
+
+
+function fonction1(t){
+   // Couple moteur
+   let Cm=Kcouple*(ns-t)
+   return Cm;
+}
+
+function fonction2(t){
+   //Couple résistant
+   let Cr;
+   //Cr=K*(ns-t)/ns;
+   switch(typedecouple)
+   {
+   case 1 :
+	Cr=C1;
+	break;
+ 
+   case 2 :
+	Cr=C2*t;
+	break;
+   
+   case 3 :
+	Cr=C3*t*t;
+	break;
+   
+   default :
+	Cr=C4/t;
+	break;
+   }
+   return Cr;
+}
+
+function fonction3(t){
+   // Couple moteur
+   let Cm=Kcouple*(ns2-t)
+   return Cm;
+}
+
+
+//Permet de faire un arrondi.
+function superarrondi(num){
+		
+	return Math.ceil((num)*Math.pow(10,-Math.floor(Math.log10((num)))))/Math.pow(10,-Math.floor(Math.log10((num))));
+}
+
+function arrondi(num){
+	if(num===0) return 0;
+	return Math.round((num)*Math.pow(10,2-Math.floor(Math.log10((num)))))/Math.pow(10,2-Math.floor(Math.log10((num))));
+}
+
+
+
+window.onload = function () {
+  
+  // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
+  /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
+  nbquestion=5;
+  nomExo="exo2";
+  theme="7";
+  //Titre de l'exercice
+  titre_texte="Association d'un variateur et d'un moteur asynchrone";
+  //Enoncé de l'exercice
+  enonce_texte="A partir de la caractéristique mécanique du moteur, déterminer les paramètres"
+  
+  // Ecriture des questions 
+  //QuestionX : énoncé de la question
+  //FbRepX : Feedback de la question
+  //RX : réponse de la question
+  //UnitéX : unité de la réponse
+  Question1=`Donner le nombre de paires de pôles du moteur`;
+  R1=p;
+  FbRep1 =`\\(n_s=\\frac{60f}{p}\\) donc \\(p=\\frac{p n_s}{60}=${R1}\\)`;
+  Unite1=`\\( \\)`;
+  
+  Question2=`Déterminer la puissance au point de fonctionnement F1`;
+  R2=arrondi(CA*nA*2*3.14/60);
+  FbRep2 =`On mesure \\(C=${arrondi(CA)} Nm\\) et \\(n=${arrondi(nA)} tr/min\\), puis on calcule \\(P=C \\Omega=C \\frac{2 \\pi n}{60}=${R2}W\\)`;
+  Unite2=`\\(W\\)`;
+	
+  Question3=`On souhaite avoir une vitesse de \\(n_2=${arrondi(nB)} tr/min\\). En déduire le couple moteur` ;
+  R3=arrondi(CB);
+  FbRep3 =`On place le point à la vitesse \\(n_2\\) et on mesure \\(C_2=${R3} Nm\\)`;
+  Unite3=`\\(Nm\\)`;
+  
+  Question4=`Déterminer la puissance au point de fonctionnement F2` ;
+  R4=arrondi(CB*nB*2*3.14/60/1000);
+  FbRep4 =`On calcule \\(P=C_2 \\Omega_2=C_2 \\frac{2 \\pi n_2}{60}=${R4} kW\\)`;
+  Unite4=`\\(kW\\)`;
+  
+  Question5=`Déterminer la fréquence du variateur pour obtenir le point de fonctionnement F2` ;
+  R5=arrondi(f2);
+  FbRep5 =`On trace la parallèle et on calcule \\(f_2=\\frac{p n_{s2}}{60}=${R5} Hz\\)`;
+  Unite5=`\\(Hz\\)`;
+  
+  
+  
+  //Ecriture du texte
+  document.getElementById("titre").innerHTML = titre_texte ;
+  document.getElementById("enonce").innerHTML = enonce_texte ;
+  document.getElementById("q1_texte").innerHTML = Question1 ;
+  document.getElementById("unite1").innerHTML = Unite1 ;
+  document.getElementById("q2_texte").innerHTML = Question2 ;
+  document.getElementById("unite2").innerHTML = Unite2 ;
+  document.getElementById("q3_texte").innerHTML = Question3 ;
+  document.getElementById("unite3").innerHTML = Unite3 ;
+  document.getElementById("q4_texte").innerHTML = Question4 ;
+  document.getElementById("unite4").innerHTML = Unite4 ;
+  document.getElementById("q5_texte").innerHTML = Question5;
+  document.getElementById("unite5").innerHTML = Unite5 ;
+  
+  MathJax.typeset();
+  
+  //Trace de la Courbe
+  tracerCourbe();
+  
+};
+
+/* VALIDATION DES REPONSES */
+function validerQ1() {
+  if (q1Done) return;
+  let r = document.getElementById("q1").value;
+  let fb = document.getElementById("fb1");
+  
+  if ((r >= 0.95*R1)&&(r <= 1.05*R1)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
+	tracerPoint(ns,0,'ns');
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep1;
+	tracerPoint(ns,0,'ns');
+  }
+  q1Done = true;
+  MathJax.typeset();
+}
+
+function validerQ2() {
+  if (q2Done) return;
+
+  let r = document.getElementById("q2").value;
+  let fb = document.getElementById("fb2");
+ 
+  if ((r >= 0.95*R2)&&(r <= 1.05*R2)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
+	tracerPoint(nA,CA,'F1');
+	
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep2;
+	tracerPoint(nA,CA,'F1');
+	
+  }
+  q2Done = true;
+  MathJax.typeset();
+}
+
+function validerQ3() {
+  if (q3Done) return;
+
+  let r = document.getElementById("q3").value;
+  let fb = document.getElementById("fb3");
+ 
+  if ((r >= 0.95*R3)&&(r <= 1.05*R3)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
+	tracerPoint(nB,CB,'F2');
+	
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep3;
+	tracerPoint(nB,CB,'F2');
+  }
+  q3Done = true;
+  MathJax.typeset();
+}
+
+function validerQ4() {
+  if (q4Done) return;
+
+  let r = document.getElementById("q4").value;
+  let fb = document.getElementById("fb4");
+ 
+  if ((r >= 0.95*R4)&&(r <= 1.05*R4)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep4;
+  }
+  q4Done = true;
+  MathJax.typeset();
+}
+
+function validerQ5() {
+  if (q5Done) return;
+
+  let r = document.getElementById("q5").value;
+  let fb = document.getElementById("fb5");
+ 
+  if ((r >= 0.95*R5)&&(r <= 1.05*R5)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep5;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep5;
+  }
+  q5Done = true;
+  
+  /*************** COURBE variateur ***************/
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const pas = xmax/1000;
+  
+  // Origine du repère
+  const ox = 50;
+  const oy = H-20;
+
+  // Échelles
+  const scaleX = (W - 80) / xmax; // pixels par seconde
+  const scaleY1 = (H-40)/ymax1; // pixels par unité 1
+  
+  
+  ctx.strokeStyle = "green";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  let first = true;
+
+  for (let t = 0; t <= xmax; t += pas) {
+	let yVal = fonction3(t);
+	if (yVal > Cn) {
+		first = true;   // on force une rupture
+		continue;       // on ne trace pas ce point
+	}
+    let x = ox + t * scaleX;
+    let y = oy - yVal * scaleY1;
+	if(y<=20){y=20;}
+	if(y>=H-20){y=H-20;}
+
+    if (first) {
+      ctx.moveTo(x, y);
+      first = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  
+
+  ctx.stroke();
+  ctx.font = "14px Arial";
+  // courbe var
+  ctx.fillStyle = "green";
+  ctx.fillText('Courbe moteur VAR+MAS', ox+50, 15);
+  ctx.fillText(`${ymax1}`, ox+250, 15);
+    
+  MathJax.typeset();
+}
+
+
+
+
+function envoyerScore() {
+
+  let scorePourcent = 0;
+
+  if (nbquestion > 0) {
+    scorePourcent = arrondi((score / nbquestion) * 100);
+  }
+
+  try {
+        // Fonction universelle pour trouver l'API SCORM
+        function findAPI(win) {
+            while (win) {
+                if (win.API_1484_11) return { api: win.API_1484_11, version: '2004' };
+                if (win.API) return { api: win.API, version: '1.2' };
+                if (win.parent === win) break;
+                win = win.parent;
+            }
+            return null;
+        }
+
+        let apiInfo = findAPI(window);
+
+        if (apiInfo) {
+            let api = apiInfo.api;
+
+            if (apiInfo.version === '2004') {
+                api.Initialize("");
+                api.SetValue("cmi.score.raw", scorePourcent);
+                api.SetValue("cmi.score.min", "0");
+                api.SetValue("cmi.score.max", "100");
+                api.SetValue("cmi.completion_status", "completed");
+                api.Commit("");
+                api.Terminate("");
+            } else { // SCORM 1.2
+                api.LMSInitialize("");
+                api.LMSSetValue("cmi.core.score.raw", scorePourcent);
+                api.LMSSetValue("cmi.core.score.min", "0");
+                api.LMSSetValue("cmi.core.score.max", "100");
+                api.LMSSetValue("cmi.core.lesson_status", "completed");
+                api.LMSCommit("");
+                api.LMSFinish("");
+            }
+
+            alert("Score envoyé à Moodle : " + scorePourcent + "%");
+
+        } else {
+            // Pas de SCORM détecté → mode local
+            sauvegarderScore(theme,nomExo, scorePourcent);
+            alert("Score (mode local) : " + scorePourcent + "%");
+        }
+
+  } catch (e) {
+
+    console.log("Erreur SCORM :", e);
+	sauvegarderScore(theme,nomExo, scorePourcent);
+    alert("Score (hors Moodle) : " + scorePourcent + "%");
+
+  }
+}
+
+function sauvegarderScore(theme, nomExo, scorePourcent) {
+    let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+    if (!scores[theme]) scores[theme] = {};
+    
+    if (!scores[theme][nomExo] || scorePourcent > scores[theme][nomExo]) {
+        scores[theme][nomExo] = scorePourcent;
+    }
+    localStorage.setItem("scoresApp", JSON.stringify(scores));
+}
+
+function tracerPoint(x,y,nom){
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  
+  // Origine du repère
+  const ox = 50;
+  const oy = H-20;
+
+  // Échelles
+  const scaleX = (W - 80) / xmax; // pixels par seconde
+  const scaleY1 = (H-40)/ymax1; // pixels par unité 1
+  
+  // AXES
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 2;
+  
+  let xp = ox + x * scaleX;
+  let yp = oy - y * scaleY1;
+  if(y<=20){y=20;}
+  if(y>=H-20){y=H-20;}
+  if(xp<=ox){xp=ox;}
+  if(xp>=W-20){xp=W-20;}
+
+  // croix x
+  ctx.beginPath();
+  ctx.moveTo(xp-5, yp+5);
+  ctx.lineTo(xp+5, yp-5);
+  ctx.stroke();
+  // croix x
+  ctx.beginPath();
+  ctx.moveTo(xp+5, yp+5);
+  ctx.lineTo(xp-5, yp-5);
+  ctx.stroke();
+  
+  ctx.fillStyle = "black";
+  ctx.font = "14px Arial";
+  ctx.fillText(nom, xp, yp-10);
+  
+}
+
+
+
+function tracerCourbe() {
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const pas = xmax/1000;
+
+  // Effacement
+  ctx.clearRect(0, 0, W, H);
+
+  // Origine du repère
+  const ox = 50;
+  const oy = H-20;
+
+  // Échelles
+  const scaleX = (W - 80) / xmax; // pixels par seconde
+  const scaleY1 = (H-40)/ymax1; // pixels par unité 1
+  const scaleY2 = (H-40)/ymax2; //pixels par unité 2
+
+  /*************** GRILLE ***************/
+  ctx.strokeStyle = "#ddd";
+  ctx.lineWidth = 1;
+
+  // Verticales
+  for (let x = ox; x < W; x += scaleX*xmax / 4) {
+    ctx.beginPath();
+    ctx.moveTo(x, 20);
+    ctx.lineTo(x, H - 20);
+    ctx.stroke();
+  }
+
+  // Horizontales
+  for (let y = 20; y < H; y += scaleY1*ymax1/5) {
+    ctx.beginPath();
+    ctx.moveTo(ox, y);
+    ctx.lineTo(W - 20, y);
+    ctx.stroke();
+  }
+
+  /*************** AXES ***************/
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 2;
+
+  // Axe x
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(W - 20, oy);
+  ctx.stroke();
+
+  // Axe y
+  ctx.beginPath();
+  ctx.moveTo(ox, 20);
+  ctx.lineTo(ox, H - 20);
+  ctx.stroke();
+
+  /*************** COURBE 1 ***************/
+  ctx.strokeStyle = "blue";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  let first = true;
+
+  for (let t = 0; t <= xmax; t += pas) {
+	let yVal = fonction1(t);
+	if (yVal > Cn) {
+		first = true;   // on force une rupture
+		continue;       // on ne trace pas ce point
+	}
+    let x = ox + t * scaleX;
+    let y = oy - yVal * scaleY1;
+	if(y<=20){y=20;}
+	if(y>=H-20){y=H-20;}
+
+    if (first) {
+      ctx.moveTo(x, y);
+      first = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+
+  ctx.stroke();
+  
+  /*************** COURBE 2 ***************/
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  first = true;
+
+  for (let t = 0; t <= xmax; t += pas) {
+    let x = ox + t * scaleX;
+    let y = oy -fonction2(t)* scaleY2;
+	if(y<=20){y=20;}
+	if(y>=H-20){y=H-20;}
+
+    if (first) {
+      ctx.moveTo(x, y);
+      first = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+
+  ctx.stroke();
+  
+  /*************** TITRES DES AXES ***************/
+  ctx.fillStyle = "black";
+  ctx.font = "14px Arial";
+
+  // Axe x
+  ctx.fillText(TitreAxeX, W / 2 - 40, H - 5);
+  // courbe 1
+  ctx.fillStyle = "blue";
+  ctx.fillText(NomCourbe1, ox, H - 5);
+  ctx.fillText(`${ymax1}`, ox, 15);
+  // courbe 2
+  ctx.fillStyle = "red";
+  ctx.fillText(NomCourbe2, W-150, H - 5);
+  ctx.fillText(`${ymax2}`, W-150, 15);
+  // Axe y (rotation)
+  ctx.fillStyle = "black";
+  ctx.fillText(`${xmax}`, W-40, oy-5);
+  
+  ctx.save();
+  ctx.translate(15, H / 2 + 40);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(TitreAxeY, 0, 0);
+  ctx.restore();
+    
+}
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test SCORM - BTS Electrotechnique</title>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="scorm.js"></script>
+<script src="courbes.js"></script>
+<script src="base.js"></script>
+<link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+<div class="container">
+
+<!-- Titre --> 
+<h2><span id="titre"></h2>
+
+<div class="enonce">
+  <p><b>Enoncé :</b> <span id="enonce"></span></p>
+</div>
+
+<!-- Courbe --> 
+<canvas id="graph" width="600" height="400" style="border:1px solid black;"></canvas>
+
+
+<!-- Questions --> 
+<div class="question">
+  <p><b>Question 1 :</b> <span id="q1_texte"></span></p>
+  <input type="number" id="q1">
+  <span id="unite1"></span>
+  <button onclick="validerQ1()">Valider</button>
+  <div id="fb1" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 2 :</b> <span id="q2_texte"></span></p>
+  <input type="number" id="q2">
+  <span id="unite2"></span>
+  <button onclick="validerQ2()">Valider</button>
+  <div id="fb2" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 3 :</b> <span id="q3_texte"></span></p>
+  <input type="number" id="q3">
+  <span id="unite3"></span>
+  <button onclick="validerQ3()">Valider</button>
+  <div id="fb3" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 4 :</b> <span id="q4_texte"></span></p>
+  <input type="number" id="q4">
+  <span id="unite4"></span>
+  <button onclick="validerQ4()">Valider</button>
+  <div id="fb4" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 5 :</b> <span id="q5_texte"></span></p>
+  <input type="number" id="q5">
+  <span id="unite5"></span>
+  <button onclick="validerQ5()">Valider</button>
+  <div id="fb5" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 6 :</b> <span id="q6_texte"></span></p>
+  <input type="number" id="q6">
+  <span id="unite6"></span>
+  <button onclick="validerQ6()">Valider</button>
+  <div id="fb6" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 7 :</b> <span id="q7_texte"></span></p>
+  <input type="number" id="q7">
+  <span id="unite7"></span>
+  <button onclick="validerQ7()">Valider</button>
+  <div id="fb7" class="feedback"></div>
+</div>
+
+
+<button onclick="envoyerScore()">Envoyer le résultat</button>
+
+</div>
+
+<script>
+let score = 0;
+let q1Done = false;
+let q2Done = false;
+let q3Done = false;
+let q4Done = false;
+let q5Done = false;
+let q6Done = false;
+let q7Done = false;
+
+
+let titre_texte, enonce_texte,nomExo,theme;
+let Question1,Question2,Question3,Question4,Question5,Question6,Question7;
+let R1,R2,R3,R4,R5,R6,R7;
+let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6,Unite7;
+let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6,FpRep7;
+let nbquestion;
+
+
+// Paramètres du signal
+
+let T=(Math.floor(Math.random() * 10) + 1)/1000;
+let f=1/T;
+let V = 50*(Math.floor(Math.random() * 5) + 1); // amplitude
+
+let alpha=(Math.floor(Math.random() * 9)+0.5)/10;
+let alphaT=alpha*T;
+let I0=(Math.floor(Math.random() * 5) + 1); //valeur moyenne de i
+//let DeltaI=V*(1-alpha)*alpha*T/L;
+let DeltaI=2*(Math.floor(Math.random() * 8) + 2)/10*I0;
+let L=V*(1-alpha)*alpha*T/DeltaI;
+let Imin=I0-DeltaI/2;
+let Imax=I0+DeltaI/2;
+
+//Paramètre de la courbe
+let NomCourbe1 = "tension v(t) (V)";
+let NomCourbe2 = "courant i(t) (A)";
+let TitreAxeX = "Temps t (s)";
+let TitreAxeY = "Amplitude";
+let xmax = superarrondi(2*T); //valeur maximale sur l'axe X
+let ymax1 = superarrondi(V); //valeur maximale sue l'axe Y1
+let ymax2 = superarrondi(Imax);; //valeur maximale sue l'axe Y2
+
+function fonction1(t){
+	let vc;
+	if(t%T<alphaT){vc=V;}
+	else vc=0;
+   return vc;
+}
+
+function fonction2(t){
+   let ic;
+   let tau=t%T;
+	if(tau<alphaT){ic=Imin+V*(1-alpha)*tau/L;}
+	else ic=Imax-alpha*V/L*(tau-alphaT);
+   return ic;
+}
+
+window.onload = function () {
+  
+  // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
+  /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
+  nbquestion=7;
+  theme="31";
+  nomExo="exo1";
+  //Titre de l'exercice
+  titre_texte="Hacheur série en conduction continue - étude des courbes";
+  //Enoncé de l'exercice
+  enonce_texte="A partir de la courbe, déterminer les paramètres"
+  
+  // Ecriture des questions 
+  //QuestionX : énoncé de la question
+  //FbRepX : Feedback de la question
+  //RX : réponse de la question
+  //UnitéX : unité de la réponse
+ Question1=`Déterminer la valeur maximale de la tension v`;
+  R1=arrondi(V);
+  FbRep1 =`On la trouve par lecture graphique \\(V_{max}=${R1} V\\)`;
+  Unite1=`\\(V\\)`;
+  
+  Question2=`Déterminer la valeur moyenne de la tension v`;
+  R2=arrondi(alpha*V);
+  FbRep2 =`On utilise la méthode des aires.<br>
+  1. On calcule l'aire \\(A= \\alpha T V_{max}\\) <br>
+  2. On utilise la formule \\(V_{moy}=\\frac{A}{T}=\\alpha V_{max}=${R2} V\\)`;
+  Unite2=`\\(V\\)`;
+  
+  Question3=`Déterminer la valeur maximale du courant` ;
+  R3=arrondi(Imax);
+  FbRep3 =`On mesure sur la courbe la valeur du maximum pour le courant (à \\(t=\\alpha T\\)) et on trouve \\(I_{max}=${R3} A\\)`;
+  Unite3=`\\(A\\)`;
+  
+  Question4=`Déterminer la valeur de l'ondulation de courant \\(\\Delta I\\)` ;
+  R4=arrondi(DeltaI);
+  FbRep4 =`On mesure \\(I_{max}\\) et \\(I_{min}\\) et on fait \\(\\Delta I=I_{max}-I_{min}=${R4} A\\)`;
+  Unite4=`\\(A\\)`;
+  
+  Question5=`Déterminer la période du signal` ;
+  R5=arrondi(T);
+  FbRep5 =`On mesure la durée d'une période du signal \\(T=${R5} s\\)`;
+  Unite5=`\\(s\\)`;
+  
+  Question6=`Déterminer la valeur moyenne du courant` ;
+  R6=arrondi(I0);
+  FbRep6 =`On utilise la méthode des aires.<br>
+  1. On calcule l'aire, pour ce faire on découpe l'aire en un rectangle et un triangle \\(A= T \\times I_{min} + \\frac{(I_{max}-I_{min}) T}{2}=\\frac{(I_{max}-I_{min})T}{2}\\) <br>
+  2. On utilise la formule \\(I_{moy}=\\frac{A}{T}=\\frac{I_{max}+I_{min}}{2}=${R6} A\\)`;
+  Unite6=`\\(A\\)`;
+  
+  Question7=`Déterminer la puissance fournie par le hacheur` ;
+  R7=arrondi(I0*alpha*V);
+  FbRep7 =`Pour calculer une puissance en continue \\(P=V_{moy}I_{moy}=${R7} W\\)`;
+  Unite7=`\\(W\\)`;
+    
+  
+  
+  //Ecriture du texte
+  document.getElementById("titre").innerHTML = titre_texte ;
+  document.getElementById("enonce").innerHTML = enonce_texte ;
+  document.getElementById("q1_texte").innerHTML = Question1 ;
+  document.getElementById("unite1").innerHTML = Unite1 ;
+  document.getElementById("q2_texte").innerHTML = Question2 ;
+  document.getElementById("unite2").innerHTML = Unite2 ;
+  document.getElementById("q3_texte").innerHTML = Question3 ;
+  document.getElementById("unite3").innerHTML = Unite3 ;
+  document.getElementById("q4_texte").innerHTML = Question4 ;
+  document.getElementById("unite4").innerHTML = Unite4 ;
+  document.getElementById("q5_texte").innerHTML = Question5 ;
+  document.getElementById("unite5").innerHTML = Unite5 ;
+  document.getElementById("q6_texte").innerHTML = Question6 ;
+  document.getElementById("unite6").innerHTML = Unite6 ;
+  document.getElementById("q7_texte").innerHTML = Question7 ;
+  document.getElementById("unite7").innerHTML = Unite7 ;
+  MathJax.typeset();
+  
+  //Trace de la Courbe
+  tracerCourbe("graph");
+  
+};
+
+/* VALIDATION DES REPONSES */
+function validerQ1() {
+  if (q1Done) return;
+  let r = document.getElementById("q1").value;
+  let fb = document.getElementById("fb1");
+  
+  if ((r >= 0.95*R1)&&(r <= 1.05*R1)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep1;
+  }
+  q1Done = true;
+  MathJax.typeset();
+}
+
+function validerQ2() {
+  if (q2Done) return;
+
+  let r = document.getElementById("q2").value;
+  let fb = document.getElementById("fb2");
+ 
+  if ((r >= 0.95*R2)&&(r <= 1.05*R2)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep2;
+  }
+  q2Done = true;
+  MathJax.typeset();
+}
+
+function validerQ3() {
+  if (q3Done) return;
+
+  let r = document.getElementById("q3").value;
+  let fb = document.getElementById("fb3");
+ 
+  if ((r >= 0.95*R3)&&(r <= 1.05*R3)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep3;
+  }
+  q3Done = true;
+  MathJax.typeset();
+}
+
+function validerQ4() {
+  if (q4Done) return;
+
+  let r = document.getElementById("q4").value;
+  let fb = document.getElementById("fb4");
+ 
+  if ((r >= 0.95*R4)&&(r <= 1.05*R4)) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep4;
+  }
+  q4Done = true;
+  MathJax.typeset();
+}
+
+function validerQ5() {
+  if (q5Done) return;
+
+  let r = document.getElementById("q5").value;
+  let fb = document.getElementById("fb5");
+ 
+  if ((Math.abs(r - R5) <= 0.05 * Math.abs(R5))) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep5;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep5;
+  }
+  q5Done = true;
+  MathJax.typeset();
+}
+
+function validerQ6() {
+  if (q6Done) return;
+
+  let r = document.getElementById("q6").value;
+  let fb = document.getElementById("fb6");
+ 
+  if ((Math.abs(r - R6) <= 0.05 * Math.abs(R6))) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep6;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep6;
+  }
+  q6Done = true;
+  MathJax.typeset();
+}
+
+function validerQ7() {
+  if (q7Done) return;
+
+  let r = document.getElementById("q7").value;
+  let fb = document.getElementById("fb7");
+ 
+  if ((Math.abs(r - R7) <= 0.05 * Math.abs(R7))) {
+    score++;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep7;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep7;
+  }
+  q7Done = true;
+  MathJax.typeset();
+}
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

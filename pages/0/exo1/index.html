@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test SCORM - BTS Electrotechnique</title>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+<link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+<div class="container">
+
+<!-- Titre --> 
+<h2><span id="titre"></h2>
+
+<div class="enonce">
+  <p><b>Enoncé :</b> <span id="enonce"></span></p>
+</div>
+
+<div class="question">
+  <p><b>Aide :</b> Vous pouvez consulter le rappel de cours ci-dessous. 
+Les prochaines réponses correctes ne rapporteront que la moitié des points.</p>
+  <button onclick="aide()">Tableau de conversion</button>
+  <div id="Aide" class="feedback"></div>
+</div> 
+
+<!-- Questions --> 
+<div class="question">
+  <p><b>Question 1 :</b> <span id="q1_texte"></span></p>
+  <input type="number" id="q1">
+  <span id="unite1"></span>
+  <button onclick="validerQ1()">Valider</button>
+  <div id="fb1" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 2 :</b> <span id="q2_texte"></span></p>
+  <input type="number" id="q2">
+  <span id="unite2"></span>
+  <button onclick="validerQ2()">Valider</button>
+  <div id="fb2" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 3 :</b> <span id="q3_texte"></span></p>
+  <input type="number" id="q3">
+  <span id="unite3"></span>
+  <button onclick="validerQ3()">Valider</button>
+  <div id="fb3" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 4 :</b> <span id="q4_texte"></span></p>
+  <input type="number" id="q4">
+  <span id="unite4"></span>
+  <button onclick="validerQ4()">Valider</button>
+  <div id="fb4" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 5 :</b> <span id="q5_texte"></span></p>
+  <input type="number" id="q5">
+  <span id="unite5"></span>
+  <button onclick="validerQ5()">Valider</button>
+  <div id="fb5" class="feedback"></div>
+</div>
+
+<div class="question">
+  <p><b>Question 6 :</b> <span id="q6_texte"></span></p>
+  <input type="number" id="q6">
+  <span id="unite6"></span>
+  <button onclick="validerQ6()">Valider</button>
+  <div id="fb6" class="feedback"></div>
+</div>
+
+<button onclick="envoyerScore()">Envoyer le résultat</button>
+
+</div>
+
+<script>
+let score = 0;
+let q1Done = false;
+let q2Done = false;
+let q3Done = false;
+let q4Done = false;
+let q5Done = false;
+let q6Done = false;
+let qQuestion = 1; // coefficient pour le résultat
+
+
+let titre_texte, enonce_texte,nomExo,theme;
+let Question1,Question2,Question3,Question4,Question5,Question6;
+let R1,R2,R3,R4,R5,R6;
+let Unite1, Unite2, Unite3,Unite4,Unite5,Unite6;
+let FbRep1, FbRep2,FbRep3,FpRep4,FpRep5,FpRep6;
+let nbquestion;
+
+//Paramètre de l'exercice
+let Z1=(Math.floor(Math.random() * 100) + 1)*Math.pow(10,(Math.floor(Math.random() * 6) -3));
+let alea1=(Math.floor(Math.random() * 3) + 1);
+let puiss1,p10_1;
+switch(alea1)
+   {
+   case 1 :
+    puiss1='T';
+	p10_1=Math.pow(10,12);	
+	break;
+ 
+   case 2 :
+	puiss1='G';
+	p10_1=Math.pow(10,9);		
+	break;
+   
+   default :
+    puiss1='M';
+	p10_1=Math.pow(10,6);	
+	break;
+   }
+   
+let Z2=(Math.floor(Math.random() * 100) + 1)*Math.pow(10,(Math.floor(Math.random() * 6) -3));
+alea1=(Math.floor(Math.random() * 3) + 1);
+let puiss2,p10_2;
+switch(alea1)
+   {
+   case 1 :
+    puiss2='k';
+	p10_2=Math.pow(10,3);	
+	break;
+ 
+   case 2 :
+	puiss2='h';
+	p10_2=Math.pow(10,2);		
+	break;
+   
+   default :
+    puiss2='da';
+	p10_2=Math.pow(10,1);	
+	break;
+   }
+
+let Z3=(Math.floor(Math.random() * 100) + 1)*Math.pow(10,(Math.floor(Math.random() * 6) -3));
+alea1=(Math.floor(Math.random() * 3) + 1);
+let puiss3,p10_3;
+switch(alea1)
+   {
+   case 1 :
+    puiss3='d';
+	p10_3=Math.pow(10,-1);	
+	break;
+ 
+   case 2 :
+	puiss3='c';
+	p10_3=Math.pow(10,-2);		
+	break;
+   
+   default :
+    puiss3='m';
+	p10_3=Math.pow(10,-3);	
+	break;
+   }
+
+let Z4=(Math.floor(Math.random() * 100) + 1)*Math.pow(10,(Math.floor(Math.random() * 6) -3));
+alea1=(Math.floor(Math.random() * 3) + 1);
+let puiss4,p10_4;
+switch(alea1)
+   {
+   case 1 :
+    puiss4='µ';
+	p10_4=Math.pow(10,-6);	
+	break;
+ 
+   case 2 :
+	puiss4='n';
+	p10_4=Math.pow(10,-9);		
+	break;
+   
+   default :
+    puiss4='f';
+	p10_4=Math.pow(10,-12);	
+	break;
+   }
+
+let Z5=(Math.floor(Math.random() * 100) + 1)*Math.pow(10,(Math.floor(Math.random() * 6) -3));
+alea1=(Math.floor(Math.random() * 4) + 1);
+let puiss5,puiss5r,p10_5;
+switch(alea1)
+   {
+   case 1 :
+    puiss5='m';
+	p10_5=Math.pow(10,-3);	
+	break;
+ 
+   case 2 :
+	puiss5='µ';
+	p10_5=Math.pow(10,-6);		
+	break;
+	
+   case 3 :
+	puiss5='n';
+	p10_5=Math.pow(10,-9);	
+	break;
+   
+   default :
+    puiss5='f';
+	p10_5=Math.pow(10,-12);	
+	break;
+   }
+alea1=(Math.floor(Math.random() * 4) + 1);
+switch(alea1)
+   {
+   case 1 :
+    puiss5r='m';
+	p10_5=p10_5*1000;	
+	break;
+ 
+   case 2 :
+	puiss5r='µ';
+	p10_5=p10_5*Math.pow(10,6);		
+	break;
+   
+   case 3 :
+    puiss5r='n';
+	p10_5=p10_5*Math.pow(10,9);	
+	break;
+	
+	default :
+    puiss5r='f';
+	p10_5=p10_5*Math.pow(10,12);	
+	break;
+   }
+
+let Z6=(Math.floor(Math.random() * 100) + 1)*Math.pow(10,(Math.floor(Math.random() * 6) -3));
+alea1=(Math.floor(Math.random() * 4) + 1);
+let puiss6,puiss6r,p10_6;
+switch(alea1)
+   {
+   case 1 :
+    puiss6='T';
+	p10_6=Math.pow(10,12);	
+	break;
+ 
+   case 2 :
+	puiss6='G';
+	p10_6=Math.pow(10,9);		
+	break;
+	
+   case 3 :
+	puiss6='M';
+	p10_6=Math.pow(10,6);	
+	break;
+   
+   default :
+    puiss6='k';
+	p10_6=Math.pow(10,3);	
+	break;
+   }
+alea1=(Math.floor(Math.random() * 4) + 1);
+switch(alea1)
+   {
+   case 1 :
+    puiss6r='T';
+	p10_6=p10_6*Math.pow(10,-12);	
+	break;
+ 
+   case 2 :
+	puiss6r='G';
+	p10_6=p10_6*Math.pow(10,-9);		
+	break;
+   
+   case 3 :
+    puiss6r='M';
+	p10_6=p10_6*Math.pow(10,-6);	
+	break;
+	
+	default :
+    puiss6r='k';
+	p10_6=p10_6*Math.pow(10,-3);	
+	break;
+   }
+
+let AideFeedback =`
+  <table class="feedback-table">
+<tr>
+  <td>Nom</td>
+  <td>Tera</td>
+  <td>Giga</td>
+  <td>Mega</td>
+  <td>kilo</td>
+  <td>hecto</td>
+  <td>déca</td>
+  <td></td>
+  <td>déci</td>
+  <td>centi</td>
+  <td>milli</td>
+  <td>micro</td>
+  <td>nano</td>
+  <td>femto</td>  
+</tr>
+<tr>
+  <td>Symbole</td>
+  <td>T</td>
+  <td>G</td>
+  <td>M</td>
+  <td>k</td>
+  <td>h</td>
+  <td>da</td>
+  <td></td>
+  <td>d</td>
+  <td>c</td>
+  <td>m</td>
+  <td>µ</td>
+  <td>n</td>
+  <td>f</td>  
+</tr>
+<tr>
+  <td>Puissance de 10</td>
+  <td>\\(10^{12}\\)</td>
+  <td>\\(10^{9}\\)</td>
+  <td>\\(10^{6}\\)</td>
+  <td>\\(10^{3}\\)</td>
+  <td>\\(10^{2}\\)</td>
+  <td>\\(10^{1}\\)</td>
+  <td>\\(10^{0}\\)</td>
+  <td>\\(10^{-1}\\)</td>
+  <td>\\(10^{-2}\\)</td>
+  <td>\\(10^{-3}\\)</td>
+  <td>\\(10^{-6}\\)</td>
+  <td>\\(10^{-9}\\)</td>
+  <td>\\(10^{-12}\\)</td>
+</tr>`
+;
+
+
+window.onload = function () {
+  
+  // écrire $(grandeur) pour écrire un string avec la valeur de la grandeur ! ex `Réaliser le calcul \\(${a1} \\times ${b1}\\)`
+  /* A MODIFIER POUR LES DIFFERENTES QUESTIONS*/
+  nbquestion=6;
+  theme="0";
+  nomExo="exo1";
+  //Titre de l'exercice
+  titre_texte="Conversion - Puissance de 10";
+  //Enoncé de l'exercice
+  enonce_texte=`Réaliser les différentes conversions.`;
+  
+  // Ecriture des questions 
+  //QuestionX : énoncé de la question
+  //FbRepX : Feedback de la question
+  //RX : réponse de la question
+  //UnitéX : unité de la réponse
+  Question1=`${Z1} ${puiss1}o=`;
+  R1=arrondi(Z1*p10_1);
+  FbRep1 =`${R1} o`;
+  Unite1=`o`;
+  
+  Question2=`${Z2} ${puiss2}g=`;
+  R2=arrondi(Z2*p10_2);
+  FbRep2 =`${R2} g`;
+  Unite2=`g`;
+	
+  Question3=`${Z3} ${puiss3}m=`;
+  R3=arrondi(Z3*p10_3);
+  FbRep3 =`${R3} m`;
+  Unite3=`m`;
+  
+  Question4=`${Z4} ${puiss4}F=`;
+  R4=arrondi(Z4*p10_4);
+  FbRep4 =`${R4} F`;
+  Unite4=`F`;
+  
+  Question5=`${Z5} ${puiss5}F=`;
+  R5=arrondi(Z5*p10_5);
+  FbRep5 =`${R5} ${puiss5r}F`;
+  Unite5=`${puiss5r}F`;
+  
+  Question6=`${Z6} ${puiss6}Wh=`;
+  R6=arrondi(Z6*p10_6);
+  FbRep6 =`${R6} ${puiss6r}Wh`;
+  Unite6=`${puiss6r}Wh`;
+  
+  
+  
+  
+  //Ecriture du texte
+  document.getElementById("titre").innerHTML = titre_texte ;
+  document.getElementById("enonce").innerHTML = enonce_texte ;
+  document.getElementById("q1_texte").innerHTML = Question1 ;
+  document.getElementById("unite1").innerHTML = Unite1 ;
+  document.getElementById("q2_texte").innerHTML = Question2 ;
+  document.getElementById("unite2").innerHTML = Unite2 ;
+  document.getElementById("q3_texte").innerHTML = Question3 ;
+  document.getElementById("unite3").innerHTML = Unite3 ;
+  document.getElementById("q4_texte").innerHTML = Question4 ;
+  document.getElementById("unite4").innerHTML = Unite4 ;
+  document.getElementById("q5_texte").innerHTML = Question5 ;
+  document.getElementById("unite5").innerHTML = Unite5 ;
+  document.getElementById("q6_texte").innerHTML = Question6 ;
+  document.getElementById("unite6").innerHTML = Unite6 ;
+  MathJax.typeset();
+
+};
+
+/* VALIDATION DES REPONSES */
+function validerQ1() {
+  if (q1Done) return;
+  let r = document.getElementById("q1").value;
+  let fb = document.getElementById("fb1");
+  
+  if ((Math.abs(r - R1) <= 0.05 * Math.abs(R1))) {
+    score=score+qQuestion;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep1;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep1;
+  }
+  q1Done = true;
+  MathJax.typeset();
+}
+
+function validerQ2() {
+  if (q2Done) return;
+
+  let r = document.getElementById("q2").value;
+  let fb = document.getElementById("fb2");
+ 
+  if ((Math.abs(r - R2) <= 0.05 * Math.abs(R2))) {
+    score=score+qQuestion;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep2;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep2;
+  }
+  q2Done = true;
+  MathJax.typeset();
+}
+
+function validerQ3() {
+  if (q3Done) return;
+
+  let r = document.getElementById("q3").value;
+  let fb = document.getElementById("fb3");
+ 
+  if ((Math.abs(r - R3) <= 0.05 * Math.abs(R3))) {
+    score=score+qQuestion;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep3;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep3;
+  }
+  q3Done = true;
+  MathJax.typeset();
+}
+
+function validerQ4() {
+  if (q4Done) return;
+
+  let r = document.getElementById("q4").value;
+  let fb = document.getElementById("fb4");
+ 
+  if ((Math.abs(r - R4) <= 0.05 * Math.abs(R4))) {
+    score=score+qQuestion;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep4;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep4;
+  }
+  q4Done = true;
+  MathJax.typeset();
+}
+
+function validerQ5() {
+  if (q5Done) return;
+
+  let r = document.getElementById("q5").value;
+  let fb = document.getElementById("fb5");
+ 
+  if ((Math.abs(r - R5) <= 0.05 * Math.abs(R5))) {
+    score=score+qQuestion;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep5;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep5;
+  }
+  q5Done = true;
+  MathJax.typeset();
+}
+
+function validerQ6() {
+  if (q6Done) return;
+
+  let r = document.getElementById("q6").value;
+  let fb = document.getElementById("fb6");
+ 
+  if ((Math.abs(r - R6) <= 0.05 * Math.abs(R6))) {
+    score=score+qQuestion;
+    fb.innerHTML = "✅ Bonne réponse<br>"+FbRep6;
+  } else {
+    fb.innerHTML = "❌ Mauvaise réponse<br>"+FbRep6;
+  }
+  q6Done = true;
+  MathJax.typeset();
+}
+
+function aide() {
+  let fb = document.getElementById("Aide");
+  fb.innerHTML = AideFeedback;
+  qQuestion = 0.5;
+  MathJax.typeset();
+}
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
