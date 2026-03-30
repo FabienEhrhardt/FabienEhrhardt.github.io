@@ -107,3 +107,76 @@ function sauvegarderScore(theme, nomExo, scorePourcent) {
     }
     localStorage.setItem("scoresApp", JSON.stringify(scores));
 }
+
+
+
+
+
+//Pour générer les exercices
+let score = 0;
+let questionsDone = [];
+
+
+
+function genererExercice(exo){
+
+document.getElementById("titre").innerHTML = exo.titre;
+document.getElementById("enonce").innerHTML = exo.enonce;
+
+let zone = document.getElementById("questions");
+zone.innerHTML="";
+
+exo.questions.forEach((q,i)=>{
+
+zone.innerHTML += `
+<div class="question">
+<p><b>Question ${i+1} :</b> ${q.texte}</p>
+<input type="number" id="q${i}">
+<span>${q.unite}</span>
+<button onclick="valider(${i})">Valider</button>
+<div id="fb${i}" class="feedback"></div>
+</div>
+`;
+questionsDone[i]=false;
+});
+
+MathJax.typeset();
+let canvas = document.getElementById("graph");
+
+if(exo.courbe1){
+    canvas.style.display = "block";
+}
+else{
+    canvas.style.display = "none";
+}
+}
+
+
+function valider(i){
+
+if(questionsDone[i]) return;
+
+let r = parseFloat(document.getElementById("q"+i).value);
+let fb = document.getElementById("fb"+i);
+
+let q = exo.questions[i];
+
+if(Math.abs(r-q.reponse)<=0.05*Math.abs(q.reponse)){
+    score++;
+    fb.innerHTML="✅ Bonne réponse<br>"+q.feedback;
+}
+else{
+    fb.innerHTML="❌ Mauvaise réponse<br>"+q.feedback;
+}
+
+questionsDone[i]=true;
+
+if(q.action) q.action();
+
+MathJax.typeset();
+
+}
+
+
+
+

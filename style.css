@@ -1,4 +1,4 @@
-b<style>
+<style>
 * {
   box-sizing: border-box;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
@@ -105,17 +105,6 @@ button:hover {
   font-weight: 500;
 }
 
-/* Bouton final */
-button:last-of-type {
-  display: block;
-  font-size: 16px;
-  margin: 5px auto;
-  background: #28a745;
-}
-
-button:last-of-type:hover {
-  background: #1e7e34;
-}
 .barre {
   /*width: 100%;*/
   width: 50px;
@@ -163,6 +152,61 @@ td {
   background: #ddd;
   border-radius: 15px;
   overflow: hidden;
+}
+
+#topBar {
+    display: flex;
+    justify-content: space-between; /* gauche / droite */
+    align-items: center;
+    padding: 10px;
+}
+
+.left, .right {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* espace entre éléments */
+}
+
+
+h1{
+  text-align:center;
+  color:#1f3c88;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+  margin-bottom:20px;
+}
+
+.badges{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap:15px;
+}
+
+.badge{
+  padding:1px;
+  border-radius:10px;
+  text-align:center;
+  color:white;
+}
+.blanc {
+  background: #f0f0f0;
+  color: #333;
+  border: 2px solid #ccc;
+}
+
+.bronze{background:#cd7f32;}
+.argent{background:#c0c0c0; color:black;}
+.or{background:#ffd700; color:black;}
+.platine{background:#00e5ff; color:black;}
+
+.score{
+  font-size:20px;
+  font-weight:bold;
 }
 
 </style>

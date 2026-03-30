@@ -21,12 +21,15 @@ const listeExercices = [
 	{
         theme: "31",
         exercices: [
-            { nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
+            { nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" },
+			{ nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
+			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
 			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
 			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" },
 			{ nom: "exo5", titre: "Calcul de puissance en monophasé" },
 			{ nom: "exo6", titre: "Bilan de puissance en monophasé" },
+			
         ]
     },
 	{
@@ -59,8 +62,17 @@ const listeExercices = [
     {
         theme: "5",
         exercices: [
-            { nom: "exo1", titre: "Modèle de Thévenin d'une batterie" },
-        ]
+			{ nom: "exo2", titre: "Autonomie d’un système alimenté par batterie" },
+			{ nom: "exo3", titre: "Autonomie réelle d’une batterie avec profondeur de décharge" },
+			{ nom: "exo4", titre: "Autonomie et performances d’un véhicule électrique" },	
+			{ nom: "exo5", titre: "Cycle de conduite et récupération d’énergie" },
+			{ nom: "exo6", titre: "Combien de batteries faut-il en série pour obtenir la tension souhaitée ?" },				
+			{ nom: "exo1", titre: "Modèle de Thévenin d'une batterie" },
+			{ nom: "exo7", titre: "Dimensionnement d’une installation solaire autonome" },
+			{ nom: "exo8", titre: "Dimensionnement d’une batterie de secours" },
+			{ nom: "exo9", titre: "Production d’énergie électrique par combustion" },
+			{ nom: "exo10", titre: "Étude pratique de la combustion d’un carburant" },
+		]
     },
 	{
         theme: "6",
@@ -71,7 +83,8 @@ const listeExercices = [
 	{
         theme: "7",
         exercices: [
-            { nom: "exo1", titre: "Courbe C=f(n) d'un moteur asynchrone" },
+            { nom: "exo3", titre: "Étude de plaque d’un moteur triphasé asynchrone" },
+			{ nom: "exo1", titre: "Courbe C=f(n) d'un moteur asynchrone" },
             { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" }
         ]
     },

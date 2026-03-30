@@ -120,122 +120,61 @@ let questionsDone = [];
 
 function genererExercice(exo){
 
-    document.getElementById("titre").innerHTML = exo.titre;
-    document.getElementById("enonce").innerHTML = exo.enonce;
+document.getElementById("titre").innerHTML = exo.titre;
+document.getElementById("enonce").innerHTML = exo.enonce;
 
-    let zone = document.getElementById("questions");
-    zone.innerHTML="";
+let zone = document.getElementById("questions");
+zone.innerHTML="";
 
-    exo.questions.forEach((q,i)=>{
+exo.questions.forEach((q,i)=>{
 
-        let inputHTML = "";
+zone.innerHTML += `
+<div class="question">
+<p><b>Question ${i+1} :</b> ${q.texte}</p>
+<input type="number" id="q${i}">
+<span>${q.unite}</span>
+<button onclick="valider(${i})">Valider</button>
+<div id="fb${i}" class="feedback"></div>
+</div>
+`;
+questionsDone[i]=false;
+});
 
-        // =====================
-        // 🔢 CALCUL (par défaut)
-        // =====================
-        if(!q.type || q.type === "calcul"){
-            inputHTML = `<input type="number" step="any" id="q${i}">`;
-        }
+MathJax.typeset();
+let canvas = document.getElementById("graph");
 
-        // =====================
-        // ✍️ TEXTE
-        // =====================
-        else if(q.type === "texte"){
-            inputHTML = `<small>${q.type === "texte" ? "✍️ Réponse ouverte" : ""}</small> <input type="text" id="q${i}">`;
-        }
-
-        // =====================
-        // 🧩 AFFICHAGE QUESTION
-        // =====================
-        zone.innerHTML += `
-        <div class="question">
-            <p><b>Question ${i+1} :</b> ${q.texte}</p>
-            ${inputHTML}
-            <span>${q.unite || ""}</span>
-            <button onclick="valider(${i})">Valider</button>
-            <div id="fb${i}" class="feedback"></div>
-        </div>
-        `;
-
-        questionsDone[i]=false;
-    });
-
-    MathJax.typeset();
-
-    // =====================
-    // 📊 GESTION COURBE
-    // =====================
-    let canvas = document.getElementById("graph");
-
-    if(exo.courbe1){
-        canvas.style.display = "block";
-    } else {
-        canvas.style.display = "none";
-    }
+if(exo.courbe1){
+    canvas.style.display = "block";
+}
+else{
+    canvas.style.display = "none";
+}
 }
 
 
 function valider(i){
 
-    if(questionsDone[i]) return;
+if(questionsDone[i]) return;
 
-    let input = document.getElementById("q"+i);
-    let fb = document.getElementById("fb"+i);
+let r = parseFloat(document.getElementById("q"+i).value);
+let fb = document.getElementById("fb"+i);
 
-    let q = exo.questions[i];
+let q = exo.questions[i];
 
-    let bonneReponse = false;
+if(Math.abs(r-q.reponse)<=0.05*Math.abs(q.reponse)){
+    score++;
+    fb.innerHTML="✅ Bonne réponse<br>"+q.feedback;
+}
+else{
+    fb.innerHTML="❌ Mauvaise réponse<br>"+q.feedback;
+}
 
-    // =====================
-    // 🔢 CAS CALCUL
-    // =====================
-    if(!q.type || q.type === "calcul"){
+questionsDone[i]=true;
 
-        let r = parseFloat(input.value);
+if(q.action) q.action();
 
-        if(!isNaN(r)){
-            let tol = q.tolerance || 0.05; // tolérance 5% par défaut
-			if(q.reponse === 0){
-					if(Math.abs(r) < 0.01) bonneReponse = true;
-				}
-			else{
-            if(Math.abs(r - q.reponse) <= tol * Math.abs(q.reponse)){
-                bonneReponse = true;
-            }
-			}
-        }
-    }
+MathJax.typeset();
 
-    // =====================
-    // ✍️ CAS TEXTE
-    // =====================
-    else if(q.type === "texte"){
-
-        let repUser = input.value.toLowerCase();
-
-        bonneReponse = q.reponse.some(mot =>
-            repUser.includes(mot.toLowerCase())
-        );
-    }
-
-    // =====================
-    // 🎯 AFFICHAGE
-    // =====================
-    if(bonneReponse){
-        score++;
-        fb.innerHTML = "✅ Bonne réponse<br>" + q.feedback;
-    } else {
-        fb.innerHTML = "❌ Mauvaise réponse<br>" + q.feedback;
-    }
-
-    questionsDone[i] = true;
-
-    // =====================
-    // 🎨 ACTION (courbe, etc.)
-    // =====================
-    if(q.action) q.action();
-
-    MathJax.typeset();
 }
 
 
