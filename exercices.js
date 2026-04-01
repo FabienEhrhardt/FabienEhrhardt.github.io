@@ -9,7 +9,10 @@ const listeExercices = [
 	{
         theme: "1",
         exercices: [
+			{ nom: "exo0", titre: "Formules : Energie / Puissance" },
 			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" },
+			{ nom: "exo2", titre: "Formules : Energie et transferts thermiques " },
+			
         ]
     },
 	{
@@ -21,7 +24,8 @@ const listeExercices = [
 	{
         theme: "31",
         exercices: [
-            { nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" },
+            { nom: "exo9", titre: "Formules : Régime continu" },
+			{ nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" },
 			{ nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
 			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
@@ -29,20 +33,22 @@ const listeExercices = [
 			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" },
 			{ nom: "exo5", titre: "Calcul de puissance en monophasé" },
 			{ nom: "exo6", titre: "Bilan de puissance en monophasé" },
-			
+			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
+			{ nom: "exo8", titre: "Formules : Régime triphasé sinusoïdal" },
         ]
     },
 	{
         theme: "32",
         exercices: [
+			{ nom: "exo0", titre: "Formules : Régime monophasé avec harmoniques de courant" },
 			{ nom: "exo1", titre: "Etude du spectre d'un signal avec harmoniques" },
         ]
     },
 	{
         theme: "33",
         exercices: [
+			{ nom: "exo0", titre: "Formules : Transformateur monophasé" },
 			{ nom: "exo1", titre: "Hacheur série en conduction continue - étude des courbes" },
-		
         ]
     },
 	{

@@ -1,7 +1,7 @@
 let theme="31";
-let nomExo="exo0";
+let nomExo="exo8";
 
-let chapitre="Régime monophasé sinusoïdal";
+let chapitre="Régime triphasé sinusoïdal";
 
 
 // ======================
@@ -9,30 +9,39 @@ let chapitre="Régime monophasé sinusoïdal";
 // ======================
 const questions = [
 {
+    texte: "Valeur efficace de la tension U=",
+    choix: [
+        "\\({V}{\\sqrt{3}}\\)",
+        "\\({V}}{\\sqrt{2}}\\)",
+        "\\(\\frac{V_{max}}{\\sqrt{3}}\\)",
+        "\\(\\frac{V_{max}}{\\sqrt{2}}\\)"
+    ]
+},
+{
     texte: "Puissance active P=",
     choix: [
-        "\\(VI\\cos\\varphi\\)",
+        "\\(\sqrt{3}UI\\cos\\varphi\\)",
         "\\(VI\\)",
-        "\\(VI\\sin \\varphi\\)",
-        "\\(RI\\)"
+        "\\(\sqrt{3}VI\\cos\\varphi\\)",
+        "\\(VI\\cos\\varphi\\)"
     ]
 },
 {
     texte: "Puissance réactive Q=",
     choix: [
-        "\\(VI\\sin\\varphi\\)",
+        "\\(\sqrt{3}UI\\sin\\varphi\\)",
         "\\(VI\\)",
-        "\\(VI\\cos \\varphi\\)",
+        "\\(\sqrt{3}VI\\sin\\varphi\\)",
         "\\(P sin \\varphi\\)"
     ]
 },
 {
     texte: "Puissance apparente S=",
     choix: [
+        "\\(\sqrt{3}UI\\)",
         "\\(VI\\)",
-        "\\(VI \\cos \\varphi\\)",
         "\\(\\sqrt{P^2-Q^2}\\)",
-        "\\(P \\cos \\varphi\\)"
+        "\\(3UI\\)"
     ]
 },
 {
@@ -69,6 +78,33 @@ const questions = [
         "\\(\\frac{T}{2\\pi}\\)",
         "\\(2 \\pi T\\)",
         "\\(2 \\pi \\omega\\)"
+    ]
+},
+{
+    texte: "Déphasage entre \\(u_12\\) et \\(u_23\\) ?",
+    choix: [
+        "\\(120 \°\\)",
+        "\\(60 \°\\)",
+        "\\(180 \°\\)",
+        "\\(30\°\\)"
+    ]
+},
+{
+    texte: "Déphasage entre \\(v_1\\) et \\(v_1\\) ?",
+    choix: [
+        "\\(120 \°\\)",
+        "\\(60 \°\\)",
+        "\\(180 \°\\)",
+        "\\(30\°\\)"
+    ]
+},
+{
+    texte: "Déphasage entre \\(u_12\\) et \\(v_1\\) ?",
+    choix: [
+        "\\(30 \°\\)",
+        "\\(60 \°\\)",
+        "\\(180 \°\\)",
+        "\\(120\°\\)"
     ]
 },
 {
@@ -130,7 +166,7 @@ const questions = [
     choix: [
         "\\(P_1+P_2+…\\)",
         "\\(\\sqrt{P_1^2+P_2^2+...}\\)",
-        "\\(VI\\)",
+        "\\(3VI\\)",
         "\\(RI\\)"
     ]
 },
@@ -139,7 +175,7 @@ const questions = [
     choix: [
         "\\(Q_1+Q_2+…\\)",
         "\\(\\sqrt{Q_1^2+Q_2^2+...}\\)",
-        "\\(VI\\)",
+        "\\(\\sqrt{3}VI sin \\varphi\\)",
         "\\(RI\\)"
     ]
 },
@@ -279,88 +315,88 @@ const questions = [
     ]
 },
 {
-    texte: "Dans R, P=",
+    texte: "Dans R triphasé couplé en étoile, P=",
     choix: [
+        "\\(3RI^2\\)",
+        "\\(3RI\\)",
+        "\\(3\\frac{V}{R}\\)",
+        "\\(0\\)"
+    ]
+},
+{
+    texte: "Dans R triphasé couplé en étoile, P=",
+    choix: [
+        "\\(3\\frac{V^2}{R}\\)",
         "\\(RI^2\\)",
-        "\\(RI\\)",
-        "\\(\\frac{V}{R}\\)",
+        "\\(3\\frac{V}{R}\\)",
         "\\(0\\)"
     ]
 },
 {
-    texte: "Dans R, P=",
-    choix: [
-        "\\(\\frac{V^2}{R}\\)",
-        "\\(RI\\)",
-        "\\(\\frac{V}{R}\\)",
-        "\\(0\\)"
-    ]
-},
-{
-    texte: "Dans R, Q=",
+    texte: "Dans R triphasé couplé en étoile, Q=",
     choix: [
         "\\(0\\)",
-        "\\(\\frac{V^2}{R}\\)",
-        "\\(RI\\)",
+        "\\(3\\frac{V^2}{R}\\)",
+        "\\(3RI^2\\)",
         "\\(RI^2\\)"
     ]
 },
 {
-    texte: "Dans L, P=",
+    texte: "Dans L triphasé couplé en étoile, P=",
     choix: [
         "\\(0\\)",
-        "\\(L\\omega I^2\\)",
-        "\\(\\frac{V^2}{L\\omega}\\)",
-        "\\(L\\omega I\\)"
+        "\\(3 L\\omega I^2\\)",
+        "\\(3 \\frac{V^2}{L\\omega}\\)",
+        "\\(3 L\\omega I\\)"
     ]
 },
 {
-    texte: "Dans L, Q=",
+    texte: "Dans L triphasé couplé en étoile, Q=",
     choix: [
-        "\\(L\\omega I^2\\)",
-        "\\(L\\omega I\\)",
+        "\\(3 L\\omega I^2\\)",
+        "\\(3L\\omega I\\)",
+        "\\(0\\)",
+        "\\(3\\frac{V}{L\\omega}\\)"
+    ]
+},
+{
+    texte: "Dans L triphasé couplé en étoile, Q=",
+    choix: [
+        "\\(3 \\frac{V^2}{L\\omega}\\)",
+        "\\(3 L\\omega I\\)",
         "\\(0\\)",
         "\\(\\frac{V}{L\\omega}\\)"
     ]
 },
 {
-    texte: "Dans L, Q=",
+    texte: "Dans C triphasé couplé en étoile, P=",
     choix: [
-        "\\(\\frac{V^2}{L\\omega}\\)",
-        "\\(L\\omega I\\)",
         "\\(0\\)",
-        "\\(\\frac{V}{L\\omega}\\)"
+        "\\(-3 C\\omega V^2\\)",
+        "\\(-3\\frac{1}{C\\omega}I^2\\)",
+        "\\(-3C\\omega I\\)"
     ]
 },
 {
-    texte: "Dans C, P=",
+    texte: "Dans C triphasé couplé en étoile, Q=",
     choix: [
-        "\\(0\\)",
+        "\\(-3C\\omega V^2\\)",
         "\\(-C\\omega V^2\\)",
-        "\\(-\\frac{1}{C\\omega}I^2\\)",
-        "\\(-C\\omega I\\)"
+        "\\(-3C\\omega V\\)",
+        "\\(-3C\\omega I\\)"
     ]
 },
 {
-    texte: "Dans C, Q=",
+    texte: "Dans C triphasé couplé en étoile, Q=",
     choix: [
-        "\\(-C\\omega V^2\\)",
-        "\\(0\\)",
-        "\\(-C\\omega V\\)",
-        "\\(-C\\omega I\\)"
-    ]
-},
-{
-    texte: "Dans C, Q=",
-    choix: [
+        "\\(-3\\frac{1}{C\\omega}I^2\\)",
         "\\(-\\frac{1}{C\\omega}I^2\\)",
-        "\\(0\\)",
-        "\\(-C\\omega V\\)",
-        "\\(-C\\omega I\\)"
+        "\\(-3C\\omega V\\)",
+        "\\(-3C\\omega I\\)"
     ]
 },
 {
-    texte: "Dans R, \\(F_p\\)=",
+    texte: "Dans R triphasé couplé en étoile, \\(F_p\\)=",
     choix: [
         "\\(1\\)",
         "\\(0\\)",
@@ -369,7 +405,7 @@ const questions = [
     ]
 },
 {
-    texte: "Dans L, \\(F_p\\)=",
+    texte: "Dans L triphasé couplé en étoile, \\(F_p\\)=",
     choix: [
         "\\(0\\)",
         "\\(0,5\\)",
@@ -378,7 +414,7 @@ const questions = [
     ]
 },
 {
-    texte: "Dans C, \\(F_p\\)=",
+    texte: "Dans C triphasé couplé en étoile, \\(F_p\\)=",
     choix: [
         "\\(0\\)",
         "\\(0,5\\)",

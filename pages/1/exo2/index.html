@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Exercice BTS Electrotechnique</title>
+
+<!-- MathJax -->
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+<script src="questions.js"></script>
+
+
+<style>
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #eef2f7;
+    text-align: center;
+}
+
+#container {
+    width: 520px;
+    margin: 40px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+#progressBar {
+    width: 100%;
+    height: 12px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+#progress {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 8px;
+    background: #f0f3f8;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #dce3ee;
+}
+
+.correct {
+    background: #4CAF50 !important;
+    color: white;
+}
+
+.wrong {
+    background: #f44336 !important;
+    color: white;
+}
+
+#feedback {
+    margin-top: 10px;
+    font-weight: bold;
+    min-height: 20px;
+}
+
+#streak {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+<h2 id="titre">⚡ Défi Formules</h2>
+<p id="Hiscore"> 0 </p>
+
+
+
+<div id="progressBar">
+    <div id="progress"></div>
+</div>
+
+<div class="stats">
+    <span id="timer">⏱️ 120s</span>
+    <span id="score">🏆 0</span>
+    <span id="streak">🔥 x0</span>
+	<span id="qrestantes"> 0 </span>
+</div>
+
+<h3 id="question"></h3>
+
+<div id="choices"></div>
+
+<p id="feedback"></p>
+
+<!-- Score -->
+<br>
+<button onclick="envoyerScore()">Envoyer le résultat</button>
+
+</div>
+
+<script>
+
+// ======================
+let temps = 120;
+let score = 0;
+let streak = 0;
+let streakmax = 0;
+let questionActuelle;
+let pileQuestions = [];
+let multiplicateur = 1;
+let Hiscore=0;
+
+// ======================
+// MELANGE TABLEAU
+// ======================
+function melanger(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// ======================
+// NOUVELLE QUESTION
+// ======================
+function nouvelleQuestion() {
+
+    if (pileQuestions.length === 0) {
+        finDuTheme();
+        return;
+    }
+
+    let index = Math.floor(Math.random() * pileQuestions.length);
+
+    let q = JSON.parse(JSON.stringify(pileQuestions[index]));
+
+    let bonneReponse = q.choix[0];
+
+    melanger(q.choix);
+
+    q.bonne = q.choix.indexOf(bonneReponse);
+	
+	document.getElementById("qrestantes").innerText =
+            "Questions restantes : " + pileQuestions.length;
+
+    // stocker aussi son index dans la pile
+    q.indexPile = index;
+
+    questionActuelle = q;
+
+    document.getElementById("question").innerHTML = q.texte;
+
+    let choicesDiv = document.getElementById("choices");
+    choicesDiv.innerHTML = "";
+
+    q.choix.forEach((choix, i) => {
+        let btn = document.createElement("button");
+        btn.innerHTML = choix;
+        btn.onclick = () => verifier(i, btn);
+        choicesDiv.appendChild(btn);
+    });
+
+    MathJax.typeset();
+}
+
+// ======================
+// VERIFICATION
+// ======================
+function verifier(index, bouton) {
+
+    let buttons = document.querySelectorAll("#choices button");
+    buttons.forEach(b => b.disabled = true);
+
+    if (index === questionActuelle.bonne) {
+
+        bouton.classList.add("correct");
+
+        streak++;
+		streakmax=Math.max(streak,streakmax);
+
+        let bonus = (streak >= 3) ? 2 : 1;
+        score += bonus * multiplicateur;
+
+        // ✅ SUPPRIMER de la pile
+        pileQuestions.splice(questionActuelle.indexPile, 1);
+
+        document.getElementById("feedback").innerText =
+            "✔ Correct +" + bonus;
+
+    } else {
+
+        bouton.classList.add("wrong");
+        buttons[questionActuelle.bonne].classList.add("correct");
+
+        streak = 0;
+
+        document.getElementById("feedback").innerText =
+            "❌ Faux (elle reviendra...😉)";
+    }
+	document.getElementById("score").innerText = "🏆 " + score;
+	document.getElementById("streak").innerText = "🔥 " + streak;
+	
+	setTimeout(nouvelleQuestion, 500);
+	
+}
+
+function finDuTheme() {
+
+    // 🎁 bonus
+    let bonus = 10;
+    score += bonus;
+
+    document.getElementById("question").innerHTML =
+        "🎉 Bravo !<br>Tu as terminé le thème !<br>+" + bonus + " points bonus";
+
+    document.getElementById("feedback").innerText =
+        "🔥 Nouveau cycle ! Continue !";
+
+    document.getElementById("score").innerText = "🏆 " + score;
+	multiplicateur++;
+
+    // 🔁 reset après 2 secondes
+    setTimeout(() => {
+        pileQuestions = [...questions];
+        nouvelleQuestion();
+    }, 2000);
+}
+
+
+// ======================
+// TIMER
+// ======================
+let interval = setInterval(() => {
+
+    temps--;
+
+    document.getElementById("timer").innerText = "⏱️ " + temps + "s";
+
+    let p = (temps / 120) * 100;
+    document.getElementById("progress").style.width = p + "%";
+
+    if (temps <= 0) {
+        clearInterval(interval);
+
+        document.getElementById("question").innerHTML =
+            "⏱️ Temps écoulé !<br>Score final : " + score;
+
+        document.getElementById("choices").innerHTML = 
+			(score > 20) ? "🔥 Excellent !" :
+            (score > 10) ? "👍 Bien joué !" :
+            "💪 Continue l'entraînement !";
+
+        document.getElementById("feedback").innerHTML ="Meilleure combo 🔥 : " +streakmax;
+            ;
+    }
+
+}, 1000);
+
+function initJeu() {
+	document.getElementById("titre").innerHTML ="⚡ Défi Formules : <br>"+chapitre;
+    pileQuestions = [...questions]; // copie des questions
+    nouvelleQuestion();
+	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+    if (!scores[theme]) scores[theme] = {};
+	if (scores[theme][nomExo+"max"]) {
+        Hiscore=scores[theme][nomExo+"max"];
+    }
+	else{
+	Hiscore=0;
+	}
+	document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
+}
+
+
+// ======================
+initJeu();
+
+</script>
+
+</body>
+</html>
