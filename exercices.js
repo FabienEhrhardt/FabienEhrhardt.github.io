@@ -63,7 +63,7 @@ const listeExercices = [
 			{ nom: "exo1", titre: "Alimentation d'une turbine hydraulique" },
 			{ nom: "exo2", titre: "Pompe centrifuge - Courbe HMT = f(Q)" },
 			{ nom: "exo3", titre: "Écoulement dans une conduite - Abaque de pertes de charge et Bernoulli" },
-			{ nom: "exo4", titre: "test responsive" }
+			
         ]
     },
     {
