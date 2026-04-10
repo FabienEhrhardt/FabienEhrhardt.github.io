@@ -87,9 +87,15 @@ input[type="number"] {
 }
 
 button {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
+  background: #1f3c88;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%; /* 🔥 mobile friendly */
+  font-size: 1rem;
+}
 
 button:hover {
   background: #162d66;
