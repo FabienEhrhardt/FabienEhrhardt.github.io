@@ -41,7 +41,10 @@ function P10(num){
 function envoyerScore() {
 
   let scorePourcent = 0;
-  scorePourcent = arrondi(Math.min(score,100));
+
+  if (nbquestion > 0) {
+    scorePourcent = arrondi((score / nbquestion) * 100);
+  }
 
   try {
         // Fonction universelle pour trouver l'API SCORM
@@ -82,43 +85,98 @@ function envoyerScore() {
 
         } else {
             // Pas de SCORM détecté → mode local
-            sauvegarderScore(theme,nomExo,chapitre, scorePourcent,score);
+            sauvegarderScore(theme,nomExo, scorePourcent);
             alert("Score (mode local) : " + scorePourcent + "%");
         }
 
   } catch (e) {
 
     console.log("Erreur SCORM :", e);
-	sauvegarderScore(theme,nomExo,chapitre, scorePourcent,score);
+	sauvegarderScore(theme,nomExo, scorePourcent);
     alert("Score (hors Moodle) : " + scorePourcent + "%");
 
   }
 }
 
-function sauvegarderScore(theme, nomExo,chapitre, scorePourcent,score) {
+function sauvegarderScore(theme, nomExo, scorePourcent) {
     let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
     if (!scores[theme]) scores[theme] = {};
     
     if (!scores[theme][nomExo] || scorePourcent > scores[theme][nomExo]) {
         scores[theme][nomExo] = scorePourcent;
     }
-	localStorage.setItem("scoresApp", JSON.stringify(scores));
-	
-	
-	let Hiscores = JSON.parse(localStorage.getItem("highscores") || "[]");
-
-    // Cherche si l'exo existe déjà
-    let existant = Hiscores.find(s => s.nom === chapitre);
-
-    if(existant){
-      // On garde le meilleur score uniquement
-      if(score > existant.score){
-        existant.score = score;
-     }
-    } else {
-    // Nouvel exo
-    Hiscores.push({nom: chapitre, score: score});
-    }
-	// Sauvegarde
-	localStorage.setItem("highscores", JSON.stringify(Hiscores));
+    localStorage.setItem("scoresApp", JSON.stringify(scores));
 }
+
+
+
+
+
+//Pour générer les exercices
+let score = 0;
+let questionsDone = [];
+
+
+
+function genererExercice(exo){
+
+document.getElementById("titre").innerHTML = exo.titre;
+document.getElementById("enonce").innerHTML = exo.enonce;
+
+let zone = document.getElementById("questions");
+zone.innerHTML="";
+
+exo.questions.forEach((q,i)=>{
+
+zone.innerHTML += `
+<div class="question">
+<p><b>Question ${i+1} :</b> ${q.texte}</p>
+<input type="number" id="q${i}">
+<span>${q.unite}</span>
+<button onclick="valider(${i})">Valider</button>
+<div id="fb${i}" class="feedback"></div>
+</div>
+`;
+questionsDone[i]=false;
+});
+
+MathJax.typeset();
+let canvas = document.getElementById("graph");
+
+if(exo.courbe1){
+    canvas.style.display = "block";
+}
+else{
+    canvas.style.display = "none";
+}
+}
+
+
+function valider(i){
+
+if(questionsDone[i]) return;
+
+let r = parseFloat(document.getElementById("q"+i).value);
+let fb = document.getElementById("fb"+i);
+
+let q = exo.questions[i];
+
+if(Math.abs(r-q.reponse)<=0.05*Math.abs(q.reponse)){
+    score++;
+    fb.innerHTML="✅ Bonne réponse<br>"+q.feedback;
+}
+else{
+    fb.innerHTML="❌ Mauvaise réponse<br>"+q.feedback;
+}
+
+questionsDone[i]=true;
+
+if(q.action) q.action();
+
+MathJax.typeset();
+
+}
+
+
+
+

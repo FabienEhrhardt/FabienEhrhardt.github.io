@@ -89,7 +89,7 @@ function envoyerScore() {
   } catch (e) {
 
     console.log("Erreur SCORM :", e);
-	sauvegarderScore(theme,nomExo,chapitre, scorePourcent);
+	sauvegarderScore(theme,nomExo,chapitre, scorePourcent,score);
     alert("Score (hors Moodle) : " + scorePourcent + "%");
 
   }
