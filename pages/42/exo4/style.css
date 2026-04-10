@@ -5,6 +5,7 @@
 body {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background: linear-gradient(135deg, #f4f6f9, #e9eef5);
+  font-size: clamp(16px, 2.5vw, 20px);
   margin: 0;
   padding: 10px;
 }
