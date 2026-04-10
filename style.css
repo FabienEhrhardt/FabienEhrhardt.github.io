@@ -7,6 +7,7 @@
 html {
   margin: 0;
   height: 100%;
+  -webkit-text-size-adjust: 100%;
   font-size: 24px; /* 🔥 base plus grande */
 }
 
@@ -19,6 +20,7 @@ html {
   width: 100%;
   height: 100%;
   border: none;
+  display: block;
 }
 
 
