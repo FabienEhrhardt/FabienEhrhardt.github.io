@@ -20,7 +20,8 @@ body {
 }
 
 #container {
-    width: 520px;
+    width: 100%;;
+    max-width: 100%;
     margin: 40px auto;
     background: white;
     padding: 25px;
@@ -97,7 +98,7 @@ button:hover {
 
 <div id="container">
 
-<h2>⚡ Défi Formules</h2>
+<h2 id="titre">⚡ Défi Formules</h2>
 <p id="Hiscore"> 0 </p>
 
 
@@ -284,6 +285,7 @@ let interval = setInterval(() => {
 }, 1000);
 
 function initJeu() {
+	document.getElementById("titre").innerHTML ="⚡ Défi Formules : <br>"+chapitre;
     pileQuestions = [...questions]; // copie des questions
     nouvelleQuestion();
 	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
