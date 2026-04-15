@@ -1,7 +1,7 @@
-let theme="31";
+let theme="33";
 let nomExo="exo0";
 
-let chapitre="Régime monophasé sinusoïdal";
+let chapitre="Transformateur monophasé";
 
 
 // ======================
@@ -9,381 +9,183 @@ let chapitre="Régime monophasé sinusoïdal";
 // ======================
 const questions = [
 {
-    texte: "Puissance active P=",
+    texte: "Rapport du transformateur \\(m=\\)",
     choix: [
-        "\\(VI\\cos\\varphi\\)",
-        "\\(VI\\)",
-        "\\(VI\\sin \\varphi\\)",
-        "\\(RI\\)"
+        "\\(\\frac{V_{20}}{V_1}\\)",
+        "\\(\\frac{V_{2}}{V_1}\\)",
+        "\\(\\frac{V_{1}}{V_2}\\)",
+        "\\(\\frac{I_{1}}{I_2}\\)"
     ]
 },
 {
-    texte: "Puissance réactive Q=",
+    texte: "Courant nominal au primaire \\(I_{1n}=\\)",
     choix: [
-        "\\(VI\\sin\\varphi\\)",
-        "\\(VI\\)",
-        "\\(VI\\cos \\varphi\\)",
-        "\\(P sin \\varphi\\)"
+        "\\(\\frac{S_n}{V_{1n}}\\)",
+        "\\(\\frac{S_n}{V_{2n}}\\)",
+        "\\(\\frac{S_n}{V_{20}}\\)",
+        "\\({S_n}{V_{1n}}\\)"
     ]
 },
 {
-    texte: "Puissance apparente S=",
+    texte: "Courant nominal au secondaire \\(I_{2n}=\\)",
     choix: [
-        "\\(VI\\)",
-        "\\(VI \\cos \\varphi\\)",
-        "\\(\\sqrt{P^2-Q^2}\\)",
-        "\\(P \\cos \\varphi\\)"
+        "\\(\\frac{S_n}{V_{2n}}\\)",
+        "\\(\\frac{S_n}{V_{20}}\\)",
+        "\\(\\frac{S_n}{V_{1n}}\\)",
+        "\\({S_n}{V_{1n}}\\)"
     ]
 },
 {
-    texte: "Valeur efficace de la tension V=",
+    texte: "Pertes Fer \\(P_F=\\)",
     choix: [
-        "\\(\\frac{V_{max}}{\\sqrt{2}}\\)",
-        "\\({V_{max}}{\\sqrt{2}}\\)",
-        "\\(\\frac{V_{max}}{\\sqrt{3}}\\)",
-        "\\({V_{max}}{\\sqrt{3}}\\)"
+        "\\(P_0\\)",
+        "\\(P_{cc}\\)",
+        "\\(P_0+P_{cc}\\)",
+        "\\(P_0-P_{cc}\\)"
     ]
 },
 {
-    texte: "Valeur efficace du courant I=",
+    texte: "Pertes Fer \\(P_F=\\)",
     choix: [
-        "\\(\\frac{I_{max}}{\\sqrt{2}}\\)",
-        "\\({I_{max}}{\\sqrt{2}}\\)",
-        "\\(\\frac{I_{max}}{\\sqrt{3}}\\)",
-        "\\({I_{max}}{\\sqrt{3}}\\)"
+        "\\(\\frac{V_1^2}{R_F}\\)",
+        "\\(R_F I_{10}^2\\)",
+        "\\(R_F I_{2cc}^2\\)",
+        "\\(\\frac{V_1}{R_F}\\)"
     ]
 },
 {
-    texte: "Pulsation \\(\\omega\\)=",
+    texte: "Puissance réactive absorbée à vide \\(Q_0=\\)",
     choix: [
-        "\\(2 \\pi f\\)",
-        "\\(\\frac{f}{2\\pi}\\)",
-        "\\(2 \\pi T\\)",
-        "\\(\\frac{2\\pi}{60}n\\)"
+        "\\(\\frac{V_1^2}{L_m \\omega}\\)",
+        "\\({L_m \\omega} I_{10}^2\\)",
+        "\\({L_m \\omega} I_{2cc}^2\\)",
+        "\\(\\frac{V_1^2}{L_m }\\)"
     ]
 },
 {
-    texte: "Fréquence f=",
+    texte: "Pertes joules nominales \\(P_{jn}\\)=",
     choix: [
-        "\\(\\frac{1}{T}\\)",
-        "\\(\\frac{T}{2\\pi}\\)",
-        "\\(2 \\pi T\\)",
-        "\\(2 \\pi \\omega\\)"
+        "\\(P_{cc}\\)",
+        "\\(P_0\\)",
+        "\\(P_0+P_{cc}\\)",
+        "\\(P_0-P_{cc}\\)"
     ]
 },
 {
-    texte: "Déphasage \\(\\varphi\\)=",
+    texte: "Pertes joules nominales \\(P_{jn}\\)=",
     choix: [
-        "\\(360 \\frac{\\Delta t}{T}\\)",
-        "\\(\\frac{V}{I}\\)",
-        "\\(\\atan F_p\\)",
-        "\\(\\asin F_p\\)"
+        "\\(R_s I_{2cc}^2\\)",
+        "\\(R_s I_{2cc}\\)",
+        "\\(\\frac{V_{1cc}}{R_s}\\)",
+        "\\(\\frac{V_{20}}{R_s}\\)"
     ]
 },
 {
-    texte: "Puissance apparente S=",
+    texte: "Puissance réactive absorbée en court circuit \\(Q_{cc}\\)=",
     choix: [
-        "\\(\\sqrt{P^2+Q^2}\\)",
-        "\\(\\sqrt{P^2-Q^2}\\)",
-        "\\(VI\\cos \\varphi\\)",
-        "\\(P F_p\\)"
+        "\\(L_s \\omega I^2_{2cc}\\)",
+        "\\(L_s  I^2_{2cc}\\)",
+        "\\(\\frac{V_{1cc}}{L_s \\omega}\\)",
+        "\\(\\frac{V_{20}}{L_s \\omega}\\)"
     ]
 },
 {
-    texte: "Facteur de puissance \\(F_p\\)=",
+    texte: "Puissance utile \\(P_2=\\)",
     choix: [
-        "\\(\\frac{P}{S}\\)",
-        "\\(\\frac{S}{P}\\)",
-        "\\(\\sin \\varphi\\)",
-        "\\(\\tan \\varphi\\)"
+        "\\(V_2I_2 cos \\varphi_2\\)",
+        "\\(V_2I_2\\)",
+        "\\(V_1I_1\\)",
+        "\\(V_1I_1 cos \\varphi_1\\)"
     ]
 },
 {
-    texte: "Facteur de puissance \\(F_p\\)=",
+    texte: "Puissance absorbée \\(P_1=\\)",
     choix: [
-        "\\(\\cos \\varphi\\)",
-        "\\(\\frac{S}{P}\\)",
-        "\\(\\sin \\varphi\\)",
-        "\\(\\tan \\varphi\\)"
+        "\\(V_1I_1 cos \\varphi_1\\)",
+        "\\(V_2I_2\\)",
+        "\\(V_1I_1\\)",
+        "\\(V_2I_2 cos \\varphi_2\\)"
     ]
 },
 {
-    texte: "Puissance réactive Q=",
+    texte: "Puissance absorbée \\(P_1=\\)",
     choix: [
-        "\\(P \\tan \\varphi\\)",
-        "\\(P \\sin \\varphi\\)",
-        "\\(S \\cos\\varphi\\)",
-        "\\(\\racine{P^2-S^2}\\)"
+        "\\(P_2+P_j+P_F\\)",
+        "\\(P_2+P_j\\)",
+        "\\(P_2+P_F\\)",
+        "\\(P_2+P_j-P_F\\)"
     ]
 },
 {
-    texte: "Energie E=",
+    texte: "Pertes joules \\(P_j\\)=",
     choix: [
-        "\\(P \\Delta t\\)",
-        "\\(\\frac{P}{\\Delta t}\\)",
-        "\\(S \\cos\\varphi\\)",
-        "\\(S \\Delta  t\\)"
+        "\\(P_{cc} \\frac{I_2^2}{I_{2cc}^2}\\)",
+        "\\(P_{cc} \\frac{I_{2cc}^2}{I_2^2}\\)",
+        "\\(P_{cc} \\frac{V_20}{V_2}\\)",
+        "\\(R_s I_2\\)"
     ]
 },
 {
-    texte: "Puissance active totale \\(P_{tot}\\)=",
+    texte: "Réactance en sortie \\(X_s\\)=",
     choix: [
-        "\\(P_1+P_2+…\\)",
-        "\\(\\sqrt{P_1^2+P_2^2+...}\\)",
-        "\\(VI\\)",
-        "\\(RI\\)"
+        "\\(L_s \\omega\\)",
+        "\\(R_s\\)",
+        "\\(Z_s\\)",
+        "\\(\\sqrt{R_s^2+(L_s \\omega)^2}\\)"
     ]
 },
 {
-    texte: "Puissance réactive totale \\(Q_{tot}\\)=",
+    texte: "Impédance au secondaire \\(Z_s=\\)",
     choix: [
-        "\\(Q_1+Q_2+…\\)",
-        "\\(\\sqrt{Q_1^2+Q_2^2+...}\\)",
-        "\\(VI\\)",
-        "\\(RI\\)"
+        "\\(\\sqrt{R_s^2+(L_s \\omega)^2}\\)",
+        "\\(L_s \\omega\\)",
+        "\\(R_s\\)",
+        "\\(R_s +L_s\\)"
     ]
 },
 {
-    texte: "Puissance apparente totale \\(S_{tot}\\)=",
+    texte: "Pertes joules \\(P_j\\)=",
     choix: [
-        "\\(\\sqrt{P_{tot}^2+Q_{tot}^2}\\)",
-        "\\(\\sqrt{S_1^2+S_2^2+...}\\)",
-        "\\(\\sqrt{P_1^2+Q_1^2+P_2^2+Q_2^2+...}\\)",
-        "\\(S_1+S_2+…\\)"
+        "\\(R_s I_{2}^2\\)",
+        "\\(R_s I_{1}^2\\)",
+        "\\(\\frac{V_2^2}{R_s}\\)",
+        "\\(\\frac{V_1^2}{R_s}\\)"
     ]
 },
 {
-    texte: "Impédance d'une résistance Z=",
+    texte: "Impédance au secondaire \\(Z_s=\\)",
     choix: [
-        "\\(R\\)",
-        "\\(R\\omega\\)",
-        "\\(\\frac{I}{V}\\)",
-        "\\(VI\\)"
+        "\\(\\frac{mV_{1cc}}{I_{2cc}}\\)",
+        "\\(\\frac{V_{1cc}}{I_{2cc}}\\)",
+        "\\(\\frac{V_{2cc}}{I_{2cc}}\\)",
+        "\\(\\frac{mV_{2cc}}{I_{2cc}}\\)"
     ]
 },
 {
-    texte: "Impédance d'une bobine Z=",
+    texte: "Courant de court circuit \\(I_{k}\\)",
     choix: [
-        "\\(L\\omega\\)",
-        "\\(\\frac{1}{L\\omega}\\)",
-        "\\(L\\)",
-        "\\(VI\\)"
+        "\\(\\frac{mV_{1}}{Z_{s}}\\)",
+        "\\(\\frac{mV_{1}}{R_{s}}\\)",
+        "\\(\\frac{mV_{1}}{L_{s}}\\)",
+        "\\(\\frac{mV_{1}}{L_{s}\\omega}\\)"
     ]
 },
 {
-    texte: "Impédance d'un dipôle Z=",
+    texte: "Chute de tension \\(\\Delta V\\)",
     choix: [
-        "\\(\\frac{V}{I}\\)",
-        "\\(VI\\)",
-        "\\(\\cos \\varphi\\)",
-        "\\(\\tan \\varphi\\)"
+        "\\(I_2 ( R_s cos \\varphi+X_s sin \\varphi)\\)",
+        "\\(I_1 ( R_s cos \\varphi+X_s sin \\varphi)\\)",
+        "\\(I_1 ( R_F cos \\varphi+X_m sin \\varphi)\\)",
+        "\\(I_2 ( R_F cos \\varphi+X_m sin \\varphi)\\)"
     ]
 },
 {
-    texte: "Impédance d'un condensateur",
+    texte: "Rendement du transformateur \\(\\eta\\)=",
     choix: [
-        "\\(\\frac{1}{C\\omega}\\)",
-        "\\(C \\omega\\)",
-        "\\(C\\)",
-        "\\(\\frac{1}{C}\\)"
-    ]
-},
-{
-    texte: "V=",
-    choix: [
-        "\\(ZI\\)",
-        "\\(\\frac{I}{Z}\\)",
-        "\\(LI\\)",
-        "\\(CI\\)"
-    ]
-},
-{
-    texte: "Pour une résistance  \\(\\varphi\\)=",
-    choix: [
-        "\\(0\\)",
-        "\\(90\\)",
-        "\\(-90\\)",
-        "\\(45\\)"
-    ]
-},
-{
-    texte: "Pour une bobine  \\(\\varphi\\)=",
-    choix: [
-        "\\(90\\)",
-        "\\(0\\)",
-        "\\(-90\\)",
-        "\\(45\\)"
-    ]
-},
-{
-    texte: "Pour un condensateur \\(\\varphi\\)=",
-    choix: [
-        "\\(-90\\)",
-        "\\(0\\)",
-        "\\(90\\)",
-        "\\(45\\)"
-    ]
-},
-{
-    texte: "Pour un circuit RL série \\(\\varphi\\)=",
-    choix: [
-        "\\(\\atan(\\frac{L\\omega}{R})\\)",
-        "\\(\\atan(\\frac{R}{L\\omega})\\)",
-        "\\(45\\)",
-        "\\(\\atan(\\frac{L}{R})\\)"
-    ]
-},
-{
-    texte: "Pour un circuit RC série \\(\\varphi\\)=",
-    choix: [
-        "\\(\\atan(\\frac{1}{RC\\omega})\\)",
-        "\\(\\atan({RC\omega})\\)",
-        "\\(\\atan(\\frac{C\\omega}{R})\\)",
-        "\\(\\atan(\\frac{C}{R})\\)"
-    ]
-},
-{
-    texte: "Pour un circuit RLC série \\(\\varphi\\)=",
-    choix: [
-        "\\(\\atan(\\frac{L\\omega-\\frac{1}{C\\omega}}{R})\\)",
-        "\\(\\atan({RLC\omega})\\)",
-        "\\(\\atan(\\frac{L+C}{R})\\)",
-        "\\(\\atan(\\frac{L\\omega}{CR})\\)"
-    ]
-},
-{
-    texte: "Pour un circuit RL sérieZ=",
-    choix: [
-        "\\(\\sqrt{R^2+(L\omega)^2}\\)",
-        "\\(R+L\\)",
-        "\\(R+L\\omega\\)",
-        "\\(\\frac{L}{R}\\)"
-    ]
-},
-{
-    texte: "Pour un circuit RC série Z=",
-    choix: [
-        "\\(\\sqrt{R^2+(\\frac{1}{C\omega})^2}\\)",
-        "\\(R+C\\)",
-        "\\(R+C\\omega\\)",
-        "\\(R+\\frac{1}{C \\omega}\\)"
-    ]
-},
-{
-    texte: "Pour un circuit RLC série Z=",
-    choix: [
-        "\\(\\sqrt{R^2+(L\\omega+\\frac{1}{C\omega})^2}\\)",
-        "\\(R+L+C\\)",
-        "\\(R+L\\omega+\\frac{1}{C\\omega}\\)",
-        "\\(\\sqrt{R^2+(L\\omega+\\frac{1}{C\omega})^2}\\)"
-    ]
-},
-{
-    texte: "Dans R, P=",
-    choix: [
-        "\\(RI^2\\)",
-        "\\(RI\\)",
-        "\\(\\frac{V}{R}\\)",
-        "\\(0\\)"
-    ]
-},
-{
-    texte: "Dans R, P=",
-    choix: [
-        "\\(\\frac{V^2}{R}\\)",
-        "\\(RI\\)",
-        "\\(\\frac{V}{R}\\)",
-        "\\(0\\)"
-    ]
-},
-{
-    texte: "Dans R, Q=",
-    choix: [
-        "\\(0\\)",
-        "\\(\\frac{V^2}{R}\\)",
-        "\\(RI\\)",
-        "\\(RI^2\\)"
-    ]
-},
-{
-    texte: "Dans L, P=",
-    choix: [
-        "\\(0\\)",
-        "\\(L\\omega I^2\\)",
-        "\\(\\frac{V^2}{L\\omega}\\)",
-        "\\(L\omega I\\)"
-    ]
-},
-{
-    texte: "Dans L, Q=",
-    choix: [
-        "\\(L\\omega I^2\\)",
-        "\\(L\\omega I\\)",
-        "\\(0\\)",
-        "\\(\\frac{V}{L\\omega}\\)"
-    ]
-},
-{
-    texte: "Dans L, Q=",
-    choix: [
-        "\\(\\frac{V^2}{L\\omega}\\)",
-        "\\(L\\omega I\\)",
-        "\\(0\\)",
-        "\\(\\frac{V}{L\\omega}\\)"
-    ]
-},
-{
-    texte: "Dans C, P=",
-    choix: [
-        "\\(0\\)",
-        "\\(-C\\omega V^2\\)",
-        "\\(-\\frac{1}{C\\omega}I^2\\)",
-        "\\(-C\\omega I\\)"
-    ]
-},
-{
-    texte: "Dans C, Q=",
-    choix: [
-        "\\(-C\\omega V^2\\)",
-        "\\(0\\)",
-        "\\(-C\\omega V\\)",
-        "\\(-C\\omega I\\)"
-    ]
-},
-{
-    texte: "Dans C, Q=",
-    choix: [
-        "\\(-\\frac{1}{C\\omega}I^2\\)",
-        "\\(0\\)",
-        "\\(-C\\omega V\\)",
-        "\\(-C\\omega I\\)"
-    ]
-},
-{
-    texte: "Dans R, \\(F_p\\)=",
-    choix: [
-        "\\(1\\)",
-        "\\(0\\)",
-        "\\(0,5\\)",
-        "\\(0,93\\)"
-    ]
-},
-{
-    texte: "Dans L, \\(F_p\\)=",
-    choix: [
-        "\\(0\\)",
-        "\\(0,5\\)",
-        "\\(0,93\\)",
-        "\\(1\\)"
-    ]
-},
-{
-    texte: "Dans C, \\(F_p\\)=",
-    choix: [
-        "\\(0\\)",
-        "\\(0,5\\)",
-        "\\(0,93\\)",
-        "\\(1\\)"
+        "\\(\\frac{P_u}{P_a}\\)",
+        "\\(\\frac{P_a}{P_u}\\)",
+        "\\(\\frac{P_u}{P_a-P_p}\\)",
+        "\\(\\frac{P_u-P_p}{P_a}\\)"
     ]
 },
 ];

@@ -49,19 +49,25 @@ const listeExercices = [
         exercices: [
 			{ nom: "exo0", titre: "Formules : Transformateur monophasé" },
 			{ nom: "exo1", titre: "Hacheur série en conduction continue - étude des courbes" },
+			{ nom: "exo3", titre: "Formules : Transformateur triphasé" },
         ]
     },
 	{
         theme: "41",
         exercices: [
+			{ nom: "exo0", titre: "Formules : Mécanique en translation" },
 			{ nom: "exo1", titre: "Profil de vitesse d'un véhicule" },
+			{ nom: "exo2", titre: "Formules : Mécanique en rotation" },
         ]
     },
 	{
         theme: "42",
         exercices: [
+			{ nom: "exo0", titre: "Formules : Mécanique des fluides" },
 			{ nom: "exo1", titre: "Alimentation d'une turbine hydraulique" },
 			{ nom: "exo2", titre: "Pompe centrifuge - Courbe HMT = f(Q)" },
+			{ nom: "exo4", titre: "Simplifications sur Bernoulli" },
+			{ nom: "exo5", titre: "Simplifications sur Bernoulli : Forme généralisée" },
 			{ nom: "exo3", titre: "Écoulement dans une conduite - Abaque de pertes de charge et Bernoulli" },
 			
         ]
@@ -69,6 +75,7 @@ const listeExercices = [
     {
         theme: "5",
         exercices: [
+			{ nom: "exo0", titre: "Formules : Batteries" },
 			{ nom: "exo2", titre: "Autonomie d’un système alimenté par batterie" },
 			{ nom: "exo3", titre: "Autonomie réelle d’une batterie avec profondeur de décharge" },
 			{ nom: "exo4", titre: "Autonomie et performances d’un véhicule électrique" },	
@@ -84,13 +91,18 @@ const listeExercices = [
 	{
         theme: "6",
         exercices: [
-            { nom: "exo1", titre: "Courbe I=f(V) d'un panneau photovoltaïque" },
+           { nom: "exo0", titre: "Formules : Eclairage" },
+		   { nom: "exo2", titre: "Formules : Panneau photovoltaïque" },
+		   { nom: "exo1", titre: "Courbe I=f(V) d'un panneau photovoltaïque" },
         ]
     },
 	{
         theme: "7",
         exercices: [
-            { nom: "exo3", titre: "Étude de plaque d’un moteur triphasé asynchrone" },
+            { nom: "exo0", titre: "Formules : Machine à courant continu" },
+			{ nom: "exo4", titre: "Formules : Machine asynchrone" },
+			{ nom: "exo5", titre: "Formules : Machine synchrone" },
+			{ nom: "exo3", titre: "Étude de plaque d’un moteur triphasé asynchrone" },
 			{ nom: "exo1", titre: "Courbe C=f(n) d'un moteur asynchrone" },
             { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" }
         ]
@@ -98,7 +110,8 @@ const listeExercices = [
 	{
         theme: "8",
         exercices: [
-            { nom: "exo2", titre: "Capteur 4-20 mA - Étalonnage" },
+            { nom: "exo0", titre: "Formules : Maitrise des procédés" },
+			{ nom: "exo2", titre: "Capteur 4-20 mA - Étalonnage" },
 			{ nom: "exo1", titre: "Performances d'un asservissement" }
 			
         ]

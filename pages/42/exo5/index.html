@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Exercice BTS Electrotechnique</title>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #f4f4f4;
+}
+
+.exo {
+  max-width: 700px;
+  margin: auto;
+  background: white;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+#progressBar {
+    width: 100%;
+    height: 12px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+#progress {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+
+.term {
+  padding: 2px;
+  margin: 2px;
+  border: 2px solid #333;
+  border-radius: 6px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.operator {
+  margin: 1px;
+  font-weight: bold;
+}
+
+.strike {
+  position: relative;
+  opacity: 0.5;
+}
+
+.strike::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  background: red;
+  transform: rotate(-5deg); /* effet "à la main" */
+  transform-origin: center;
+}
+
+.good {
+  background: #c8f7c5;
+}
+
+.bad {
+  background: #f7c5c5;
+}
+
+#bank {
+  margin-top: 10px;
+}
+
+.draggable {
+  display: inline-block;
+  padding: 6px;
+  margin: 5px;
+  border: 2px dashed #555;
+  border-radius: 6px;
+  cursor: grab;
+  background: #eee;
+}
+
+button {
+  background: #1f3c88;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Bouton final */
+button:last-of-type {
+  display: block;
+  margin: 25px auto 0;
+  font-size: 16px;
+  padding: 10px 20px;
+  background: #28a745;
+}
+
+button:last-of-type:hover {
+  background: #1e7e34;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="exo">
+
+<h2>⚡ Défi Bernoulli : formule généralisée</h2>
+
+<div id="progressBar">
+    <div id="progress"></div>
+</div>
+
+<div class="stats">
+    <span id="timer">⏱️ 120s</span>
+    <span id="score">🏆 0</span>
+    <span id="streak">🔥 x0</span>
+	<span id="Niveau">💡 1 </span>
+</div>
+
+<p>Remplacer ou supprimer les termes dans l'équation de Bernoulli en fonction des hypothèses <br>
+On supposera que le fluide s'écoule du point A vers le point B.</p>
+
+<p id="enonce"></p>
+
+<h3>Hypothèses</h3>
+<div id="hypotheses"></div>
+
+<div id="equation"></div>
+
+<h3>Relations disponibles</h3>
+<div id="bank"></div>
+
+<button id="btnValider" onclick="valider()">Valider la réponse</button>
+
+<p id="resultat"></p>
+
+<br>
+<button onclick="envoyerScore()">Envoyer le résultat</button>
+
+</div>
+
+<script>
+
+// ---------------------
+// RELATIONS TOUJOURS DISPONIBLES
+// ---------------------
+
+const relationsGlobales = [
+  "P_{atm}",
+  "h"
+];
+
+// ---------------------
+// QUESTIONS
+// ---------------------
+
+const baseQuestions1 = [
+{
+  enonce:"Vidange d'un réservoir avec pertes de charges",
+  hypotheses:["Points A et B à l’air libre",
+			"Pas de pompe ni de turbine",
+			"Différence de hauteur entre le point A et le point B : h",
+			"Surface en A très grande devant celle en B."],
+  aSupprimer:["V_A","P_B","P_A","Z_B","P_t","P_p"],
+  aRemplacer:{"Z_A":"h"}
+},
+{
+  enonce:"Vidange d'un réservoir avec une pompe et pertes de charges",
+  hypotheses:["Points A et B à l’air libre",
+			"Pas de turbine",
+			"Différence de hauteur entre le point A et le point B : h",
+			"Surface en A très grande devant celle en B."],
+  aSupprimer:["V_A","P_B","P_A","Z_B","P_t"],
+  aRemplacer:{"Z_A":"h"}
+},
+{
+  enonce:"Pompage dans un réservoir enterré avec pertes de charges",
+  hypotheses:["Points A et B à l’air libre",
+			"Pas de turbine",
+			"Différence de hauteur entre le point B et le point A : h",
+			"Surface en A très grande devant celle en B."],
+  aSupprimer:["V_A","P_B","P_A","Z_A","P_t"],
+  aRemplacer:{"Z_B":"h"}
+},
+{
+  enonce:"Pompage dans un réservoir enterré sans pertes de charges",
+  hypotheses:["Points A et B à l’air libre",
+			"Pertes de charge négligées",
+			"Pas de turbine",
+			"Différence de hauteur entre le point B et le point A : h",
+			"Surface en A très grande devant celle en B."],
+  aSupprimer:["V_A","P_B","P_A","Z_A","P_t","P_pe"],
+  aRemplacer:{"Z_B":"h"}
+},
+{
+  enonce:"Ventillation sans pertes de charges",
+  hypotheses:["Pressions en A et B identiques",
+			"Pertes de charge négligées",
+			"Pas de turbine",
+			"Conduite horizontale",
+			"Vitesse en A supposée nulle"],
+  aSupprimer:["V_A","P_B","P_A","Z_A","Z_B","P_t","P_pe"],
+  aRemplacer:{}
+},
+{
+  enonce:"Ventillation avec pertes de charges",
+  hypotheses:["Pressions en A et B identiques",
+			"Pas de turbine",
+			"Conduite horizontale",
+			"A et B dans la même conduite"],
+  aSupprimer:["V_B","V_A","P_B","P_A","Z_A","Z_B","P_t"],
+  aRemplacer:{}
+},
+{
+  enonce:"Centrale hydraulique avec pertes de charges",
+  hypotheses:["Points A et B à l’air libre",
+			"Pas de pompe",
+			"Différence de hauteur entre le point A et le point B : h",
+			"Energies cinétiques négligées"],
+  aSupprimer:["V_A","V_B","P_B","P_A","Z_B","P_p"],
+  aRemplacer:{"Z_A":"h"}
+},
+{
+  enonce:"Centrale hydraulique sans pertes de charges",
+  hypotheses:["Points A et B à l’air libre",
+			"Pertes de charge négligées",
+			"Pas de pompe",
+			"Différence de hauteur entre le point A et le point B : h",
+			"Energies cinétiques négligées"],
+  aSupprimer:["V_A","V_B","P_B","P_A","Z_B","P_p","P_pe"],
+  aRemplacer:{"Z_A":"h"}
+},
+{
+  enonce:"Eolienne",
+  hypotheses:["Points A et B à l’air libre",
+			"Pertes de charge négligées",
+			"Pas de pompe",
+			"Mouvement horizontal de l'air"],
+  aSupprimer:["P_B","P_A","Z_B","Z_A","P_p","P_pe"],
+  aRemplacer:{}
+},
+
+];
+
+
+// ---------------------
+
+let pile=[...baseQuestions1];
+let current;
+let score=0;
+let temps = 12000;
+let streak = 0;
+let niv=1;
+
+let theme="42";
+let nomExo="exo5";
+
+
+
+// ---------------------
+
+function latex(term){
+  const map={
+    "P_A":"\P_A",
+    "V_A":"v_A^2",
+    "Z_A":"z_A",
+    "P_B":"\P_B",
+    "V_B":"v_B^2",
+    "Z_B":"z_B",
+	"P_p":"\\frac{P_{pompe}}{Q_v}",
+	"P_t":"\\frac{P_{turbine}}{Q_v}",
+	"P_pe":"\\Delta P_{pertes}"
+  };
+  return map[term];
+}
+
+// ---------------------
+
+function chargerQuestion(){
+
+  if (pile.length === 0) {
+        finDuTheme();
+        return;
+    }
+
+    let index = Math.floor(Math.random() * pile.length);
+
+    current = JSON.parse(JSON.stringify(pile[index]));
+	current.indexPile=index;
+  
+  //current = pile.shift();
+
+  // Equation
+  let eq = `
+  <span class="operator">\\(\\frac{1}{2}\\rho\\)(</span>
+  <span class="term" data-term="V_B">\\(${latex("V_B")}\\)</span>
+  <span class="operator">-</span>
+  <span class="term" data-term="V_A">\\(${latex("V_A")}\\)</span>
+  <span class="operator">)</span>
+  <span class="operator">+</span> 
+  <span class="operator">\\(\\rho g\\)(</span>
+  <span class="term" data-term="Z_B">\\(${latex("Z_B")}\\)</span>
+  <span class="operator">-</span>
+  <span class="term" data-term="Z_A">\\(${latex("Z_A")}\\)</span>
+  <span class="operator">)</span>
+  <span class="operator">+</span>
+  <span class="term" data-term="P_B">\\(${latex("P_B")}\\)</span>
+  <span class="operator">-</span>
+  <span class="term" data-term="P_A">\\(${latex("P_A")}\\)</span>
+  <span class="operator">)</span>
+  
+  <span class="operator">=</span>
+
+  <span class="term" data-term="P_p">\\(${latex("P_p")}\\)</span>
+  <span class="operator">-</span>
+  <span class="term" data-term="P_t">\\(${latex("P_t")}\\)</span>
+  <span class="operator">-</span>
+  <span class="term" data-term="P_pe">\\(${latex("P_pe")}\\)</span>
+  `;
+
+  document.getElementById("equation").innerHTML = eq;
+
+  // Enoncé
+  document.getElementById("enonce").innerHTML = "<strong>Type d'exercice : </strong>"+ current.enonce;
+  
+  // Hypothèses
+  let h="";
+  current.hypotheses.forEach(x=>h+="<p>• "+x+"</p>");
+  document.getElementById("hypotheses").innerHTML = h;
+
+  // Clic suppression
+  document.querySelectorAll(".term").forEach(el=>{
+    el.addEventListener("click",()=>{
+      el.classList.toggle("strike");
+    });
+  });
+
+  // Relations toujours visibles
+  let b="";
+  relationsGlobales.forEach((r,i)=>{
+    b+=`<div class="draggable" draggable="true" id="d${i}">\\(${r}\\)</div>`;
+  });
+  document.getElementById("bank").innerHTML=b;
+
+  dragInit();
+
+  MathJax.typeset();
+}
+
+// ---------------------
+
+function dragInit(){
+  document.querySelectorAll(".draggable").forEach(el=>{
+    el.addEventListener("dragstart", e=>{
+      e.dataTransfer.setData("text", e.target.innerHTML);
+    });
+  });
+
+  document.querySelectorAll(".term").forEach(el=>{
+    el.addEventListener("dragover", e=>e.preventDefault());
+
+    el.addEventListener("drop", e=>{
+      e.preventDefault();
+      el.innerHTML = e.dataTransfer.getData("text");
+      el.dataset.replaced = "true";
+      MathJax.typeset();
+    });
+  });
+}
+
+// ---------------------
+
+function valider(){
+
+  let juste = true;
+
+  document.querySelectorAll(".term").forEach(el=>{
+    let term = el.dataset.term;
+
+    let doitSupprimer = current.aSupprimer.includes(term);
+    let estBarré = el.classList.contains("strike");
+
+    let doitRemplacer = current.aRemplacer[term];
+    let estRemplacé = el.dataset.replaced;
+
+    if(doitSupprimer && estBarré){
+      el.classList.add("good");
+    }
+    else if(doitSupprimer && !estBarré){
+      el.classList.add("bad");
+      juste=false;
+    }
+    else if(!doitSupprimer && estBarré){
+      el.classList.add("bad");
+      juste=false;
+    }
+
+    if(doitRemplacer){
+      if(estRemplacé){
+        el.classList.add("good");
+      } else {
+        el.classList.add("bad");
+        juste=false;
+      }
+    }
+  });
+
+  if(juste){
+    score+=5;
+	streak++;
+    document.getElementById("resultat").innerText="✅ Correct";
+	pile.splice(current.indexPile, 1);
+  } else {
+    //score-=2;
+	streak=0;
+    document.getElementById("resultat").innerText="❌ Faux (elle reviendra...😉)";
+    pile.push(current);
+  }
+
+  document.getElementById("score").innerText = "🏆 " + score;
+  document.getElementById("streak").innerText = "🔥 " + streak;
+
+  setTimeout(chargerQuestion,500);
+}
+
+// ---------------------
+// ======================
+// TIMER
+// ======================
+let interval = setInterval(() => {
+
+    temps--;
+
+    document.getElementById("timer").innerText = "⏱️ " + temps + "s";
+
+    let p = (temps / 120) * 100;
+    document.getElementById("progress").style.width = p + "%";
+
+    if (temps <= 0) {
+        clearInterval(interval);
+
+        document.getElementById("enonce").innerHTML =
+            "⏱️ Temps écoulé !<br>Score final : " + score;
+
+        document.getElementById("resultat").innerHTML = 
+			(score > 75) ? "🔥 Excellent !" :
+            (score > 50) ? "👍 Bien joué !" :
+            "💪 Continue l'entraînement !";
+
+        document.getElementById("equation").innerHTML ="";
+		document.getElementById("hypotheses").innerHTML ="";
+		document.getElementById("bank").innerHTML ="";
+		document.getElementById("btnValider").style.display = "none";
+
+		
+            
+    }
+
+}, 1000);
+
+function finDuTheme() {
+
+    // 🎁 bonus
+    let bonus = 10;
+	niv++;
+    score += bonus;
+
+    document.getElementById("enonce").innerHTML =
+        "🎉 Bravo !<br>Tu as terminé le paquet !<br>+" + bonus + " points bonus";
+
+    document.getElementById("resultat").innerText =
+        "🔥 On recommence ! ";
+
+    document.getElementById("score").innerText = "🏆 " + score;
+	document.getElementById("Niveau").innerText = "💡 " + `${niv}`;
+
+    // 🔁 reset après 2 secondes
+    setTimeout(() => {
+        pile = [...baseQuestions1];
+        chargerQuestion();
+    }, 2000);
+}
+
+
+chargerQuestion();
+
+</script>
+
+</body>
+</html>

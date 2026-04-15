@@ -1,0 +1,103 @@
+<style>
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, #f4f6f9, #e9eef5);
+  margin: 0;
+}
+
+/* Conteneur principal */
+.container {
+  max-width: 1000px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* Titre */
+h2 {
+  text-align: center;
+  color: #1f3c88;
+  margin-bottom: 10px;
+}
+
+.enonce {
+  background: #f0f4ff;
+  padding: 15px;
+  border-left: 5px solid #1f3c88;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Canvas */
+canvas {
+  display: block;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  background: white;
+}
+
+/* Questions */
+.question {
+  background: #fafafa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  transition: 0.3s;
+}
+
+.question:hover {
+  background: #f1f5ff;
+}
+
+input[type="number"] {
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 80px;
+  margin-right: 5px;
+}
+
+button {
+  background: #1f3c88;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #162d66;
+}
+
+.feedback {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f8f8f8;
+  font-weight: 500;
+}
+
+/* Bouton final */
+button:last-of-type {
+  display: block;
+  margin: 25px auto 0;
+  font-size: 16px;
+  padding: 10px 20px;
+  background: #28a745;
+}
+
+button:last-of-type:hover {
+  background: #1e7e34;
+}
+
+</style>
