@@ -99,7 +99,7 @@ body {
 }
 
 button {
-  background: #1f3c88;
+  background: #28a745;
   color: white;
   border: none;
   padding: 7px 12px;
@@ -108,19 +108,14 @@ button {
   transition: 0.2s;
 }
 
-/* Bouton final */
-button:last-of-type {
-  display: block;
-  margin: 25px auto 0;
-  font-size: 16px;
-  padding: 10px 20px;
-  background: #28a745;
-}
-
-button:last-of-type:hover {
+button:hover {
   background: #1e7e34;
 }
-
+.fin{
+  display: flex;
+  justify-content: center;  /* centre horizontalement */
+  gap: 10px;                /* espace entre les boutons */
+}
 
 </style>
 </head>
@@ -159,7 +154,10 @@ button:last-of-type:hover {
 <p id="resultat"></p>
 
 <br>
+<div class="fin">
 <button onclick="envoyerScore()">Envoyer le résultat</button>
+<button onclick="location.reload()">Recommencer l'exercice</button>
+</div>
 
 </div>
 
@@ -456,6 +454,7 @@ let interval = setInterval(() => {
 		document.getElementById("hypotheses").innerHTML ="";
 		document.getElementById("bank").innerHTML ="";
 		document.getElementById("btnValider").style.display = "none";
+		envoyerScore();
 
 		
             

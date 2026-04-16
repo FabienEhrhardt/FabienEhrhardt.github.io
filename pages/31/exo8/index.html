@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Exercice BTS Electrotechnique</title>
 
 <!-- MathJax -->
@@ -20,9 +21,9 @@ body {
 }
 
 #container {
-    width: 100%;;
-    max-width: 100%;
-    margin: 40px auto;
+    width: 100%;
+    max-width: 520px;
+    margin: 20px auto;
     background: white;
     padding: 25px;
     border-radius: 12px;
@@ -122,8 +123,10 @@ button:hover {
 
 <!-- Score -->
 <br>
+<div class="fin">
 <button onclick="envoyerScore()">Envoyer le résultat</button>
-
+<button onclick="location.reload()">Recommencer l'exercice</button>
+</div>
 </div>
 
 <script>
@@ -279,7 +282,7 @@ let interval = setInterval(() => {
             "💪 Continue l'entraînement !";
 
         document.getElementById("feedback").innerHTML ="Meilleure combo 🔥 : " +streakmax;
-            ;
+        envoyerScore();
     }
 
 }, 1000);

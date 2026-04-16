@@ -66,17 +66,17 @@ input[type="number"] {
 }
 
 button {
-  background: #1f3c88;
+  background: #28a745;
   color: white;
   border: none;
-  padding: 7px 12px;
+  padding: 7px 20px;
   border-radius: 6px;
   cursor: pointer;
   transition: 0.2s;
 }
 
 button:hover {
-  background: #162d66;
+  background: #1e7e34;
 }
 
 .feedback {
@@ -87,17 +87,36 @@ button:hover {
   font-weight: 500;
 }
 
-/* Bouton final */
-button:last-of-type {
-  display: block;
-  margin: 25px auto 0;
-  font-size: 16px;
-  padding: 10px 20px;
-  background: #28a745;
+.feedback-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+  text-align: center;
 }
 
-button:last-of-type:hover {
-  background: #1e7e34;
+.feedback-table th,
+.feedback-table td {
+  border: 2px solid #444;
+  padding: 8px;
+  vertical-align: middle;
 }
+
+.feedback-table th {
+  background-color: #1f3c88;
+  color: white;
+  font-weight: 600;
+}
+
+.feedback-table tr:nth-child(even) {
+  background-color: #f2f4ff;
+}
+
+.fin{
+  display: flex;
+  justify-content: center;  /* centre horizontalement */
+  gap: 10px;                /* espace entre les boutons */
+}
+
 
 </style>

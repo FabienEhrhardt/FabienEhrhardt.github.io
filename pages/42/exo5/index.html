@@ -16,10 +16,10 @@ body {
 }
 
 .exo {
-  max-width: 700px;
+  max-width: 520px;
   margin: auto;
   background: white;
-  padding: 5px;
+  padding: 10px;
   border-radius: 10px;
 }
 
@@ -46,7 +46,7 @@ body {
 
 
 .term {
-  padding: 2px;
+  padding: 5px;
   margin: 2px;
   border: 2px solid #333;
   border-radius: 6px;
@@ -99,7 +99,7 @@ body {
 }
 
 button {
-  background: #1f3c88;
+  background: #28a745;
   color: white;
   border: none;
   padding: 7px 12px;
@@ -108,19 +108,14 @@ button {
   transition: 0.2s;
 }
 
-/* Bouton final */
-button:last-of-type {
-  display: block;
-  margin: 25px auto 0;
-  font-size: 16px;
-  padding: 10px 20px;
-  background: #28a745;
-}
-
-button:last-of-type:hover {
+button:hover {
   background: #1e7e34;
 }
-
+.fin{
+  display: flex;
+  justify-content: center;  /* centre horizontalement */
+  gap: 10px;                /* espace entre les boutons */
+}
 
 </style>
 </head>
@@ -129,7 +124,7 @@ button:last-of-type:hover {
 
 <div class="exo">
 
-<h2>⚡ Défi Bernoulli : formule généralisée</h2>
+<h2>⚡ Défi Bernoulli</h2>
 
 <div id="progressBar">
     <div id="progress"></div>
@@ -142,8 +137,7 @@ button:last-of-type:hover {
 	<span id="Niveau">💡 1 </span>
 </div>
 
-<p>Remplacer ou supprimer les termes dans l'équation de Bernoulli en fonction des hypothèses <br>
-On supposera que le fluide s'écoule du point A vers le point B.</p>
+<p>Remplacer ou supprimer les termes dans l'équation de Bernoulli en fonction des hypothèses</p>
 
 <p id="enonce"></p>
 
@@ -160,7 +154,10 @@ On supposera que le fluide s'écoule du point A vers le point B.</p>
 <p id="resultat"></p>
 
 <br>
+<div class="fin">
 <button onclick="envoyerScore()">Envoyer le résultat</button>
+<button onclick="location.reload()">Recommencer l'exercice</button>
+</div>
 
 </div>
 
@@ -181,90 +178,81 @@ const relationsGlobales = [
 
 const baseQuestions1 = [
 {
-  enonce:"Vidange d'un réservoir avec pertes de charges",
-  hypotheses:["Points A et B à l’air libre",
-			"Pas de pompe ni de turbine",
-			"Différence de hauteur entre le point A et le point B : h",
-			"Surface en A très grande devant celle en B."],
-  aSupprimer:["V_A","P_B","P_A","Z_B","P_t","P_p"],
+  enonce:"Point B à l’air libre",
+  hypotheses:["Point B à l’air libre"],
+  aSupprimer:[],
+  aRemplacer:{"P_B":"P_{atm}"}
+},
+{
+  enonce:"Point A à l’air libre",
+  hypotheses:["Point A à l’air libre"],
+  aSupprimer:[],
+  aRemplacer:{"P_A":"P_{atm}"}
+},
+{
+  enonce:"Écoulement horizontal",
+  hypotheses:["Écoulement horizontal"],
+  aSupprimer:["Z_A","Z_B"],
+  aRemplacer:{}
+},
+{
+  enonce:"Différence de hauteur",
+  hypotheses:["Le point A est à une hauteur h de B"],
+  aSupprimer:["Z_B"],
   aRemplacer:{"Z_A":"h"}
 },
 {
-  enonce:"Vidange d'un réservoir avec une pompe et pertes de charges",
-  hypotheses:["Points A et B à l’air libre",
-			"Pas de turbine",
-			"Différence de hauteur entre le point A et le point B : h",
-			"Surface en A très grande devant celle en B."],
-  aSupprimer:["V_A","P_B","P_A","Z_B","P_t"],
-  aRemplacer:{"Z_A":"h"}
-},
-{
-  enonce:"Pompage dans un réservoir enterré avec pertes de charges",
-  hypotheses:["Points A et B à l’air libre",
-			"Pas de turbine",
-			"Différence de hauteur entre le point B et le point A : h",
-			"Surface en A très grande devant celle en B."],
-  aSupprimer:["V_A","P_B","P_A","Z_A","P_t"],
+  enonce:"Différence de hauteur",
+  hypotheses:["Le point B est à une hauteur h de A"],
+  aSupprimer:["Z_A"],
   aRemplacer:{"Z_B":"h"}
 },
 {
-  enonce:"Pompage dans un réservoir enterré sans pertes de charges",
-  hypotheses:["Points A et B à l’air libre",
-			"Pertes de charge négligées",
-			"Pas de turbine",
-			"Différence de hauteur entre le point B et le point A : h",
-			"Surface en A très grande devant celle en B."],
-  aSupprimer:["V_A","P_B","P_A","Z_A","P_t","P_pe"],
-  aRemplacer:{"Z_B":"h"}
-},
-{
-  enonce:"Ventillation sans pertes de charges",
-  hypotheses:["Pressions en A et B identiques",
-			"Pertes de charge négligées",
-			"Pas de turbine",
-			"Conduite horizontale",
-			"Vitesse en A supposée nulle"],
-  aSupprimer:["V_A","P_B","P_A","Z_A","Z_B","P_t","P_pe"],
+  enonce:"Section en A très grande",
+  hypotheses:["Section en A très grande"],
+  aSupprimer:["V_A"],
   aRemplacer:{}
 },
 {
-  enonce:"Ventillation avec pertes de charges",
-  hypotheses:["Pressions en A et B identiques",
-			"Pas de turbine",
-			"Conduite horizontale",
-			"A et B dans la même conduite"],
-  aSupprimer:["V_B","V_A","P_B","P_A","Z_A","Z_B","P_t"],
+  enonce:"Section en B très grande",
+  hypotheses:["Section en B très grande"],
+  aSupprimer:["V_B"],
   aRemplacer:{}
 },
 {
-  enonce:"Centrale hydraulique avec pertes de charges",
-  hypotheses:["Points A et B à l’air libre",
-			"Pas de pompe",
-			"Différence de hauteur entre le point A et le point B : h",
-			"Energies cinétiques négligées"],
-  aSupprimer:["V_A","V_B","P_B","P_A","Z_B","P_p"],
+  enonce:"Energie cinétique négligée",
+  hypotheses:["Energie cinétique négligée"],
+  aSupprimer:["V_B","V_A"],
+  aRemplacer:{}
+},
+{
+  enonce:"Même tuyau",
+  hypotheses:["Section du tuyau constante"],
+  aSupprimer:["V_B","V_A"],
+  aRemplacer:{}
+},
+{
+  enonce:"Energie potentielle négligée",
+  hypotheses:["Energie potentielle négligée"],
+  aSupprimer:["Z_B","Z_A"],
+  aRemplacer:{}
+},
+{
+  enonce:"Point A et B à l’air libre",
+  hypotheses:["Point A à l’air libre","Point B à l’air libre"],
+  aSupprimer:["P_B","P_A"],
+  aRemplacer:{}
+},
+{
+  enonce:"Vidange d'un réservoir",
+  hypotheses:[
+    "Section en A très grande",
+    "A et B à l'air libre",
+	"A est à une hauteur h"
+  ],
+  aSupprimer:["V_A","P_B","P_A","Z_B"],
   aRemplacer:{"Z_A":"h"}
-},
-{
-  enonce:"Centrale hydraulique sans pertes de charges",
-  hypotheses:["Points A et B à l’air libre",
-			"Pertes de charge négligées",
-			"Pas de pompe",
-			"Différence de hauteur entre le point A et le point B : h",
-			"Energies cinétiques négligées"],
-  aSupprimer:["V_A","V_B","P_B","P_A","Z_B","P_p","P_pe"],
-  aRemplacer:{"Z_A":"h"}
-},
-{
-  enonce:"Eolienne",
-  hypotheses:["Points A et B à l’air libre",
-			"Pertes de charge négligées",
-			"Pas de pompe",
-			"Mouvement horizontal de l'air"],
-  aSupprimer:["P_B","P_A","Z_B","Z_A","P_p","P_pe"],
-  aRemplacer:{}
-},
-
+}
 ];
 
 
@@ -273,12 +261,12 @@ const baseQuestions1 = [
 let pile=[...baseQuestions1];
 let current;
 let score=0;
-let temps = 12000;
+let temps = 120;
 let streak = 0;
 let niv=1;
 
 let theme="42";
-let nomExo="exo5";
+let nomExo="exo4";
 
 
 
@@ -287,14 +275,11 @@ let nomExo="exo5";
 function latex(term){
   const map={
     "P_A":"\P_A",
-    "V_A":"v_A^2",
+    "V_A":"\\frac{1}{2}\\rho v_A^2",
     "Z_A":"z_A",
     "P_B":"\P_B",
-    "V_B":"v_B^2",
-    "Z_B":"z_B",
-	"P_p":"\\frac{P_{pompe}}{Q_v}",
-	"P_t":"\\frac{P_{turbine}}{Q_v}",
-	"P_pe":"\\Delta P_{pertes}"
+    "V_B":"\\frac{1}{2}\\rho v_B^2",
+    "Z_B":"z_B"
   };
   return map[term];
 }
@@ -317,30 +302,23 @@ function chargerQuestion(){
 
   // Equation
   let eq = `
-  <span class="operator">\\(\\frac{1}{2}\\rho\\)(</span>
-  <span class="term" data-term="V_B">\\(${latex("V_B")}\\)</span>
-  <span class="operator">-</span>
+ 
   <span class="term" data-term="V_A">\\(${latex("V_A")}\\)</span>
-  <span class="operator">)</span>
-  <span class="operator">+</span> 
-  <span class="operator">\\(\\rho g\\)(</span>
-  <span class="term" data-term="Z_B">\\(${latex("Z_B")}\\)</span>
-  <span class="operator">-</span>
-  <span class="term" data-term="Z_A">\\(${latex("Z_A")}\\)</span>
-  <span class="operator">)</span>
   <span class="operator">+</span>
-  <span class="term" data-term="P_B">\\(${latex("P_B")}\\)</span>
-  <span class="operator">-</span>
+  <span class="operator">\\(\\rho g\\)</span>
+  <span class="term" data-term="Z_A">\\(${latex("Z_A")}\\)</span>
+  <span class="operator">+</span>
   <span class="term" data-term="P_A">\\(${latex("P_A")}\\)</span>
-  <span class="operator">)</span>
   
+
   <span class="operator">=</span>
 
-  <span class="term" data-term="P_p">\\(${latex("P_p")}\\)</span>
-  <span class="operator">-</span>
-  <span class="term" data-term="P_t">\\(${latex("P_t")}\\)</span>
-  <span class="operator">-</span>
-  <span class="term" data-term="P_pe">\\(${latex("P_pe")}\\)</span>
+  <span class="term" data-term="V_B">\\(${latex("V_B")}\\)</span>
+  <span class="operator">+</span>
+  <span class="operator">\\(\\rho g\\)</span>
+  <span class="term" data-term="Z_B">\\(${latex("Z_B")}\\)</span>
+  <span class="operator">+</span>
+  <span class="term" data-term="P_B">\\(${latex("P_B")}\\)</span>
   `;
 
   document.getElementById("equation").innerHTML = eq;
@@ -476,12 +454,14 @@ let interval = setInterval(() => {
 		document.getElementById("hypotheses").innerHTML ="";
 		document.getElementById("bank").innerHTML ="";
 		document.getElementById("btnValider").style.display = "none";
+		envoyerScore();
 
 		
             
     }
 
 }, 1000);
+
 
 function finDuTheme() {
 
