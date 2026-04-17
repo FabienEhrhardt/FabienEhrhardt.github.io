@@ -36,7 +36,7 @@ const questions = [
     ]
 },
 {
-    texte: "Rendement d'un cycle de charge/décharge \\(\eta=\\)",
+    texte: "Rendement d'un cycle de charge/décharge \\(\\eta=\\)",
     choix: [
         "\\(\\frac{W_{décharge}}{W{charge}}\\)",
         "\\(\\frac{P_u}{P_a}\\)",

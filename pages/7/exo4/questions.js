@@ -18,7 +18,7 @@ const questions = [
     ]
 },
 {
-    texte: "glissement\\(g=\\)",
+    texte: "glissement \\(g=\\)",
     choix: [
         "\\(\\frac{n_s-n}{n_s}\\)",
         "\\(\\frac{n}{n_s}\\)",
@@ -135,10 +135,10 @@ const questions = [
     ]
 },
 {
-    texte: "Principe fondamental de la dynamique \\(J \\frac{d \\Omega }{dt}",
+    texte: "Principe fondamental de la dynamique \\(J \\frac{d \\Omega }{dt}=\\)",
     choix: [
         "\\(C_u-C_R\\)",
-        "\\(C_u-C_em\\)",
+        "\\(C_u-C_{em}\\)",
         "\\(C_u-C_f\\)",
         "\\(C_{em}-C_f\\)"
     ]

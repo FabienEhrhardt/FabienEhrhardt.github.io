@@ -81,15 +81,6 @@ const questions = [
     ]
 },
 {
-    texte: "Pertes joules à l'induit \\(P_{ji}=\\)",
-    choix: [
-        "\\(\\frac{3}{2}RI^2\\)",
-        "\\(RI^2\\)",
-        "\\(3RI^2\\)",
-        "\\(\\frac{V^2}{R}\\)"
-    ]
-},
-{
     texte: "Puissance électromagnétique \\(P_{em}=\\)",
     choix: [
         "\\(C_{em} \\Omega_s\\)",
@@ -153,10 +144,10 @@ const questions = [
     ]
 },
 {
-    texte: "Principe fondamental de la dynamique \\(J \\frac{d \\Omega }{dt}",
+    texte: "Principe fondamental de la dynamique \\(J \\frac{d \\Omega }{dt}=\\)",
     choix: [
         "\\(C_u-C_R\\)",
-        "\\(C_u-C_em\\)",
+        "\\(C_u-C_{em}\\)",
         "\\(C_u-C_f\\)",
         "\\(C_{em}-C_f\\)"
     ]

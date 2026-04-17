@@ -29,8 +29,8 @@ const questions = [
 {
     texte: "Accélération \\(a=\\)",
     choix: [
-        "\\(\\frac{dv}[dt}\\)",
-        "\\(\\frac{dx}[dt}\\)",
+        "\\(\\frac{dv}{dt}\\)",
+        "\\(\\frac{dx}{dt}\\)",
         "\\(v \\Delta t\\)",
         "\\(\\frac{dv}{dx}\\)"
     ]
@@ -39,7 +39,7 @@ const questions = [
     texte: "Vitesse \\(v=\\)",
     choix: [
         "\\(\\frac{dx}{dt}\\)",
-        "\\(\\frac{dv}[dt}\\)",
+        "\\(\\frac{dv}{dt}\\)",
         "\\(x\\Delta t\\)",
         "\\(\\frac{da}{dx}\\)"
     ]
@@ -63,9 +63,9 @@ const questions = [
     ]
 },
 {
-    texte: "Principe fondamental de la dynamique \\(m\\upperarrowright{a}\\)",
+    texte: "Principe fondamental de la dynamique \\(m\\overrightarrow{a}\\)",
     choix: [
-        "\\(\\Sigma \\upperarrowright{F}\\)",
+        "\\(\\Sigma \\overrightarrow{F}\\)",
         "\\(C_m-C_R\\)",
         "\\(F\\)",
         "\\(\\Sigma F\\)"

@@ -20,9 +20,9 @@ const questions = [
 {
     texte: "Puissance totale absorbée \\(P_a=\\)",
     choix: [
-        "\\(P_e+P_{ji}+P_pm+P_u\\)",
-        "\\(P_e+P_{ji}+P_pm\\)",
-        "\\(P_e+P_{ji}+P_pm+P_u+P_i\\)",
+        "\\(P_e+P_{ji}+P_{pm}+P_u\\)",
+        "\\(P_e+P_{ji}+P_{pm}\\)",
+        "\\(P_e+P_{ji}+P_{pm}+P_u+P_i\\)",
         "\\(VI\\)"
     ]
 },
@@ -162,7 +162,7 @@ const questions = [
     ]
 },
 {
-    texte: "Principe fondamental de la dynamique \\(J \\frac{d \\Omega }{dt}",
+    texte: "Principe fondamental de la dynamique \\(J \\frac{d \\Omega }{dt}=\\)",
     choix: [
         "\\(C_u-C_R\\)",
         "\\(C_u-C_em\\)",

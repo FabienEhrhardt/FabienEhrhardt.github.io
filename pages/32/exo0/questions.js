@@ -56,7 +56,7 @@ const questions = [
 {
     texte: "Valeur efficace du courant I=",
     choix: [
-        "\\(Faut mesurer!\\)",
+        "\\(Faut\\:mesurer!\\)",
         "\\({I_{max}}{\\sqrt{2}}\\)",
         "\\(\\frac{I_{max}}{\\sqrt{2}}\\)",
         "\\({I_{max}}{\\sqrt{3}}\\)"
@@ -92,10 +92,10 @@ const questions = [
 {
     texte: "Déphasage \\(\\varphi\\)=",
     choix: [
-        "\\(360 \\frac{\\Delta t}{T}\\)",
+        "\\(acos DFP\\)",
         "\\(\\frac{V}{I}\\)",
         "\\(atan F_p\\)",
-        "\\(asin F_p\\)"
+        "\\(acos F_p\\)"
     ]
 },
 {
@@ -140,7 +140,7 @@ const questions = [
         "\\(P \\tan \\varphi\\)",
         "\\(P \\sin \\varphi\\)",
         "\\(S \\cos\\varphi\\)",
-        "\\(\\racine{P^2-S^2}\\)"
+        "\\(\\sqrt{P^2-S^2}\\)"
     ]
 },
 {
@@ -200,10 +200,10 @@ const questions = [
 {
     texte: "Taux de distorsion harmonique \\(THD_i\\)=",
     choix: [
-        "\\(\\frac{I^2-I_1^2}{I_1}\\)",
+        "\\(\\frac{\\sqrt{I^2-I_1^2}}{I_1}\\)",
         "\\(\\frac{\\sqrt{I_1^2+I_2^2+I_3^2+…}}{I_1}\\)",
         "\\(\\frac{\\sqrt{I^2-I_1^2}}{I}\\)",
-        "\\(\\frac\\sqrt{{I_1^2+I_2^2+I_3^2+…}}{I}\\)"
+        "\\(\\frac{\\sqrt{I_1^2+I_2^2+I_3^2+…}}{I}\\)"
     ]
 },
 {

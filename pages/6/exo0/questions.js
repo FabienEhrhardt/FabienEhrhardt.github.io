@@ -110,9 +110,9 @@ const questions = [
 {
     texte: "Rayon du disque éclairé au sol \\(R=\\)",
     choix: [
-        "\\(h tan \\alpha\\)",
-        "\\(h sin \\alpha\\)",
-        "\\(h cos \\alpha\\)",
+        "\\(h \\times tan \\alpha\\)",
+        "\\(h \\times  sin \\alpha\\)",
+        "\\(h \\times cos \\alpha\\)",
         "\\(\\frac{h}{cos \\alpha}\\)"
     ]
 },

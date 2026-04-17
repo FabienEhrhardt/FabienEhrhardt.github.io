@@ -47,17 +47,17 @@ const questions = [
 {
     texte: "Accélération angulaire \\(\\gamma=\\)",
     choix: [
-        "\\(\\frac{d\\Omega}[dt}\\)",
-        "\\(\\frac{d\\theta}[dt}\\)",
+        "\\(\\frac{d\\Omega}{dt}\\)",
+        "\\(\\frac{d\\theta}{dt}\\)",
         "\\(\\Omega \\Delta t\\)",
         "\\(\\frac{d\\Omega}{d\\theta}\\)"
     ]
 },
 {
-    texte: "Vitesse angulaire \\(v=\\)",
+    texte: "Vitesse angulaire \\(\\Omega=\\)",
     choix: [
         "\\(\\frac{d\\theta}{dt}\\)",
-        "\\(\\frac{d\\Omega}[dt}\\)",
+        "\\(\\frac{d\\gamma}{dt}\\)",
         "\\(\\theta \\Delta t\\)",
         "\\(\\frac{d\\gamma}{d\\theta}\\)"
     ]
@@ -85,7 +85,7 @@ const questions = [
     choix: [
         "\\(C_m-C_R\\)",
         "\\(C_m+C_R\\)",
-        "\\(\\Sigma \\upperarrowright{F}\\)",
+        "\\(\\Sigma \\overrightarrow{F}\\)",
         "\\(\\Sigma F\\)"
     ]
 },

@@ -11,8 +11,8 @@ const questions = [
 {
     texte: "Valeur efficace de la tension U=",
     choix: [
-        "\\({V}{\\sqrt{3}}\\)",
-        "\\({V}}{\\sqrt{2}}\\)",
+        "\\(V \\sqrt{3}\\)",
+        "\\({V}{\\sqrt{2}}\\)",
         "\\(\\frac{V_{max}}{\\sqrt{3}}\\)",
         "\\(\\frac{V_{max}}{\\sqrt{2}}\\)"
     ]
@@ -20,25 +20,25 @@ const questions = [
 {
     texte: "Puissance active P=",
     choix: [
-        "\\(\sqrt{3}UI\\cos\\varphi\\)",
+        "\\(\\sqrt{3}UI\\cos\\varphi\\)",
         "\\(VI\\)",
-        "\\(\sqrt{3}VI\\cos\\varphi\\)",
+        "\\(\\sqrt{3}VI\\cos\\varphi\\)",
         "\\(VI\\cos\\varphi\\)"
     ]
 },
 {
     texte: "Puissance réactive Q=",
     choix: [
-        "\\(\sqrt{3}UI\\sin\\varphi\\)",
+        "\\(\\sqrt{3}UI\\sin\\varphi\\)",
         "\\(VI\\)",
-        "\\(\sqrt{3}VI\\sin\\varphi\\)",
+        "\\(\\sqrt{3}VI\\sin\\varphi\\)",
         "\\(P sin \\varphi\\)"
     ]
 },
 {
     texte: "Puissance apparente S=",
     choix: [
-        "\\(\sqrt{3}UI\\)",
+        "\\(\\sqrt{3}UI\\)",
         "\\(VI\\)",
         "\\(\\sqrt{P^2-Q^2}\\)",
         "\\(3UI\\)"
@@ -81,7 +81,7 @@ const questions = [
     ]
 },
 {
-    texte: "Déphasage entre \\(u_12\\) et \\(u_23\\) ?",
+    texte: "Déphasage entre \\(u_{12}\\) et \\(u_{23}\\) ?",
     choix: [
         "\\(120 \°\\)",
         "\\(60 \°\\)",
@@ -90,7 +90,7 @@ const questions = [
     ]
 },
 {
-    texte: "Déphasage entre \\(v_1\\) et \\(v_1\\) ?",
+    texte: "Déphasage entre \\(v_{1}\\) et \\(v_{2}\\) ?",
     choix: [
         "\\(120 \°\\)",
         "\\(60 \°\\)",
@@ -99,7 +99,7 @@ const questions = [
     ]
 },
 {
-    texte: "Déphasage entre \\(u_12\\) et \\(v_1\\) ?",
+    texte: "Déphasage entre \\(u_{12}\\) et \\(v_1\\) ?",
     choix: [
         "\\(30 \°\\)",
         "\\(60 \°\\)",
@@ -121,7 +121,7 @@ const questions = [
     choix: [
         "\\(\\sqrt{P^2+Q^2}\\)",
         "\\(\\sqrt{P^2-Q^2}\\)",
-        "\\(VI\\cos \\varphi\\)",
+        "\\(VI \\cos \\varphi\\)",
         "\\(P F_p\\)"
     ]
 },
@@ -149,7 +149,7 @@ const questions = [
         "\\(P \\tan \\varphi\\)",
         "\\(P \\sin \\varphi\\)",
         "\\(S \\cos\\varphi\\)",
-        "\\(\\racine{P^2-S^2}\\)"
+        "\\(\\sqrt{P^2-S^2}\\)"
     ]
 },
 {
@@ -272,10 +272,10 @@ const questions = [
 {
     texte: "Pour un circuit RC série \\(\\varphi\\)=",
     choix: [
-        "\\(atan(\\frac{1}{RC\\omega})\\)",
-        "\\(atan({RC\\omega})\\)",
-        "\\(atan(\\frac{C\\omega}{R})\\)",
-        "\\(atan(\\frac{C}{R})\\)"
+        "\\(atan(\\frac{-1}{RC\\omega})\\)",
+        "\\(atan({-RC\\omega})\\)",
+        "\\(atan(\\frac{-C\\omega}{R})\\)",
+        "\\(atan(\\frac{-C}{R})\\)"
     ]
 },
 {
@@ -288,7 +288,7 @@ const questions = [
     ]
 },
 {
-    texte: "Pour un circuit RL sérieZ=",
+    texte: "Pour un circuit RL série Z=",
     choix: [
         "\\(\\sqrt{R^2+(L\\omega)^2}\\)",
         "\\(R+L\\)",

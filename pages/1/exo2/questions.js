@@ -38,14 +38,14 @@ const questions = [
 {
     texte: "Loi d'Ohm thermique \\(\\Delta T=\\)",
     choix: [
-        "\\(R_th} \\Phi\\)",
+        "\\(R_{th} \\Phi\\)",
         "\\(\\frac{\\Phi}{R_{th}}\\)",
         "\\(\\frac{Q}{R_{th}}\\)",
         "\\(Q R_{th}\\)"
     ]
 },
 {
-    texte: "Résistance thermique en conduction \\(R_th=\\)",
+    texte: "Résistance thermique en conduction \\(R_{th}=\\)",
     choix: [
         "\\(\\frac{e}{\\lambda S}\\)",
         "\\(\\frac{1}{\\lambda S}\\)",
@@ -54,7 +54,7 @@ const questions = [
     ]
 },
 {
-    texte: "Résistance thermique en conduction \\(R_th=\\)",
+    texte: "Résistance thermique en convection \\(R_{th}=\\)",
     choix: [
         "\\(\\frac{1}{h S}\\)",
         "\\(\\frac{e}{h S}\\)",
@@ -63,7 +63,7 @@ const questions = [
     ]
 },
 {
-    texte: "Association de résistance en série \\(R_{th_eq}=\\)",
+    texte: "Association de résistance en série \\(R_{th_{eq}}=\\)",
     choix: [
         "\\(R_1+R_2\\)",
         "\\(\\frac{1}{R_1}+\\frac{1}{R_2}\\)",
@@ -72,7 +72,7 @@ const questions = [
     ]
 },
 {
-    texte: "Association de résistance en parallèle \\(R_{th_eq}=\\)",
+    texte: "Association de résistance en parallèle \\(R_{th_{eq}}=\\)",
     choix: [
         "\\(\\frac{R_1 R_2}{R_1+R_2}\\)",
         "\\(\\frac{1}{R_1}+\\frac{1}{R_2}\\)",
@@ -81,7 +81,7 @@ const questions = [
     ]
 },
 {
-    texte: "Association de résistance en parallèle \\(\\frac{1}{R_{th_eq}}=\\)",
+    texte: "Association de résistance en parallèle \\(\\frac{1}{R_{th_{eq}}}=\\)",
     choix: [
         "\\(\\frac{1}{R_1}+\\frac{1}{R_2}\\)",
         "\\(R_1+R_2\\)",
@@ -95,7 +95,7 @@ const questions = [
         "\\(2(Lh+Lp+hp)\\)",
         "\\(Lhp\\)",
         "\\(2Lhp\\)",
-        "\\(2(Lh\\timesLp\\timeshp)\\)"
+        "\\(2(Lh \\times Lp \\times hp)\\)"
     ]
 },
 {
@@ -108,7 +108,7 @@ const questions = [
     ]
 },
 {
-    texte: "Flux évacué par convection dans une armoire \\(\\Phi_c=\\)",
+    texte: "Flux évacué par un ventilateur dans une armoire \\(\\Phi_c=\\)",
     choix: [
         "\\(m C_m \\frac{\\Delta T}{\\Delta t}\\)",
         "\\(\\frac{T_{int}-T_{ext}}{R_{th}}\\)",
@@ -167,7 +167,7 @@ const questions = [
         "\\(\\Sigma P_p\\)",
         "\\(P_{p_{max}}\\)",
         "\\(P_{p_{min}}\\)",
-        "\\(\\{frac{P_{p_{max}}+P_{p_{max}}}{2}\\)"
+        "\\(\\frac{P_{p_{max}}+P_{p_{max}}}{2}\\)"
     ]
 },
 {

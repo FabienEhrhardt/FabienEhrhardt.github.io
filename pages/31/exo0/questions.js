@@ -113,7 +113,7 @@ const questions = [
         "\\(P \\tan \\varphi\\)",
         "\\(P \\sin \\varphi\\)",
         "\\(S \\cos\\varphi\\)",
-        "\\(\\racine{P^2-S^2}\\)"
+        "\\(\\sqrt{P^2-S^2}\\)"
     ]
 },
 {
@@ -236,7 +236,7 @@ const questions = [
 {
     texte: "Pour un circuit RC série \\(\\varphi\\)=",
     choix: [
-        "\\(atan(\\frac{1}{RC\\omega})\\)",
+        "\\(atan(\\frac{-1}{RC\\omega})\\)",
         "\\(atan({RC\\omega})\\)",
         "\\(atan(\\frac{C\\omega}{R})\\)",
         "\\(atan(\\frac{C}{R})\\)"
@@ -252,7 +252,7 @@ const questions = [
     ]
 },
 {
-    texte: "Pour un circuit RL sérieZ=",
+    texte: "Pour un circuit RL série Z=",
     choix: [
         "\\(\\sqrt{R^2+(L\\omega)^2}\\)",
         "\\(R+L\\)",

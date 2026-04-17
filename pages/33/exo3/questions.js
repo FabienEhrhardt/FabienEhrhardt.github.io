@@ -14,7 +14,7 @@ const questions = [
         "\\(\\frac{V_{a0}}{V_A}\\)",
         "\\(\\frac{V_{a}}{V_A}\\)",
         "\\(\\frac{V_{A}}{V_a}\\)",
-        "\\(\\frac{I_{A}}{I_a0}\\)"
+        "\\(\\frac{I_{A}}{I_{a0}}\\)"
     ]
 },
 {
@@ -23,7 +23,7 @@ const questions = [
         "\\(\\frac{U_{ab0}}{U_{AB}}\\)",
         "\\(\\frac{V_{a}}{V_A}\\)",
         "\\(\\frac{U_{AB}}{U_{ab}}\\)",
-        "\\(\\frac{I_{A}}{I_a0}\\)"
+        "\\(\\frac{I_{A}}{I_{a0}}\\)"
     ]
 },
 {
@@ -40,24 +40,6 @@ const questions = [
     choix: [
         "\\(\\frac{S_n}{3V_{A}}\\)",
         "\\(\\frac{S_n}{3V_{a}}\\)",
-        "\\(\\frac{S_n}{V_{A}}\\)",
-        "\\({S_n}{V_{A}}\\)"
-    ]
-},
-{
-    texte: "Courant nominal au secondaire \\(I_{1n}=\\)",
-    choix: [
-        "\\(\\frac{S_n}{\\sqrt{3}U_{ab}}\\)",
-        "\\(\\frac{S_n}{\\sqrt{3}U_{AB}}\\)",
-        "\\(\\frac{S_n}{U_{AB}}\\)",
-        "\\(\\frac{S_n}{U_{ab}}\\)"
-    ]
-},
-{
-    texte: "Courant nominal au secondaire \\(I_{1n}=\\)",
-    choix: [
-        "\\(\\frac{S_n}{3V_{a}}\\)",
-        "\\(\\frac{S_n}{3V_{A}}\\)",
         "\\(\\frac{S_n}{V_{A}}\\)",
         "\\({S_n}{V_{A}}\\)"
     ]
@@ -65,10 +47,19 @@ const questions = [
 {
     texte: "Courant nominal au secondaire \\(I_{2n}=\\)",
     choix: [
-        "\\(\\frac{S_n}{V_{2n}}\\)",
-        "\\(\\frac{S_n}{V_{20}}\\)",
-        "\\(\\frac{S_n}{V_{1n}}\\)",
-        "\\({S_n}{V_{1n}}\\)"
+        "\\(\\frac{S_n}{\\sqrt{3}U_{ab}}\\)",
+        "\\(\\frac{S_n}{\\sqrt{3}U_{AB}}\\)",
+        "\\(\\frac{S_n}{U_{AB}}\\)",
+        "\\(\\frac{S_n}{U_{ab}}\\)"
+    ]
+},
+{
+    texte: "Courant nominal au secondaire \\(I_{2n}=\\)",
+    choix: [
+        "\\(\\frac{S_n}{3V_{a}}\\)",
+        "\\(\\frac{S_n}{3V_{A}}\\)",
+        "\\(\\frac{S_n}{V_{A}}\\)",
+        "\\({S_n}{V_{A}}\\)"
     ]
 },
 {
@@ -157,7 +148,7 @@ const questions = [
     choix: [
         "\\(P_{cc} \\frac{I_a^2}{I_{acc}^2}\\)",
         "\\(P_{cc} \\frac{I_{acc}^2}{I_a^2}\\)",
-        "\\(P_{cc} \\frac{V_A0}{V_a}\\)",
+        "\\(P_{cc} \\frac{V_{A0}}{V_a}\\)",
         "\\(3P_{cc} \\frac{I_a^2}{I_{acc}^2}\\)"
     ]
 },

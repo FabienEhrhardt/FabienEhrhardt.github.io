@@ -121,7 +121,7 @@ const questions = [
     choix: [
         "\\(P_{cc} \\frac{I_2^2}{I_{2cc}^2}\\)",
         "\\(P_{cc} \\frac{I_{2cc}^2}{I_2^2}\\)",
-        "\\(P_{cc} \\frac{V_20}{V_2}\\)",
+        "\\(P_{cc} \\frac{V_{20}}{V_2}\\)",
         "\\(R_s I_2\\)"
     ]
 },

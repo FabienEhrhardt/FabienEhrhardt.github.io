@@ -11,7 +11,7 @@ const questions = [
 {
     texte: "Sensibilité \\(S=\\)",
     choix: [
-        "\\(\\frac'\\Delta s}{\\Delta m}\\)",
+        "\\(\\frac{\\Delta s}{\\Delta m}\\)",
         "\\(2^n-1\\)",
         "\\(\\frac{\\Delta s}{2^n-1}\\)",
         "\\(\\frac{\\Delta m}{2^n-1}\\)"
@@ -31,35 +31,35 @@ const questions = [
     choix: [
         "\\(\\frac{\\Delta m}{2^n-1}\\)",
         "\\(\\frac{\\Delta s}{2^n-1}\\)",
-        "\\(\\frac'\\Delta s}{\\Delta m}\\)",
+        "\\(\\frac{\\Delta s}{\\Delta m}\\)",
         "\\(2^n-1\\)"
     ]
 },
 {
     texte: "Erreur absolue \\(\\epsilon=\\)",
     choix: [
-        "\\(X_c-X_{s \infty}\\)",
-        "\\(\\frac{X_c-X_{s \infty}}{X_c}\\)",
-        "\\(\\frac{X_c-X_{s \infty}}{X_{s \infty}}\\)",
-        "\\(\\frac{X_{s \infty}-X_c}{X_c}\\)"
+        "\\(X_c-X_{s \\infty}\\)",
+        "\\(\\frac{X_c-X_{s \\infty}}{X_c}\\)",
+        "\\(\\frac{X_c-X_{s \\infty}}{X_{s \\infty}}\\)",
+        "\\(\\frac{X_{s \\infty}-X_c}{X_c}\\)"
     ]
 },
 {
-    texte: "Erreur relative \\(\\epsilon_{\%}=\\)",
+    texte: "Erreur relative \\(\\epsilon_{\\%}=\\)",
     choix: [
-        "\\(\\frac{X_c-X_{s \infty}}{X_c}\\)",
-        "\\(X_c-X_{s \infty}\\)",
-        "\\(\\frac{X_c-X_{s \infty}}{X_{s \infty}}\\)",
-        "\\(\\frac{X_{s \infty}-X_c}{X_c}\\)"
+        "\\(\\frac{X_c-X_{s \\infty}}{X_c}\\)",
+        "\\(X_c-X_{s \\infty}\\)",
+        "\\(\\frac{X_c-X_{s \\infty}}{X_{s \\infty}}\\)",
+        "\\(\\frac{X_{s \\infty}-X_c}{X_c}\\)"
     ]
 },
 {
     texte: "Dépassement \\(D=\\)",
     choix: [
-        "\\(\\frac{X_{s max}-X_{s \infty}}{X_{s \infty}}\\)",
+        "\\(\\frac{X_{s max}-X_{s \\infty}}{X_{s \\infty}}\\)",
         "\\(\\frac{X_{s max}-X_{c}}{X_{c}}\\)",
-        "\\(\\frac{X_{s max}-X_{s \infty}}{X_{c}}\\)",
-        "\\(\\frac{X_{s max}-X_{c}{X_{s \infty}}\\)"
+        "\\(\\frac{X_{s max}-X_{s \\infty}}{X_{c}}\\)",
+        "\\(\\frac{X_{s max}-X_{c}}{X_{s \\infty}}\\)"
     ]
 },
 {

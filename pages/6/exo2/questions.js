@@ -12,7 +12,7 @@ const questions = [
     texte: "Puissance électrique fournie par un panneau PV \\(P_{elec}=\\)",
     choix: [
         "\\(VI\\)",
-        "\\(Phi S\\)",
+        "\\(\\Phi S\\)",
         "\\(I\\)",
         "\\(VI cos \\varphi\\)"
     ]
@@ -27,7 +27,7 @@ const questions = [
     ]
 },
 {
-    texte: "Rendement d'un panneau PV \\(\eta=\\)",
+    texte: "Rendement d'un panneau PV \\(\\eta=\\)",
     choix: [
         "\\(\\frac{P_{elec}}{P_{S}}\\)",
         "\\(\\frac{P_{S}}{P_{elec}}\\)",
@@ -38,8 +38,8 @@ const questions = [
 {
     texte: "Modèle de Norton  en convention générateur \\(I=\\)",
     choix: [
-        "\\(I_0-\frac{V}{R_{int}}\\)",
-        "\\(I_0+\frac{V}{R_{int}}\\)",
+        "\\(I_0-\\frac{V}{R_{int}}\\)",
+        "\\(I_0+\\frac{V}{R_{int}}\\)",
         "\\(I_0+ R_{int}+V\\)",
         "\\(I_0+ R_{int}-V\\)"
     ]
