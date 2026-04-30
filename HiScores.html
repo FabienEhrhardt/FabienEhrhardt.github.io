@@ -236,9 +236,48 @@ function resetData() {
     }
 }
 
+
+function getBadge() {
+	let bestSerie = parseInt(localStorage.getItem("bestSerie")) || 0;
+	if (bestSerie >= 100) return "⭐ Iron Man";
+	if (bestSerie >= 42) return "🏅 Marathon";
+    if (bestSerie >= 30) return "🏃‍♂️ 30 km";
+    if (bestSerie >= 21) return "🥇 Semi-marathon";
+    if (bestSerie >= 10) return "🏃 10 km";
+    if (bestSerie >= 5) return "🚶 5 km";
+    return "👟 Débutant";
+}
+
+function couleurMarathon() {
+	let bestSerie = parseInt(localStorage.getItem("platine")) || 0;
+	if (bestSerie >= 42) return "or";
+    if (bestSerie >= 30) return "argent";
+    if (bestSerie >= 21) return "bronze";
+    if (bestSerie >= 10) return "bronze";
+    if (bestSerie >= 5) return "blanc";
+    return "blanc";
+}
+
+
+
+
+
 function afficherBadges(){
   let html = "";
-
+  // Badge Marathon
+  let streak = parseInt(localStorage.getItem("streak")) || 0;
+  let bestSerie = getBadge();
+  let couleurMar=couleurMarathon();
+  
+  html += `
+      <div class="badge ${couleurMar}">
+        <h4>🗓️ Régularité</h4>
+        <p>🔥 Série actuelle : </p>
+        <p><i>${streak} jours</i></p>
+		<p><b>${bestSerie}</b></p>
+      </div>
+    `;
+  
   themes.forEach(t => {
 
     let progression = progressionTheme(t.id); // ⚠️ à adapter à ton stockage

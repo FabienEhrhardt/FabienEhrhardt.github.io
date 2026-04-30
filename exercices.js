@@ -92,8 +92,15 @@ const listeExercices = [
         theme: "6",
         exercices: [
            { nom: "exo0", titre: "Formules : Eclairage" },
+		   { nom: "exo3", titre: "Éclairage d’un atelier industriel" },
+		   { nom: "exo4", titre: "Température de couleur d’une source" },
+		   { nom: "exo5", titre: "Analyse d’un spectre lumineux" },
+		   { nom: "exo6", titre: "Cartographie d’éclairement d’un atelier" },
+		   { nom: "exo7", titre: "Diagramme polaire d’un luminaire" },
 		   { nom: "exo2", titre: "Formules : Panneau photovoltaïque" },
 		   { nom: "exo1", titre: "Courbe I=f(V) d'un panneau photovoltaïque" },
+		   
+		   
         ]
     },
 	{

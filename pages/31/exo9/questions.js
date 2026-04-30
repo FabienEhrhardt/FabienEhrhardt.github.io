@@ -18,7 +18,7 @@ const questions = [
     ]
 },
 {
-    texte: "Loi d'Ohm \\(U=)\\",
+    texte: "Loi d'Ohm \\(U=\\)",
     choix: [
         "\\(RI\\)",
         "\\(\\frac{I}{R}\\)",
@@ -54,7 +54,7 @@ const questions = [
     ]
 },
 {
-    texte: "Association de résistance en série \\(R_{th_{eq]}=\\)",
+    texte: "Association de résistance en série \\(R_{th_{eq}}=\\)",
     choix: [
         "\\(R_1+R_2\\)",
         "\\(\\frac{1}{R_1}+\\frac{1}{R_2}\\)",

@@ -12,6 +12,32 @@ function superarrondi(num){
 		return Math.ceil((num)*Math.pow(10,-Math.floor(Math.log10((num)))))/Math.pow(10,-Math.floor(Math.log10((num))));
 }
 
+function P10(num){
+		let num10;
+		if((num*1e9<1000)&&(num*1e9>1)) {
+			num10=num*1e9;
+			return num10+" n";}
+		if((num*1e6<1000)&&(num*1e6>1)) {
+			num10=num10*1e6;
+		return num*1e6+" µ";}
+		if((num*1e3<1000)&&(num*1e3>1)) {
+			num10=num*1e3;
+			return num10+" m";}
+		if((num<1000)&&(num>1)) return num+" ";
+		if((num*1e-3<1000)&&(num*1e-3>1)) {
+			num10=num*1e-3;
+			return num10*1e-3+" k";}
+		if((num*1e-6<1000)&&(num*1e-6>1)) {
+			num10=num*1e-6;
+			return num10+" M";}
+		if((num*1e-9<1000)&&(num*1e-9>1)) {
+			num10=num*1e-9;
+			return num10+" G";}
+		if((num*1e-12<1000)&&(num*1e-12>1)) {
+			num10=num*1e12;
+			return num10+" T";}
+}
+
 function envoyerScore() {
 
   let scorePourcent = 0;
@@ -59,25 +85,56 @@ function envoyerScore() {
 
         } else {
             // Pas de SCORM détecté → mode local
-            sauvegarderScore(theme,nomExo, scorePourcent);
+            sauvegarderScore(theme,nomExo, scorePourcent,score);
             alert("Score (mode local) : " + scorePourcent + "%");
         }
 
   } catch (e) {
 
     console.log("Erreur SCORM :", e);
-	sauvegarderScore(theme,nomExo, scorePourcent);
+	sauvegarderScore(theme,nomExo, scorePourcent,score);
     alert("Score (hors Moodle) : " + scorePourcent + "%");
 
   }
 }
 
-function sauvegarderScore(theme, nomExo, scorePourcent) {
-    let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+function sauvegarderScore(theme, nomExo, scorePourcent,score) {
+    updateStreak(score);
+	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
     if (!scores[theme]) scores[theme] = {};
     
     if (!scores[theme][nomExo] || scorePourcent > scores[theme][nomExo]) {
         scores[theme][nomExo] = scorePourcent;
     }
     localStorage.setItem("scoresApp", JSON.stringify(scores));
+}
+
+function updateStreak(score) {
+    if (score <= 0) return; // sécurité
+
+    const today = new Date().toDateString();
+    const lastDate = localStorage.getItem("lastDate");
+    let streak = parseInt(localStorage.getItem("streak")) || 0;
+	let bestSerie = parseInt(localStorage.getItem("bestSerie")) || 0;
+
+    const diffDays = Math.floor((new Date(today) - new Date(lastDate)) / (1000*60*60*24));
+
+	if (diffDays === 1) streak++;
+		else if (diffDays === 0) {}
+		else if (diffDays === 2) {
+			// joker (optionnel)
+		streak++; 
+	} else {
+		streak = 1;
+	}
+	
+	if (diffDays > 2) {
+		alert("😢 Série perdue ! On tente un exercice minimum tous les 2 jours! On repart à 0 !");
+	}
+		if(streak>bestSerie){bestSerie=streak;}
+		
+		localStorage.setItem("streak", streak);
+		localStorage.setItem("lastDate", today);
+		localStorage.setItem("bestSerie", bestSerie);
+		
 }

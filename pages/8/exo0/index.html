@@ -228,8 +228,10 @@ function verifier(index, bouton) {
         document.getElementById("feedback").innerText =
             "❌ Faux (elle reviendra...😉)";
     }
+	if(score>Hiscore){Hiscore=score;}
 	document.getElementById("score").innerText = "🏆 " + score;
 	document.getElementById("streak").innerText = "🔥 " + streak;
+	document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
 	
 	setTimeout(nouvelleQuestion, 500);
 	
@@ -292,13 +294,11 @@ function initJeu() {
     pileQuestions = [...questions]; // copie des questions
     nouvelleQuestion();
 	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
-    if (!scores[theme]) scores[theme] = {};
-	if (scores[theme][nomExo+"max"]) {
-        Hiscore=scores[theme][nomExo+"max"];
-    }
-	else{
-	Hiscore=0;
-	}
+    let Hiscores = JSON.parse(localStorage.getItem("highscores") || "[]");
+
+    // Cherche si l'exo existe déjà
+    let existant = Hiscores.find(s => s.nom === chapitre);
+	if(existant){Hiscore= existant.score;}
 	document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
 }
 

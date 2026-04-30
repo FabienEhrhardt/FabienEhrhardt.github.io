@@ -96,7 +96,8 @@ function envoyerScore() {
 }
 
 function sauvegarderScore(theme, nomExo,chapitre, scorePourcent,score) {
-    let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+    updateStreak(score);
+	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
     if (!scores[theme]) scores[theme] = {};
     
     if (!scores[theme][nomExo] || scorePourcent > scores[theme][nomExo]) {
@@ -121,4 +122,34 @@ function sauvegarderScore(theme, nomExo,chapitre, scorePourcent,score) {
     }
 	// Sauvegarde
 	localStorage.setItem("highscores", JSON.stringify(Hiscores));
+}
+
+function updateStreak(score) {
+    if (score <= 0) return; // sécurité
+
+    const today = new Date().toDateString();
+    const lastDate = localStorage.getItem("lastDate");
+    let streak = parseInt(localStorage.getItem("streak")) || 0;
+	let bestSerie = parseInt(localStorage.getItem("bestSerie")) || 0;
+
+    const diffDays = Math.floor((new Date(today) - new Date(lastDate)) / (1000*60*60*24));
+
+	if (diffDays === 1) streak++;
+		else if (diffDays === 0) {}
+		else if (diffDays === 2) {
+			// joker (optionnel)
+		streak++; 
+	} else {
+		streak = 1;
+	}
+	
+	if (diffDays > 2) {
+		alert("😢 Série perdue ! On tente un exercice minimum tous les 2 jours! On repart à 0 !");
+	}
+		if(streak>bestSerie){bestSerie=streak;}
+		
+		localStorage.setItem("streak", streak);
+		localStorage.setItem("lastDate", today);
+		localStorage.setItem("bestSerie", bestSerie);
+		
 }
