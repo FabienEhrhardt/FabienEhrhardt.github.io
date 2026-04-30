@@ -125,8 +125,8 @@ function tracerPolaire(canvasId){
 let I0 = intensite(0);
 let Iang = intensite(ang);
 
-let E = Math.round(I0/Phi*1000 / (distance*distance));
-let Eang= Math.round(Iang/Phi*1000 / (distance*distance)*Math.pow(Math.cos(ang/180*3.14159),3));
+let E = Math.round(I0*Phi/1000 / (distance*distance));
+let Eang= Math.round(Iang*Phi/1000 / (distance*distance)*Math.pow(Math.cos(ang/180*3.14159),3));
 
 // =====================
 // EXERCICE
@@ -158,9 +158,9 @@ feedback:`Lire au centre du diagramme \\(I_{N}(0)=${Imax}\\) Cd/kLm`
 // =====================
 {
 texte:"Donner l’intensité lumineuse maximale",
-reponse:Imax/Phi*1000,
+reponse:Imax*Phi/1000,
 unite:"Cd",
-feedback:`On multiplie par le flux lumineux en kLm \\(I(0)=\\Phi \\times I_{N}(0)=${arrondi(Imax/Phi*1000)}\\) Cd`
+feedback:`On multiplie par le flux lumineux en kLm \\(I(0)=\\Phi \\times I_{N}(0)=${arrondi(Imax*Phi/1000)}\\) Cd`
 },
 
 // =====================

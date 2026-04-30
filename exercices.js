@@ -97,6 +97,7 @@ const listeExercices = [
 		   { nom: "exo5", titre: "Analyse d’un spectre lumineux" },
 		   { nom: "exo6", titre: "Cartographie d’éclairement d’un atelier" },
 		   { nom: "exo7", titre: "Diagramme polaire d’un luminaire" },
+		   { nom: "exo8", titre: "Éclairage d’une scène avec un projecteur" },
 		   { nom: "exo2", titre: "Formules : Panneau photovoltaïque" },
 		   { nom: "exo1", titre: "Courbe I=f(V) d'un panneau photovoltaïque" },
 		   
