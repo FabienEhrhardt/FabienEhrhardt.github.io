@@ -211,6 +211,10 @@ function verifier(index, bouton) {
 
         let bonus = (streak >= 3) ? 2 : 1;
         score += bonus * multiplicateur;
+		if(Hiscore<score){
+			Hiscore=score;
+			document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
+			}
 
         // ✅ SUPPRIMER de la pile
         pileQuestions.splice(questionActuelle.indexPile, 1);
@@ -228,10 +232,9 @@ function verifier(index, bouton) {
         document.getElementById("feedback").innerText =
             "❌ Faux (elle reviendra...😉)";
     }
-	if(score>Hiscore){Hiscore=score;}
 	document.getElementById("score").innerText = "🏆 " + score;
 	document.getElementById("streak").innerText = "🔥 " + streak;
-	document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
+	
 	
 	setTimeout(nouvelleQuestion, 500);
 	
@@ -250,6 +253,10 @@ function finDuTheme() {
         "🔥 Nouveau cycle ! Continue !";
 
     document.getElementById("score").innerText = "🏆 " + score;
+	if(Hiscore<score){
+			Hiscore=score;
+			document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
+			}
 	multiplicateur++;
 
     // 🔁 reset après 2 secondes
@@ -257,6 +264,15 @@ function finDuTheme() {
         pileQuestions = [...questions];
         nouvelleQuestion();
     }, 2000);
+}
+
+function getHighscoreChapitre(chapitre){
+
+    let Hiscores = JSON.parse(localStorage.getItem("highscores") || "[]");
+
+    let existant = Hiscores.find(s => s.nom === chapitre);
+
+    return existant ? existant.score : 0;
 }
 
 
@@ -294,11 +310,8 @@ function initJeu() {
     pileQuestions = [...questions]; // copie des questions
     nouvelleQuestion();
 	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
-    let Hiscores = JSON.parse(localStorage.getItem("highscores") || "[]");
-
-    // Cherche si l'exo existe déjà
-    let existant = Hiscores.find(s => s.nom === chapitre);
-	if(existant){Hiscore= existant.score;}
+    if (!scores[theme]) scores[theme] = {};
+	Hiscore=getHighscoreChapitre(chapitre);
 	document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
 }
 

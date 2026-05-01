@@ -82,7 +82,7 @@ function envoyerScore() {
 
         } else {
             // Pas de SCORM détecté → mode local
-            sauvegarderScore(theme,nomExo,chapitre, scorePourcent,score);
+            sauvegarderScore(theme,nomExo, scorePourcent,score);
             alert("Score (mode local) : " + scorePourcent + "%");
         }
 
@@ -95,7 +95,7 @@ function envoyerScore() {
   }
 }
 
-function sauvegarderScore(theme, nomExo,chapitre, scorePourcent,score) {
+function sauvegarderScore(theme, nomExo, scorePourcent,score) {
     updateStreak(score);
 	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
     if (!scores[theme]) scores[theme] = {};

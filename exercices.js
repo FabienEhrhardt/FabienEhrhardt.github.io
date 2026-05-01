@@ -50,6 +50,9 @@ const listeExercices = [
 			{ nom: "exo0", titre: "Formules : Transformateur monophasé" },
 			{ nom: "exo1", titre: "Hacheur série en conduction continue - étude des courbes" },
 			{ nom: "exo3", titre: "Formules : Transformateur triphasé" },
+			{ nom: "exo4", titre: "Transformateur triphasé – Lecture de plaque" },
+			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
+			
         ]
     },
 	{

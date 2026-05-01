@@ -211,6 +211,10 @@ function verifier(index, bouton) {
 
         let bonus = (streak >= 3) ? 2 : 1;
         score += bonus * multiplicateur;
+		if(Hiscore<score){
+			Hiscore=score;
+			document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
+			}
 
         // ✅ SUPPRIMER de la pile
         pileQuestions.splice(questionActuelle.indexPile, 1);
@@ -231,6 +235,7 @@ function verifier(index, bouton) {
 	document.getElementById("score").innerText = "🏆 " + score;
 	document.getElementById("streak").innerText = "🔥 " + streak;
 	
+	
 	setTimeout(nouvelleQuestion, 500);
 	
 }
@@ -248,6 +253,10 @@ function finDuTheme() {
         "🔥 Nouveau cycle ! Continue !";
 
     document.getElementById("score").innerText = "🏆 " + score;
+	if(Hiscore<score){
+			Hiscore=score;
+			document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
+			}
 	multiplicateur++;
 
     // 🔁 reset après 2 secondes
@@ -255,6 +264,15 @@ function finDuTheme() {
         pileQuestions = [...questions];
         nouvelleQuestion();
     }, 2000);
+}
+
+function getHighscoreChapitre(chapitre){
+
+    let Hiscores = JSON.parse(localStorage.getItem("highscores") || "[]");
+
+    let existant = Hiscores.find(s => s.nom === chapitre);
+
+    return existant ? existant.score : 0;
 }
 
 
@@ -282,7 +300,7 @@ let interval = setInterval(() => {
             "💪 Continue l'entraînement !";
 
         document.getElementById("feedback").innerHTML ="Meilleure combo 🔥 : " +streakmax;
-            ;
+        envoyerScore();
     }
 
 }, 1000);
@@ -293,12 +311,7 @@ function initJeu() {
     nouvelleQuestion();
 	let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
     if (!scores[theme]) scores[theme] = {};
-	if (scores[theme][nomExo+"max"]) {
-        Hiscore=scores[theme][nomExo+"max"];
-    }
-	else{
-	Hiscore=0;
-	}
+	Hiscore=getHighscoreChapitre(chapitre);
 	document.getElementById("Hiscore").innerText = "Meilleur score 🏆 " + Hiscore;
 }
 

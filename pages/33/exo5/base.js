@@ -41,7 +41,10 @@ function P10(num){
 function envoyerScore() {
 
   let scorePourcent = 0;
-  scorePourcent = arrondi(Math.min(score,100));
+
+  if (nbquestion > 0) {
+    scorePourcent = arrondi((score / nbquestion) * 100);
+  }
 
   try {
         // Fonction universelle pour trouver l'API SCORM
@@ -82,14 +85,14 @@ function envoyerScore() {
 
         } else {
             // Pas de SCORM détecté → mode local
-            sauvegarderScore(theme,nomExo,chapitre, scorePourcent,score);
+            sauvegarderScore(theme,nomExo, scorePourcent,score);
             alert("Score (mode local) : " + scorePourcent + "%");
         }
 
   } catch (e) {
 
     console.log("Erreur SCORM :", e);
-	sauvegarderScore(theme,nomExo,chapitre, scorePourcent,score);
+	sauvegarderScore(theme,nomExo, scorePourcent,score);
     alert("Score (hors Moodle) : " + scorePourcent + "%");
 
   }
@@ -134,4 +137,130 @@ function updateStreak(score) {
 		localStorage.setItem("lastDate", today);
 		localStorage.setItem("bestSerie", bestSerie);
 		
+}
+
+//Pour générer les exercices
+let score = 0;
+let questionsDone = [];
+
+
+
+function genererExercice(exo){
+
+    document.getElementById("titre").innerHTML = exo.titre;
+    document.getElementById("enonce").innerHTML = exo.enonce;
+
+    let zone = document.getElementById("questions");
+    zone.innerHTML="";
+
+    exo.questions.forEach((q,i)=>{
+
+        let inputHTML = "";
+
+        // =====================
+        // 🔢 CALCUL (par défaut)
+        // =====================
+        if(!q.type || q.type === "calcul"){
+            inputHTML = `<input type="number" step="any" id="q${i}">`;
+        }
+
+        // =====================
+        // ✍️ TEXTE
+        // =====================
+        else if(q.type === "texte"){
+            inputHTML = `<small>${q.type === "texte" ? "✍️ Réponse ouverte" : ""}</small> <input type="text" id="q${i}">`;
+        }
+
+        // =====================
+        // 🧩 AFFICHAGE QUESTION
+        // =====================
+        zone.innerHTML += `
+        <div class="question">
+            <p><b>Question ${i+1} :</b> ${q.texte}</p>
+            ${inputHTML}
+            <span>${q.unite || ""}</span>
+            <button onclick="valider(${i})">Valider</button>
+            <div id="fb${i}" class="feedback"></div>
+        </div>
+        `;
+
+        questionsDone[i]=false;
+    });
+
+    MathJax.typeset();
+
+    // =====================
+    // 📊 GESTION COURBE
+    // =====================
+    let canvas = document.getElementById("graph");
+
+    if(exo.courbe1){
+        canvas.style.display = "block";
+    } else {
+        canvas.style.display = "none";
+    }
+}
+
+
+function valider(i){
+
+    if(questionsDone[i]) return;
+
+    let input = document.getElementById("q"+i);
+    let fb = document.getElementById("fb"+i);
+
+    let q = exo.questions[i];
+
+    let bonneReponse = false;
+
+    // =====================
+    // 🔢 CAS CALCUL
+    // =====================
+    if(!q.type || q.type === "calcul"){
+
+        let r = parseFloat(input.value);
+
+        if(!isNaN(r)){
+            let tol = q.tolerance || 0.05; // tolérance 5% par défaut
+			if(q.reponse === 0){
+					if(Math.abs(r) < 0.01) bonneReponse = true;
+				}
+			else{
+            if(Math.abs(r - q.reponse) <= tol * Math.abs(q.reponse)){
+                bonneReponse = true;
+            }
+			}
+        }
+    }
+
+    // =====================
+    // ✍️ CAS TEXTE
+    // =====================
+    else if(q.type === "texte"){
+
+        let repUser = input.value.toLowerCase();
+
+        bonneReponse = q.reponse.some(mot =>
+            repUser.includes(mot.toLowerCase())
+        );
+    }
+
+    // =====================
+    // 🎯 AFFICHAGE
+    // =====================
+    if(bonneReponse){
+        score++;
+        fb.innerHTML = "✅ Bonne réponse<br>" + q.feedback;
+    } else {
+        fb.innerHTML = "❌ Mauvaise réponse<br>" + q.feedback;
+    }
+
+    questionsDone[i] = true;
+
+    // =====================
+    // 🎨 ACTION (courbe, etc.)
+    // =====================
+    if(q.action) q.action();
+
+    MathJax.typeset();
 }
