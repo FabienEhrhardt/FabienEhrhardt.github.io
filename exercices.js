@@ -123,7 +123,8 @@ const listeExercices = [
         exercices: [
             { nom: "exo0", titre: "Formules : Maitrise des procédés" },
 			{ nom: "exo2", titre: "Capteur 4-20 mA - Étalonnage" },
-			{ nom: "exo1", titre: "Performances d'un asservissement" }
+			{ nom: "exo1", titre: "Performances d'un asservissement" },
+			{ nom: "exo3", titre: "Installation photovoltaïque – Étude économique" },
 			
         ]
     }
