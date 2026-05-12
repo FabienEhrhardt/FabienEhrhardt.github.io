@@ -52,7 +52,7 @@ const listeExercices = [
 			{ nom: "exo3", titre: "Formules : Transformateur triphasé" },
 			{ nom: "exo4", titre: "Transformateur triphasé – Lecture de plaque" },
 			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
-			
+			{ nom: "exo6", titre: "Transformateur triphasé – Choix du disjoncteur du secondaire" },
         ]
     },
 	{
@@ -124,7 +124,8 @@ const listeExercices = [
             { nom: "exo0", titre: "Formules : Maitrise des procédés" },
 			{ nom: "exo2", titre: "Capteur 4-20 mA - Étalonnage" },
 			{ nom: "exo1", titre: "Performances d'un asservissement" },
-			{ nom: "exo3", titre: "Installation photovoltaïque – Étude économique" },
+			{ nom: "exo3", titre: "Installation photovoltaïque – Étude économique" }
+			{ nom: "exo4", titre: "Efficacité énergétique – Étude économique du remplacement d’un moteur" },
 			
         ]
     }

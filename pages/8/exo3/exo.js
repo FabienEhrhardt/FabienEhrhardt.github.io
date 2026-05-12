@@ -51,7 +51,7 @@ function tracerRentabilite(canvasId){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     //Dimensions
-    let margeX=60;
+    let margeX=100;
     let margeY=40;
 
     let largeur=canvas.width-2*margeX;
