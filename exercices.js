@@ -12,6 +12,10 @@ const listeExercices = [
 			{ nom: "exo0", titre: "Formules : Energie / Puissance" },
 			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" },
 			{ nom: "exo2", titre: "Formules : Energie et transferts thermiques " },
+			{ nom: "exo4", titre: "Ballon d’eau chaude – Bilan énergétique" },
+			{ nom: "exo3", titre: "Refroidissement thermique d’un module IGBT" },
+			{ nom: "exo5", titre: "Data center – Refroidissement thermique" },
+			{ nom: "exo6", titre: "Armoire électrique – Étude thermique complète" },
 			
         ]
     },
@@ -35,14 +39,16 @@ const listeExercices = [
 			{ nom: "exo6", titre: "Bilan de puissance en monophasé" },
 			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
 			{ nom: "exo8", titre: "Formules : Régime triphasé sinusoïdal" },
-        ]
+        
+		]
     },
 	{
         theme: "32",
         exercices: [
 			{ nom: "exo0", titre: "Formules : Régime monophasé avec harmoniques de courant" },
 			{ nom: "exo1", titre: "Etude du spectre d'un signal avec harmoniques" },
-        ]
+        
+		]
     },
 	{
         theme: "33",
@@ -53,7 +59,8 @@ const listeExercices = [
 			{ nom: "exo4", titre: "Transformateur triphasé – Lecture de plaque" },
 			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
 			{ nom: "exo6", titre: "Transformateur triphasé – Choix du disjoncteur du secondaire" },
-        ]
+        
+		]
     },
 	{
         theme: "41",
@@ -61,12 +68,14 @@ const listeExercices = [
 			{ nom: "exo0", titre: "Formules : Mécanique en translation" },
 			{ nom: "exo1", titre: "Profil de vitesse d'un véhicule" },
 			{ nom: "exo2", titre: "Formules : Mécanique en rotation" },
-        ]
+        
+		]
     },
 	{
         theme: "42",
         exercices: [
 			{ nom: "exo0", titre: "Formules : Mécanique des fluides" },
+			{ nom: "exo6", titre: "Installation hydraulique – Bilan des débits" },			
 			{ nom: "exo1", titre: "Alimentation d'une turbine hydraulique" },
 			{ nom: "exo2", titre: "Pompe centrifuge - Courbe HMT = f(Q)" },
 			{ nom: "exo4", titre: "Simplifications sur Bernoulli" },
@@ -89,6 +98,7 @@ const listeExercices = [
 			{ nom: "exo8", titre: "Dimensionnement d’une batterie de secours" },
 			{ nom: "exo9", titre: "Production d’énergie électrique par combustion" },
 			{ nom: "exo10", titre: "Étude pratique de la combustion d’un carburant" },
+		
 		]
     },
 	{
@@ -103,8 +113,7 @@ const listeExercices = [
 		   { nom: "exo8", titre: "Éclairage d’une scène avec un projecteur" },
 		   { nom: "exo2", titre: "Formules : Panneau photovoltaïque" },
 		   { nom: "exo1", titre: "Courbe I=f(V) d'un panneau photovoltaïque" },
-		   
-		   
+		      
         ]
     },
 	{
@@ -116,7 +125,8 @@ const listeExercices = [
 			{ nom: "exo3", titre: "Étude de plaque d’un moteur triphasé asynchrone" },
 			{ nom: "exo1", titre: "Courbe C=f(n) d'un moteur asynchrone" },
             { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" }
-        ]
+        
+		]
     },
 	{
         theme: "8",
@@ -126,6 +136,7 @@ const listeExercices = [
 			{ nom: "exo1", titre: "Performances d'un asservissement" },
 			{ nom: "exo3", titre: "Installation photovoltaïque – Étude économique" },
 			{ nom: "exo4", titre: "Efficacité énergétique – Étude économique du remplacement d’un moteur" },
+			{ nom: "exo5", titre: "Installation photovoltaïque – Réalisation d’un devis" },
 			
         ]
     }

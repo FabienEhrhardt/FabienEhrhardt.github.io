@@ -98,21 +98,20 @@ function Materiel(canvasId){
 
     let h1=coutMateriel*coef;
 
-    ctx.fillRect(80,baseY-h1,80,h1);
+    ctx.fillRect(20,baseY-h1,80,h1);
 
     ctx.fillStyle="black";
-    ctx.fillText("Matériel",120,330);
+    ctx.fillText("Matériel",60,330);
 
-    PosMat={x:120,y:baseY-h1-10};
+    PosMat={x:60,y:baseY-h1-10};
 	
 	ctx.fillStyle="black";
-    ctx.font="14px Arial";
     ctx.textAlign="center";
 
     ctx.fillText(coutMateriel+ "€",PosMat.x,PosMat.y);
 }
 
-function Materiel(canvasId){
+function Pose(canvasId){
 	const canvas=document.getElementById(canvasId);
     const ctx=canvas.getContext("2d");
 	
@@ -140,28 +139,33 @@ function Materiel(canvasId){
 
     let h2=coutMOExec*coef;
 
-    ctx.fillRect(200,baseY-h2,80,h2);
-
-    ctx.fillStyle="black";
-    ctx.fillText("Pose",240,330);
-
-    PosExec={x:240,y:baseY-h2-10};
-	
+    ctx.fillRect(140,baseY-h2,80,h2);
 	ctx.fillStyle="black";
-    ctx.font="14px Arial";
-    ctx.textAlign="center";
+    ctx.fillText("Pose",180,330);
 
-    ctx.fillText(coutMateriel+ "€",PosExec.x,PosExec.y);
+    PosExec={x:180,y:baseY-h2-10};
+    ctx.fillText(coutMOExec+ "€",PosExec.x,PosExec.y);
 }
 
+function Service(canvasId){
+	const canvas=document.getElementById(canvasId);
+    const ctx=canvas.getContext("2d");
+	
+	//Barres
+    let baseY=300;
 
-/*
-function tracerDevis(canvasId){
+    //Echelle
+    let max=Math.max(
+        coutMateriel,
+        coutMOExec,
+        coutMOBTS,
+        montantTVA,
+        totalTTC
+    );
 
+    let coef=180/max;
+	
     
-    
-
-
 
     // =====================
     // BTS
@@ -171,15 +175,38 @@ function tracerDevis(canvasId){
 
     let h3=coutMOBTS*coef;
 
-    ctx.fillRect(320,baseY-h3,80,h3);
+    ctx.fillRect(260,baseY-h3,80,h3);
+	ctx.fillStyle="black";
 
-    ctx.fillStyle="black";
-    ctx.fillText("Mise en",360,330);
-    ctx.fillText("service",360,350);
+    ctx.fillText("Mise en",300,330);
+    ctx.fillText("service",300,350);
 
-    PosBTS={x:360,y:baseY-h3-10};
+    PosBTS={x:300,y:baseY-h3-10};
 
-    // =====================
+    ctx.fillText(coutMOBTS+ "€",PosBTS.x,PosBTS.y);
+}
+
+function TVAg(canvasId){
+	const canvas=document.getElementById(canvasId);
+    const ctx=canvas.getContext("2d");
+	
+	//Barres
+    let baseY=300;
+
+    //Echelle
+    let max=Math.max(
+        coutMateriel,
+        coutMOExec,
+        coutMOBTS,
+        montantTVA,
+        totalTTC
+    );
+
+    let coef=180/max;
+	
+    
+
+   // =====================
     // TVA
     // =====================
 
@@ -187,12 +214,36 @@ function tracerDevis(canvasId){
 
     let h4=montantTVA*coef;
 
-    ctx.fillRect(440,baseY-h4,80,h4);
+    ctx.fillRect(380,baseY-h4,80,h4);
+	ctx.fillStyle="black";
 
-    ctx.fillStyle="black";
-    ctx.fillText("TVA",480,330);
+    ctx.fillText("TVA",420,330);
 
-    PosTVA={x:480,y:baseY-h4-10};
+    PosTVA={x:420,y:baseY-h4-10};
+
+    ctx.fillText(montantTVA+ "€",PosTVA.x,PosTVA.y);
+}
+
+
+function Total(canvasId){
+	const canvas=document.getElementById(canvasId);
+    const ctx=canvas.getContext("2d");
+	
+	//Barres
+    let baseY=300;
+
+    //Echelle
+    let max=Math.max(
+        coutMateriel,
+        coutMOExec,
+        coutMOBTS,
+        montantTVA,
+        totalTTC
+    );
+
+    let coef=180/max;
+	
+    
 
     // =====================
     // TTC
@@ -202,26 +253,13 @@ function tracerDevis(canvasId){
 
     let h5=totalTTC*coef;
 
-    ctx.fillRect(560,baseY-h5,80,h5);
+    ctx.fillRect(500,baseY-h5,80,h5);
+	ctx.fillStyle="black";
 
-    ctx.fillStyle="black";
-    ctx.fillText("Total TTC",600,330);
+    ctx.fillText("Total TTC",540,330);
 
-    PosTTC={x:600,y:baseY-h5-10};
-
-}
-*/
-function ajouterTexte(canvasId,texte,x,y){
-
-    const canvas=document.getElementById(canvasId);
-    const ctx=canvas.getContext("2d");
-
-    ctx.fillStyle="black";
-    ctx.font="14px Arial";
-    ctx.textAlign="center";
-
-    ctx.fillText(texte,x,y);
-
+    PosTTC={x:540,y:baseY-h5-10};
+    ctx.fillText(totalTTC+ "€",PosTTC.x,PosTTC.y);
 }
 
 // =====================
@@ -246,18 +284,10 @@ L’installation comprend :
 </ul>
 
 La pose et le câblage sont réalisés par des exécutants (niveau bac professionnel).<br>
-La mise en service et le paramétrage sont réalisés par un technicien qualifié (niveau BTS).<br><br>
+La mise en service et le paramétrage sont réalisés par un technicien qualifié (niveau BTS).<br>
 
-Main d’œuvre exécutants :
-<ul>
-<li>${hExec} h à ${tauxExec} €/h.</li>
-</ul>
-
-Main d’œuvre qualifiée :
-<ul>
-<li>${hBTS} h à ${tauxBTS} €/h.</li>
-</ul>
-
+Main d’œuvre exécutants : ${hExec} h à ${tauxExec} €/h.<br>
+Main d’œuvre qualifiée : ${hBTS} h à ${tauxBTS} €/h.<br>
 Le taux de TVA est de ${TVA} %.`,
 
 courbe1:{},
@@ -315,7 +345,7 @@ feedback:`\\(C=t \\times taux=
 ${hExec} \\times ${tauxExec}=
 ${coutMOExec}\\) €`,
 action:function(){
-    ajouterTexte("graph",`${coutMOExec} €`,PosExec.x,PosExec.y);
+    Pose("graph");
 }
 },
 
@@ -328,7 +358,7 @@ feedback:`\\(C=t \\times taux=
 ${hBTS} \\times ${tauxBTS}=
 ${coutMOBTS}\\) €`,
 action:function(){
-    ajouterTexte("graph",`${coutMOBTS} €`,PosBTS.x,PosBTS.y);
+    Service("graph");
 }
 },
 
@@ -358,7 +388,7 @@ unite:"€",
 feedback:`\\(TVA=HT \\times 20 \\% \\)<br>
 \\(TVA=${montantTVA}\\) €`,
 action:function(){
-    ajouterTexte("graph",`${montantTVA} €`,PosTVA.x,PosTVA.y);
+    TVAg("graph");
 }
 },
 
@@ -370,7 +400,7 @@ unite:"€",
 feedback:`\\(TTC=HT+TVA\\)<br>
 \\(TTC=${totalTTC}\\) €`,
 action:function(){
-    ajouterTexte("graph",`${totalTTC} €`,PosTTC.x,PosTTC.y);
+    Total("graph");
 }
 },
 
@@ -416,5 +446,11 @@ window.onload=function(){
     genererExercice(exo);
 
     Init("graph");
+	
+    Materiel("graph");
+    Pose("graph");
+    Service("graph");
+    TVAg("graph");
+    Total("graph");
 
 };

@@ -96,6 +96,27 @@ function progressionGlobale() {
     return count > 0 ? Math.round(total / count) : 0;
 }
 
+function totalTrophee() {
+
+    let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
+
+    let total = 0;
+
+    listeExercices.forEach(themeObj => {
+
+        themeObj.exercices.forEach(exo => {
+
+            if (scores[themeObj.theme]) {
+                total += scores[themeObj.theme][exo.nom] ?? 0;
+            }
+
+        });
+
+    });
+
+    return Math.round(total);
+}
+
 function nbExercices() {
 
     let scores = JSON.parse(localStorage.getItem("scoresApp")) || {};
@@ -132,7 +153,7 @@ function majBarres() {
 	updateBar("B6", progressionTheme("6"));
 	updateBar("B7", progressionTheme("7"));
 	updateBar("B8", progressionTheme("8"));
-	updateBar("barGlobal", progressionGlobale());
+	//updateBar("barGlobal", progressionGlobale());
 }
 
 function majBarresExo(theme) {

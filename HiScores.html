@@ -16,6 +16,13 @@
 <div class="card">
   <h2>👤 Profil</h2>
   <p id="pseudo"></p>
+  <div class="progress-global">
+  <strong>Progression générale :</strong>
+  <div class="barre">
+    <div id="barGlobal" class="remplissage">0%</div>
+  </div>
+  </div>
+  
   <button id="Reset" onclick="resetData()">Réinitialiser le profil ?</button>
 </div>
 
@@ -305,6 +312,7 @@ function afficherBadges(){
 // --- Init ---
 afficherScores();
 afficherBadges();
+updateBar("barGlobal", progressionGlobale());
 
 </script>
 

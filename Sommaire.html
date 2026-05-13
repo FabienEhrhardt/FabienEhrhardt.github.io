@@ -17,13 +17,7 @@
 
 <div class="enonce">
   <p>Ci-dessous une liste d'exercices pour s'entrainer pour la physique en BTS Electrotechnique</p>
-  
-  <div class="progress-global">
-  <strong>Progression générale :</strong>
-  <div class="barre">
-    <div id="barGlobal" class="remplissage">0%</div>
-  </div>
-  </div>
+  <p id="ScoreTotal"></p>
   <p id="nbExo"></p>
 
 </div>
@@ -127,6 +121,9 @@
   </div>
   </td>
 </tr>
+<tr>
+  <td><a href="formulaire.pdf">9. Formulaire BTS</a></td>
+</tr>
 </table>
 </div>
 
@@ -137,6 +134,7 @@
 window.onload = function () {
 	majBarres();
 	document.getElementById("nbExo").innerHTML = "Nombre d'exercices disponibles : <strong>" + nbExercices()+'</strong> exercices';
+	document.getElementById("ScoreTotal").innerHTML = "Score actuel : <strong>" + totalTrophee()+" ⚡"+'</strong> ';
 }
 </script>
 
