@@ -76,8 +76,13 @@ margin:2px;
 	</tr>
 	<tr>
 		<td>Curseur voie A :</td>
-		<td><input type="range" id="tracker" min="0" max="1" step="0.001" value="0.5" oninput="updateTracker(this.value)"></td>
-		<td><span id="trackerVal"></span></td>
+		<td><input type="range" id="tracker1" min="0" max="1" step="0.001" value="0.5" oninput="updateTracker1(this.value)"></td>
+		<td><span id="trackerVal1"></span></td>
+	</tr>
+	<tr>
+		<td>Curseur voie B :</td>
+		<td><input type="range" id="tracker2" min="0" max="1" step="0.001" value="0.5" oninput="updateTracker2(this.value)"></td>
+		<td><span id="trackerVal2"></span></td>
 	</tr>
 </table>
 </div>
@@ -158,15 +163,21 @@ const divY = 8
 // recherche curseur
 // ==========================
 
-function updateTracker(val){
+function updateTracker1(val){
 
-tracker = parseFloat(val)
+tracker1 = parseFloat(val)
 
 }
 
-function drawTracker(){
+function updateTracker2(val){
 
-let x = tracker * width
+tracker2 = parseFloat(val)
+
+}
+
+function drawTracker1(){
+
+let x = tracker1 * width
 
 ctx.strokeStyle="red"
 ctx.lineWidth=1
@@ -180,7 +191,7 @@ ctx.stroke()
 
 let t0 = findTrigger()
 
-let t = t0 + tracker*(timeScale*divX)
+let t = t0 + tracker1*(timeScale*divX)
 
 let value = f1(t)
 
@@ -198,10 +209,51 @@ ctx.fill()
 
 ctx.fillStyle="white"
 
-document.getElementById("trackerVal").innerText =
+document.getElementById("trackerVal1").innerText =
 "t = "+(t*1000).toFixed(2)+" ms   CH1 = "+value.toFixed(2)+" V"
 
 }
+
+
+function drawTracker2(){
+
+let x = tracker2 * width
+
+ctx.strokeStyle="red"
+ctx.lineWidth=1
+
+ctx.beginPath()
+ctx.moveTo(x,0)
+ctx.lineTo(x,height)
+ctx.stroke()
+
+// calcul du temps
+
+let t0 = findTrigger()
+
+let t = t0 + tracker2*(timeScale*divX)
+
+let value = f2(t)
+
+// position du point sur CH2
+
+let y = height/2 - value/scale2*(height/divY)
+
+ctx.fillStyle="red"
+
+ctx.beginPath()
+ctx.arc(x,y,4,0,Math.PI*2)
+ctx.fill()
+
+// texte
+
+ctx.fillStyle="white"
+
+document.getElementById("trackerVal2").innerText =
+"t = "+(t*1000).toFixed(2)+" ms   CH2 = "+value.toFixed(2)+" V"
+
+}
+
 
 
 // ==========================
@@ -235,6 +287,8 @@ t+=dt
 
 return 0
 }
+
+
 
 // ==========================
 // dessin grille
@@ -378,19 +432,20 @@ triggerLevel.toFixed(2)+" V"
 
 function draw(){
 
-ctx.clearRect(0,0,width,height)
+ctx.clearRect(0,0,width,height);
 
-drawGrid()
+drawGrid();
 
-drawSignals()
+drawSignals();
 
-drawText()
+drawText();
 
-updateDisplay()
+updateDisplay();
 
-requestAnimationFrame(draw)
+requestAnimationFrame(draw);
 
-drawTracker()
+drawTracker1();
+drawTracker2();
 
 }
 

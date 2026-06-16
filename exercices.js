@@ -23,6 +23,8 @@ const listeExercices = [
         theme: "2",
         exercices: [
 			{ nom: "exo1", titre: "Etude de la réponse indicielle d'un système du premier ordre" },
+			{ nom: "exo2", titre: "Identification d'un système par la méthode de Broïda" },
+			
         ]
     },
 	{
@@ -31,6 +33,8 @@ const listeExercices = [
             { nom: "exo9", titre: "Formules : Régime continu" },
 			{ nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" },
 			{ nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
+			{ nom: "exo10", titre: "📟 TP – Maîtrise de l'oscilloscope numérique" },
+			{ nom: "exo11", titre: "Utilisation oscilloscope et signaux sinusoïdaux" },
 			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
 			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
@@ -46,7 +50,11 @@ const listeExercices = [
         theme: "32",
         exercices: [
 			{ nom: "exo0", titre: "Formules : Régime monophasé avec harmoniques de courant" },
+			{ nom: "exo3", titre: "🎵 TP – Harmoniques et sons" },
 			{ nom: "exo1", titre: "Etude du spectre d'un signal avec harmoniques" },
+			{ nom: "exo2", titre: "Analyse d'un réseau avec harmoniques de courant – Lecture" },
+			{ nom: "exo4", titre: "Analyse d'un réseau avec harmoniques de courant – Calculs" },
+			
         
 		]
     },
@@ -68,6 +76,10 @@ const listeExercices = [
 			{ nom: "exo0", titre: "Formules : Mécanique en translation" },
 			{ nom: "exo1", titre: "Profil de vitesse d'un véhicule" },
 			{ nom: "exo2", titre: "Formules : Mécanique en rotation" },
+			{ nom: "exo5", titre: "Treuil électrique — forces, puissance et énergie" },
+			{ nom: "exo6", titre: "Pont roulant d'atelier — PFD et bilan énergétique" },
+			{ nom: "exo4", titre: "Dimensionnement du moteur d'un véhicule électrique" },
+			{ nom: "exo3", titre: "Variateur de fréquence — Chaîne de transmission mécanique" },
         
 		]
     },

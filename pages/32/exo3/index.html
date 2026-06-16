@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP – Harmoniques et sons</title>
+<style>
+:root {
+  --blue: #1f3c88;
+  --blue-light: #f0f4ff;
+  --green: #28a745;
+  --green-dark: #1e7e34;
+  --orange: #e07b00;
+  --red: #c0392b;
+  --gray: #888;
+  --gray-light: #f5f5f5;
+  --border: #dde3f0;
+  --radius: 10px;
+}
+* { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: linear-gradient(135deg, #f4f6f9, #e9eef5); min-height: 100vh; padding: 20px; }
+.container { max-width: 1100px; margin: auto; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+.page-header { background: var(--blue); color: white; padding: 22px 30px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; }
+.page-header p { font-size: 0.88rem; opacity: 0.82; margin-top: 3px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--gray-light); flex-wrap: wrap; }
+.tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: white; font-weight: 600; }
+.tab-btn:hover:not(.active) { color: var(--blue); background: #eef2ff; }
+.tab-content { display: none; padding: 24px 30px; }
+.tab-content.active { display: block; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--blue); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 14px; }
+.card { background: var(--blue-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.slider-label { min-width: 120px; font-size: 0.82rem; color: #444; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--blue); }
+.slider-val { min-width: 68px; font-size: 0.82rem; font-weight: 600; color: var(--blue); text-align: right; }
+.harmonics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.harm-item { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.harm-item label { font-size: 0.75rem; color: var(--gray); }
+.harm-item input[type=range] { width: 100%; accent-color: var(--orange); }
+.harm-item .harm-val { font-size: 0.8rem; font-weight: 600; color: var(--orange); }
+canvas { display: block; border-radius: 8px; border: 1px solid var(--border); background: white; }
+.canvas-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+.canvas-box h4 { font-size: 0.82rem; color: var(--gray); margin-bottom: 6px; text-align: center; }
+.indicators { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.ind-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 100px; }
+.ind-card .ind-val { font-size: 1.3rem; font-weight: 700; color: var(--blue); }
+.ind-card .ind-label { font-size: 0.75rem; color: var(--gray); }
+.thd-warn { color: var(--red) !important; }
+.thd-ok { color: var(--green) !important; }
+.btn { border: none; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: 0.2s; }
+.btn-green { background: var(--green); color: white; } .btn-green:hover { background: var(--green-dark); }
+.btn-blue { background: var(--blue); color: white; } .btn-blue:hover { background: #162d6a; }
+.btn-orange { background: var(--orange); color: white; } .btn-orange:hover { background: #c06a00; }
+.btn-red { background: var(--red); color: white; } .btn-red:hover { background: #922b21; }
+.btn-gray { background: #ccc; color: #444; } .btn-gray:hover { background: #bbb; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.adsr-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.adsr-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 80px; }
+.adsr-item label { font-size: 0.78rem; color: var(--gray); }
+.adsr-item input { width: 100%; accent-color: var(--blue); }
+.adsr-item span { font-size: 0.78rem; font-weight: 600; color: var(--blue); }
+.instruments-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.instr-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 10px; text-align: center; cursor: pointer; transition: 0.2s; background: white; }
+.instr-card:hover { border-color: var(--blue); background: var(--blue-light); }
+.instr-card.active { border-color: var(--blue); background: var(--blue-light); box-shadow: 0 0 0 3px rgba(31,60,136,0.12); }
+.instr-card .instr-icon { font-size: 2rem; margin-bottom: 6px; }
+.instr-card .instr-name { font-size: 0.85rem; font-weight: 600; color: var(--blue); }
+.staff-container { position: relative; width: 100%; overflow-x: auto; margin-bottom: 16px; }
+#staffCanvas { display: block; cursor: pointer; border-radius: 8px; border: 1px solid var(--border); background: white; }
+.defi-panel { border: 2px dashed var(--orange); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; background: #fffbf5; }
+.defi-panel h3 { color: var(--orange); margin-bottom: 10px; font-size: 1rem; }
+.defi-choices { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.defi-choice { padding: 8px 16px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.88rem; background: white; transition: 0.2s; }
+.defi-choice:hover { border-color: var(--orange); background: #fff8ee; }
+.defi-choice.correct { border-color: var(--green); background: #e8f8e8; color: var(--green-dark); font-weight: 600; }
+.defi-choice.wrong { border-color: var(--red); background: #fde8e8; color: var(--red); }
+.question-block { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.question-block p { font-size: 0.92rem; margin-bottom: 10px; line-height: 1.6; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-opt { padding: 8px 14px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; font-size: 0.88rem; background: white; text-align: left; transition: 0.15s; }
+.q-opt:hover { background: var(--blue-light); border-color: var(--blue); }
+.q-opt.correct { background: #e8f8e8; border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+.q-opt.wrong { background: #fde8e8; border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+.q-feedback { margin-top: 8px; font-size: 0.84rem; padding: 8px 12px; border-radius: 6px; display: none; }
+.q-feedback.show { display: block; }
+.q-feedback.ok { background: #e8f8e8; color: var(--green-dark); }
+.q-feedback.ko { background: #fde8e8; color: var(--red); }
+.score-bar { background: var(--blue-light); border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.score-bar span { font-size: 0.88rem; color: var(--blue); font-weight: 500; }
+#send {   background: #28a745;   color: white;   border: none;   padding: 7px 20px;   border-radius: 6px;   cursor: pointer;   transition: 0.2s; }
+@media (max-width: 700px) { .canvas-row { grid-template-columns: 1fr; } .instruments-grid { grid-template-columns: repeat(2,1fr); } .harmonics-grid { grid-template-columns: repeat(3,1fr); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>🎵 TP – Harmoniques et sons</h1>
+  <p>Explorez l'effet des harmoniques sur les signaux et les timbres instrumentaux</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('synthese',this)">🎛️ Synthèse</button>
+  <button class="tab-btn" onclick="showTab('instruments',this)">🎻 Instruments</button>
+  <button class="tab-btn" onclick="showTab('portee',this)">🎼 Portée musicale</button>
+  <button class="tab-btn" onclick="showTab('defi',this)">🎯 Défi timbre</button>
+  <button class="tab-btn" onclick="showTab('questions',this)">❓ Questions</button>
+</div>
+
+<!-- ════════ TAB SYNTHESE ════════ -->
+<div id="tab-synthese" class="tab-content active">
+  <div class="indicators">
+    <div class="ind-card">
+      <div class="ind-val" id="ind-f0">440 Hz</div>
+      <div class="ind-label">Fréquence fondamentale</div>
+    </div>
+    <div class="ind-card">
+      <div class="ind-val thd-ok" id="ind-thd">0.0 %</div>
+      <div class="ind-label">THD</div>
+    </div>
+    <div class="ind-card">
+      <div class="ind-val" id="ind-harm-count">0</div>
+      <div class="ind-label">Harmoniques actives</div>
+    </div>
+    <div class="ind-card">
+      <div class="ind-val" id="ind-periode">2.27 ms</div>
+      <div class="ind-label">Période</div>
+    </div>
+  </div>
+
+  <div class="canvas-row">
+    <div class="canvas-box">
+      <h4>Courbe temporelle — 1 période du fondamental</h4>
+      <canvas id="canvasTime" width="490" height="200"></canvas>
+    </div>
+    <div class="canvas-box">
+      <h4>Spectre fréquentiel (amplitude, u.a.)</h4>
+      <canvas id="canvasSpectrum" width="490" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Fondamental</div>
+    <div class="slider-row">
+      <span class="slider-label">Fréquence f₀</span>
+      <input type="range" id="sl-f0" min="50" max="1000" value="440" step="1" oninput="updateAll()">
+      <span class="slider-val" id="v-f0">440 Hz</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">Amplitude A₁</span>
+      <input type="range" id="sl-a0" min="0" max="100" value="100" step="1" oninput="updateAll()">
+      <span class="slider-val" id="v-a0">100 u.a.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Amplitudes des harmoniques (unités arbitraires, 0–100)</div>
+    <div class="harmonics-grid" id="harmGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Enveloppe sonore (ADSR simplifié)</div>
+    <div class="adsr-row">
+      <div class="adsr-item">
+        <label>Attaque (ms)</label>
+        <input type="range" id="sl-atk" min="1" max="500" value="20" step="1" oninput="updateADSR()">
+        <span id="v-atk">20</span>
+      </div>
+      <div class="adsr-item">
+        <label>Déclin (ms)</label>
+        <input type="range" id="sl-dec" min="10" max="2000" value="300" step="10" oninput="updateADSR()">
+        <span id="v-dec">300</span>
+      </div>
+      <div class="adsr-item">
+        <label>Sustain (%)</label>
+        <input type="range" id="sl-sus" min="0" max="100" value="70" step="1" oninput="updateADSR()">
+        <span id="v-sus">70</span>
+      </div>
+      <div class="adsr-item">
+        <label>Release (ms)</label>
+        <input type="range" id="sl-rel" min="10" max="2000" value="400" step="10" oninput="updateADSR()">
+        <span id="v-rel">400</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-green" onclick="playSound()">▶ Jouer le son</button>
+    <button class="btn btn-red" onclick="stopSound()">■ Stop</button>
+    <button class="btn btn-gray" onclick="resetSliders()">↺ Réinitialiser</button>
+  </div>
+</div>
+
+<!-- ════════ TAB INSTRUMENTS ════════ -->
+<div id="tab-instruments" class="tab-content">
+  <div class="card">
+    <div class="section-title">Choisir un instrument</div>
+    <div class="instruments-grid">
+      <div class="instr-card" id="instr-flute" onclick="loadInstrument('flute')">
+        <div class="instr-icon">🪈</div><div class="instr-name">Flûte</div>
+      </div>
+      <div class="instr-card" id="instr-violin" onclick="loadInstrument('violin')">
+        <div class="instr-icon">🎻</div><div class="instr-name">Violon</div>
+      </div>
+      <div class="instr-card" id="instr-piano" onclick="loadInstrument('piano')">
+        <div class="instr-icon">🎹</div><div class="instr-name">Piano</div>
+      </div>
+      <div class="instr-card" id="instr-trumpet" onclick="loadInstrument('trumpet')">
+        <div class="instr-icon">🎺</div><div class="instr-name">Trompette</div>
+      </div>
+    </div>
+    <p style="font-size:0.84rem;color:var(--gray);margin-bottom:12px;">
+      Cliquer sur un instrument charge son profil harmonique complet (fondamental + harmoniques + enveloppe) dans le synthétiseur.
+    </p>
+  </div>
+  <div class="card">
+    <div class="section-title">Profil harmonique (amplitude, u.a.)</div>
+    <canvas id="canvasInstr" width="700" height="180" style="width:100%;"></canvas>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn btn-green" onclick="playSound()">▶ Jouer (f₀ actuelle)</button>
+      <button class="btn btn-red" onclick="stopSound()">■ Stop</button>
+    </div>
+    <p id="instr-desc" style="font-size:0.84rem;color:#555;margin-top:8px;line-height:1.6;"></p>
+  </div>
+</div>
+
+<!-- ════════ TAB PORTEE ════════ -->
+<div id="tab-portee" class="tab-content">
+  <div class="card">
+    <div class="section-title">Portée musicale — Gamme de Do majeur</div>
+    <p style="font-size:0.84rem;color:#555;margin-bottom:12px;line-height:1.6;">
+      Cliquez sur une note pour l'entendre avec le timbre actuellement sélectionné. La fréquence s'affiche sous chaque note.
+    </p>
+    <div class="staff-container">
+      <canvas id="staffCanvas" width="720" height="220" onclick="handleStaffClick(event)"></canvas>
+    </div>
+    <div id="note-info" style="margin-top:10px;font-size:0.9rem;color:var(--blue);font-weight:600;min-height:22px;"></div>
+  </div>
+  <div class="card" style="background:white;">
+    <div class="section-title">Le lien fréquence → hauteur</div>
+    <p style="font-size:0.88rem;line-height:1.7;color:#444;">
+      • <b>Do central (C4)</b> = 261,63 Hz — <b>La 440 (A4)</b> = 440 Hz (référence internationale)<br>
+      • Chaque octave <b>double</b> la fréquence : Do4 = 261 Hz → Do5 = 523 Hz<br>
+      • Entre deux notes consécutives (demi-ton) : facteur × 2^(1/12) ≈ 1,0595
+    </p>
+  </div>
+</div>
+
+<!-- ════════ TAB DEFI ════════ -->
+<div id="tab-defi" class="tab-content">
+  <div class="defi-panel">
+    <h3>🎯 Défi : Retrouve l'instrument !</h3>
+    <p style="font-size:0.88rem;color:#555;line-height:1.6;">
+      Un son mystère est joué. Écoutez attentivement, puis devinez l'instrument.
+      Le profil sera chargé dans l'onglet Synthèse pour que vous puissiez analyser le spectre après avoir répondu.
+    </p>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn btn-orange" onclick="startDefi()">🎲 Nouveau défi</button>
+      <button class="btn btn-green" onclick="playDefiSound()">▶ Réécouter</button>
+      <button class="btn btn-red" onclick="stopSound()">■ Stop</button>
+    </div>
+    <div class="defi-choices" id="defiChoices"></div>
+    <div id="defi-result" style="margin-top:12px;font-size:0.92rem;font-weight:600;min-height:22px;"></div>
+  </div>
+  <div style="background:var(--blue-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;">
+    <b style="color:var(--blue);">Score défis :</b>
+    <span id="defi-score" style="color:var(--blue);font-weight:600;"> 0 / 0</span>
+    <span style="font-size:0.8rem;color:var(--gray);margin-left:8px;">(mémorisé localement)</span>
+  </div>
+</div>
+
+<!-- ════════ TAB QUESTIONS ════════ -->
+<div id="tab-questions" class="tab-content">
+  <div class="score-bar">
+    <span>Score : <b id="q-score">0</b> / <b id="q-total">0</b> questions répondues</span>
+  </div>
+  <div id="questions-list"></div>
+  <button id="send" onclick="envoyerScore()">Envoyer le résultat</button>
+</div>
+
+</div><!-- /container -->
+
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+
+<script>
+// ═══════════════════════════
+// ÉTAT GLOBAL
+// ═══════════════════════════
+let f0 = 440;
+let a0 = 100;                        // amplitude fondamental (0–100 u.a.)
+let harmonics = new Array(15).fill(0); // amplitudes harmoniques (0–100 u.a., indépendantes de a0)
+let adsr = { atk:20, dec:300, sus:70, rel:400 };
+let audioCtx = null;
+let currentNodes = [];
+let defiTarget = null;
+let defiScore = { ok:0, total:0 };
+let nbquestion=10;
+let theme = "32";
+let nomExo = "exo3";
+
+// ═══════════════════════════
+// PROFILS INSTRUMENTS
+// a0_instr : amplitude du fondamental (0–100 u.a.)
+// harmonics : amplitudes des H2–H16 (0–100 u.a., absolues, PAS relatives à a0)
+// adsr : enveloppe propre à l'instrument
+// ═══════════════════════════
+const instruments = {
+  flute: {
+    name:"Flûte traversière", icon:"🪈",
+    a0_instr: 100,
+    harmonics: [12, 5, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adsr: { atk:300, dec:100, sus:85, rel:600 },
+    desc:"La flûte produit un son très pur, dominé par le fondamental. Ses harmoniques supérieures sont très faibles, d'où un timbre doux et cristallin. Le THD est quasi nul.",
+    color:"#1f3c88"
+  },
+  violin: {
+    name:"Violon", icon:"🎻",
+    a0_instr: 80,
+    harmonics: [60, 70, 50, 40, 30, 22, 16, 12, 9, 6, 5, 4, 3, 2, 2],
+    adsr: { atk:500, dec:730, sus:43, rel:400 },
+    desc:"Le violon est riche en harmoniques : toutes les partielles sont présentes avec des amplitudes élevées. Cette richesse spectrale donne au violon son timbre chaud, brillant et expressif.",
+    color:"#8b1a1a"
+  },
+  piano: {
+    name:"Piano", icon:"🎹",
+    // fondamental plus faible que H3 et H5 (harmoniques impairs dominants)
+    a0_instr: 45,
+    harmonics: [32, 2, 7, 4, 2, 5, 1, 1, 0, 0, 0, 0, 0, 0,0 ],
+    adsr: { atk:30, dec:100, sus:3, rel:350 },
+    desc:"Le piano à une attaque forte qui s'estompe rapidement due à la corde frappée.",
+    color:"#2e7d32"
+  },
+  trumpet: {
+    name:"Trompette", icon:"🎺",
+    a0_instr: 60,
+    harmonics: [80, 95, 50, 70, 55, 40, 28, 18, 12, 8, 6, 4, 3, 2, 1],
+    adsr: { atk:15, dec:80, sus:90, rel:250 },
+    desc:"La trompette possède un spectre très riche : les harmoniques H2, H3 et H4 dépassent souvent le fondamental en amplitude. Ce spectre dense lui confère son timbre brillant et puissant.",
+    color:"#b45309"
+  }
+};
+
+// ═══════════════════════════
+// NOTES (Do4 → Do5)
+// ═══════════════════════════
+const notes = [
+  { name:"Do",  freq:261.63, solfege:"C4" },
+  { name:"Ré",  freq:293.66, solfege:"D4" },
+  { name:"Mi",  freq:329.63, solfege:"E4" },
+  { name:"Fa",  freq:349.23, solfege:"F4" },
+  { name:"Sol", freq:392.00, solfege:"G4" },
+  { name:"La",  freq:440.00, solfege:"A4" },
+  { name:"Si",  freq:493.88, solfege:"B4" },
+  { name:"Do",  freq:523.25, solfege:"C5" },
+];
+let noteXPositions = [];
+
+// ═══════════════════════════
+// INIT GRILLE HARMONIQUES
+// ═══════════════════════════
+function buildHarmGrid() {
+  const g = document.getElementById("harmGrid");
+  g.innerHTML = "";
+  for (let i = 0; i < 15; i++) {
+    const rank = i + 2;
+    const d = document.createElement("div");
+    d.className = "harm-item";
+    d.innerHTML = `<label>H${rank} (${rank}×f₀)</label>
+      <input type="range" id="sl-h${i}" min="0" max="100" value="0" step="1" oninput="setHarmonic(${i},this.value)">
+      <span class="harm-val" id="hv-h${i}">0</span>`;
+    g.appendChild(d);
+  }
+}
+
+function setHarmonic(i, v) {
+  harmonics[i] = parseFloat(v);
+  document.getElementById("hv-h"+i).textContent = v;
+  updateAll();
+}
+
+// ═══════════════════════════
+// UPDATE PRINCIPAL
+// ═══════════════════════════
+function updateAll() {
+  f0 = parseFloat(document.getElementById("sl-f0").value);
+  a0 = parseFloat(document.getElementById("sl-a0").value);
+  document.getElementById("v-f0").textContent = f0 + " Hz";
+  document.getElementById("v-a0").textContent = a0 + " u.a.";
+  updateIndicators();
+  drawTime();
+  drawSpectrum();
+}
+
+function updateADSR() {
+  adsr.atk = parseInt(document.getElementById("sl-atk").value);
+  adsr.dec = parseInt(document.getElementById("sl-dec").value);
+  adsr.sus = parseInt(document.getElementById("sl-sus").value);
+  adsr.rel = parseInt(document.getElementById("sl-rel").value);
+  document.getElementById("v-atk").textContent = adsr.atk;
+  document.getElementById("v-dec").textContent = adsr.dec;
+  document.getElementById("v-sus").textContent = adsr.sus;
+  document.getElementById("v-rel").textContent = adsr.rel;
+}
+
+// THD = sqrt(sum(An²)) / A1  avec An en u.a. absolues
+// Totalement indépendant de a0 (amplitude du fondamental est a0, harmoniques sont harmonics[])
+function computeTHD() {
+  if (a0 <= 0) return 0;
+  let sumSq = 0;
+  harmonics.forEach(h => { sumSq += h * h; });
+  return Math.sqrt(sumSq) / a0 * 100;
+}
+
+function updateIndicators() {
+  document.getElementById("ind-f0").textContent = f0 + " Hz";
+  document.getElementById("ind-periode").textContent = (1000/f0).toFixed(2) + " ms";
+  const thd = computeTHD().toFixed(1);
+  const thdEl = document.getElementById("ind-thd");
+  thdEl.textContent = thd + " %";
+  thdEl.className = "ind-val " + (parseFloat(thd) > 20 ? "thd-warn" : "thd-ok");
+  document.getElementById("ind-harm-count").textContent = harmonics.filter(h=>h>0).length;
+}
+
+// ═══════════════════════════
+// SIGNAL (amplitudes absolues)
+// fondamental = a0, harmonique i = harmonics[i] (u.a. absolues)
+// ═══════════════════════════
+function signalAt(t) {
+  let s = a0 * Math.sin(2 * Math.PI * f0 * t);
+  harmonics.forEach((h, i) => {
+    if (h > 0) s += h * Math.sin(2 * Math.PI * (i+2) * f0 * t);
+  });
+  return s;
+}
+
+// ═══════════════════════════
+// DESSIN COURBE TEMPORELLE
+// ═══════════════════════════
+function drawTime(canvasId="canvasTime", color="#1f3c88") {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const T = 1 / f0;
+  const N = 600;
+  const m = { l:44, r:12, t:14, b:30 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+
+  ctx.fillStyle = "#fafafa";
+  ctx.fillRect(m.l, m.t, pw, ph);
+
+  let vals = [];
+  for (let i = 0; i <= N; i++) vals.push(signalAt(i/N*T));
+  let maxV = Math.max(0.01, Math.max(...vals.map(Math.abs)));
+
+  // grille
+  ctx.strokeStyle = "#e0e6f0"; ctx.lineWidth = 1;
+  for (let g=0; g<=4; g++) {
+    let x = m.l + g*pw/4;
+    ctx.beginPath(); ctx.moveTo(x,m.t); ctx.lineTo(x,m.t+ph); ctx.stroke();
+  }
+  [0.5,1].forEach(r => {
+    let y = m.t + ph/2 - r*ph/2;
+    ctx.beginPath(); ctx.moveTo(m.l,y); ctx.lineTo(m.l+pw,y); ctx.stroke();
+    y = m.t + ph/2 + r*ph/2;
+    ctx.beginPath(); ctx.moveTo(m.l,y); ctx.lineTo(m.l+pw,y); ctx.stroke();
+  });
+
+  // axe zéro
+  ctx.strokeStyle="#aaa"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(m.l,m.t+ph/2); ctx.lineTo(m.l+pw,m.t+ph/2); ctx.stroke();
+
+  // courbe
+  ctx.strokeStyle=color; ctx.lineWidth=2.2;
+  ctx.beginPath();
+  for (let i=0; i<=N; i++) {
+    let x = m.l + i/N*pw;
+    let y = m.t + ph/2 - (vals[i]/maxV)*(ph/2*0.9);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // labels axe Y
+  ctx.fillStyle="#555"; ctx.font="11px Arial"; ctx.textAlign="right";
+  ctx.fillText(maxV.toFixed(1), m.l-3, m.t+14);
+  ctx.fillText("0", m.l-3, m.t+ph/2+4);
+  ctx.fillText("-"+maxV.toFixed(1), m.l-3, m.t+ph-4);
+  ctx.fillStyle="#888"; ctx.font="10px Arial"; ctx.textAlign="right";
+  ctx.fillText("u.a.", m.l-3, m.t+4);
+  ctx.textAlign="center";
+  ctx.fillText("0", m.l, m.t+ph+16);
+  ctx.fillText("T/2", m.l+pw/2, m.t+ph+16);
+  ctx.fillText("T", m.l+pw, m.t+ph+16);
+}
+
+// ═══════════════════════════
+// DESSIN SPECTRE
+// Axe Y = amplitude absolue (u.a.)
+// Mise à l'échelle automatique sur la valeur max présente
+// ═══════════════════════════
+function drawSpectrum(canvasId="canvasSpectrum") {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const m = { l:44, r:12, t:14, b:30 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+
+  ctx.fillStyle="#fafafa";
+  ctx.fillRect(m.l, m.t, pw, ph);
+
+  // Amplitudes absolues : H1 = a0, H2..H16 = harmonics[0..14]
+  const ampls = [a0, ...harmonics];
+  const maxA  = Math.max(1, Math.max(...ampls));
+
+  const nbBars = 16;
+  const barW   = pw / nbBars * 0.55;
+  const gaps   = pw / nbBars;
+
+  // axe X
+  ctx.strokeStyle="#aaa"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(m.l,m.t+ph); ctx.lineTo(m.l+pw,m.t+ph); ctx.stroke();
+
+  // ligne de référence sommet
+  ctx.strokeStyle="#dde3f0"; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(m.l,m.t+ph-ph*0.9); ctx.lineTo(m.l+pw,m.t+ph-ph*0.9); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // dessin barres
+  ampls.forEach((amp, i) => {
+    const barH = ph * (amp/maxA) * 0.9;
+    const x    = m.l + i*gaps + gaps/2 - barW/2;
+    ctx.fillStyle = i===0 ? "#1f3c88" : `hsl(${20+i*10},75%,45%)`;
+    if (barH > 0.5) ctx.fillRect(x, m.t+ph-barH, barW, barH);
+    ctx.fillStyle="#666"; ctx.font="10px Arial"; ctx.textAlign="center";
+    ctx.fillText("H"+(i+1), x+barW/2, m.t+ph+14);
+    // valeur au-dessus de la barre si > 0
+    if (amp > 0) {
+      ctx.fillStyle="#444"; ctx.font="9px Arial";
+      ctx.fillText(Math.round(amp), x+barW/2, m.t+ph-barH-2);
+    }
+  });
+
+  // axe Y labels
+  ctx.fillStyle="#888"; ctx.font="10px Arial"; ctx.textAlign="right";
+  ctx.fillText(Math.round(maxA), m.l-3, m.t+ph-ph*0.9+10);
+  ctx.fillText("0", m.l-3, m.t+ph-2);
+  ctx.fillText("u.a.", m.l-3, m.t+8);
+}
+
+// ═══════════════════════════
+// AUDIO
+// Les gains des oscillateurs reflètent les amplitudes absolues
+// normalisées sur le total pour éviter la saturation
+// ═══════════════════════════
+function ensureAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function stopSound() {
+  currentNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  currentNodes = [];
+}
+
+function playSound(freq, harmArr, adsrOvr, a0Ovr) {
+  ensureAudioCtx();
+  stopSound();
+
+  const pFreq = freq   || f0;
+  const pHarm = harmArr|| harmonics;
+  const pAdsr = adsrOvr|| adsr;
+  const pA0   = (a0Ovr !== undefined) ? a0Ovr : a0;
+
+  // Normalisation : amplitude max du profil complet
+  const allAmps = [pA0, ...pHarm];
+  const totalMax = Math.max(1, Math.max(...allAmps));
+
+  const masterGain = audioCtx.createGain();
+  masterGain.connect(audioCtx.destination);
+
+  const now  = audioCtx.currentTime;
+  const atkT = pAdsr.atk/1000, decT = pAdsr.dec/1000;
+  const susL = pAdsr.sus/100,  relT = pAdsr.rel/1000;
+  const dur  = atkT + decT + relT + 0.5;
+
+  masterGain.gain.setValueAtTime(0, now);
+  masterGain.gain.linearRampToValueAtTime(0.5, now+atkT);
+  masterGain.gain.linearRampToValueAtTime(0.5*susL, now+atkT+decT);
+  masterGain.gain.setValueAtTime(0.5*susL, now+atkT+decT+0.4);
+  masterGain.gain.linearRampToValueAtTime(0, now+dur);
+
+  function makeOsc(freq, gainVal) {
+    const osc = audioCtx.createOscillator();
+    const g   = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    g.gain.value = gainVal / totalMax;
+    osc.connect(g); g.connect(masterGain);
+    osc.start(now); osc.stop(now+dur);
+    currentNodes.push(osc);
+  }
+
+  makeOsc(pFreq, pA0);
+  pHarm.forEach((h, i) => { if (h > 0) makeOsc(pFreq*(i+2), h); });
+}
+
+// ═══════════════════════════
+// RESET
+// ═══════════════════════════
+function resetSliders() {
+  document.getElementById("sl-f0").value = 440;
+  document.getElementById("sl-a0").value = 100;
+  harmonics = new Array(15).fill(0);
+  for (let i=0; i<15; i++) {
+    document.getElementById("sl-h"+i).value = 0;
+    document.getElementById("hv-h"+i).textContent = "0";
+  }
+  adsr = {atk:20, dec:300, sus:70, rel:400};
+  document.getElementById("sl-atk").value=adsr.atk; document.getElementById("v-atk").textContent=adsr.atk;
+  document.getElementById("sl-dec").value=adsr.dec; document.getElementById("v-dec").textContent=adsr.dec;
+  document.getElementById("sl-sus").value=adsr.sus; document.getElementById("v-sus").textContent=adsr.sus;
+  document.getElementById("sl-rel").value=adsr.rel; document.getElementById("v-rel").textContent=adsr.rel;
+  updateAll();
+}
+
+// ═══════════════════════════
+// CHARGEMENT INSTRUMENT
+// ═══════════════════════════
+function loadInstrument(key) {
+  const instr = instruments[key];
+
+  // Amplitude fondamental
+  a0 = instr.a0_instr;
+  document.getElementById("sl-a0").value = a0;
+  document.getElementById("v-a0").textContent = a0 + " u.a.";
+
+  // Harmoniques
+  harmonics = [...instr.harmonics];
+  for (let i=0; i<15; i++) {
+    document.getElementById("sl-h"+i).value = harmonics[i];
+    document.getElementById("hv-h"+i).textContent = harmonics[i];
+  }
+
+  // ADSR
+  adsr = {...instr.adsr};
+  document.getElementById("sl-atk").value=adsr.atk; document.getElementById("v-atk").textContent=adsr.atk;
+  document.getElementById("sl-dec").value=adsr.dec; document.getElementById("v-dec").textContent=adsr.dec;
+  document.getElementById("sl-sus").value=adsr.sus; document.getElementById("v-sus").textContent=adsr.sus;
+  document.getElementById("sl-rel").value=adsr.rel; document.getElementById("v-rel").textContent=adsr.rel;
+
+  document.querySelectorAll(".instr-card").forEach(c=>c.classList.remove("active"));
+  document.getElementById("instr-"+key).classList.add("active");
+  document.getElementById("instr-desc").textContent = instr.desc;
+
+  drawInstrumentProfile(key);
+  updateAll();
+}
+
+function drawInstrumentProfile(key) {
+  const canvas = document.getElementById("canvasInstr");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const instr = instruments[key];
+  const m = { l:44, r:20, t:20, b:30 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+
+  ctx.fillStyle="#fafafa";
+  ctx.fillRect(m.l, m.t, pw, ph);
+
+  const ampls  = [instr.a0_instr, ...instr.harmonics];
+  const maxA   = Math.max(1, Math.max(...ampls));
+  const nbBars = 16;
+  const barW   = pw/nbBars*0.55;
+  const gaps   = pw/nbBars;
+
+  ctx.strokeStyle="#aaa"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(m.l,m.t+ph); ctx.lineTo(m.l+pw,m.t+ph); ctx.stroke();
+
+  ctx.strokeStyle="#dde3f0"; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(m.l,m.t+ph-ph*0.9); ctx.lineTo(m.l+pw,m.t+ph-ph*0.9); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ampls.forEach((amp, i) => {
+    const barH = ph*(amp/maxA)*0.9;
+    const x    = m.l + i*gaps + gaps/2 - barW/2;
+    ctx.fillStyle = i===0 ? instr.color : instr.color+"99";
+    if (barH > 0.5) ctx.fillRect(x, m.t+ph-barH, barW, barH);
+    ctx.fillStyle="#555"; ctx.font="10px Arial"; ctx.textAlign="center";
+    ctx.fillText("H"+(i+1), x+barW/2, m.t+ph+14);
+    if (amp>0) {
+      ctx.fillStyle="#444"; ctx.font="9px Arial";
+      ctx.fillText(Math.round(amp), x+barW/2, m.t+ph-barH-2);
+    }
+  });
+
+  ctx.fillStyle="#888"; ctx.font="10px Arial"; ctx.textAlign="right";
+  ctx.fillText(Math.round(maxA), m.l-3, m.t+ph-ph*0.9+10);
+  ctx.fillText("u.a.", m.l-3, m.t+12);
+  ctx.fillStyle=instr.color; ctx.font="13px Arial"; ctx.textAlign="left";
+  ctx.fillText(instr.name, m.l, m.t-4);
+}
+
+// ═══════════════════════════
+// PORTÉE MUSICALE
+// ═══════════════════════════
+function drawStaff(highlightIdx=-1) {
+  const canvas = document.getElementById("staffCanvas");
+  const ctx = canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const staffTop=55, ls=14, staffLines=5;
+  const marginL=60, marginR=30;
+
+  // lignes
+  ctx.strokeStyle="#333"; ctx.lineWidth=1.5;
+  for (let l=0; l<staffLines; l++) {
+    const y=staffTop+l*ls;
+    ctx.beginPath(); ctx.moveTo(marginL,y); ctx.lineTo(W-marginR,y); ctx.stroke();
+  }
+
+  // clé de sol
+  ctx.fillStyle="#1f3c88"; ctx.font="bold 68px serif";
+  ctx.fillText("𝄞", 18, staffTop+4*ls+8);
+
+  // barre fin
+  ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.moveTo(W-marginR,staffTop); ctx.lineTo(W-marginR,staffTop+4*ls); ctx.stroke();
+
+  const nbNotes=notes.length;
+  const usableW=W-marginL-marginR-40;
+  const noteSpacing=usableW/(nbNotes);
+  noteXPositions=[];
+
+  // décalages verticaux : indices croissants = montée (en demi-lignes depuis ligne 5 du bas)
+  // Do4 sous la portée, Do5 au-dessus
+  const yOffsets=[-1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5]
+
+  function noteY(idx) {
+    return staffTop + 4*ls - yOffsets[idx]*ls;
+  }
+
+  notes.forEach((note, i) => {
+    const x = marginL+20+i*noteSpacing+noteSpacing/2;
+    noteXPositions.push(x);
+    const y = noteY(i);
+    const isHL = (i===highlightIdx);
+
+    // ligne supplémentaire Do4
+    if (i===0) {
+      ctx.strokeStyle="#333"; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(x-14,staffTop+4*ls+14); ctx.lineTo(x+14,staffTop+4*ls+14); ctx.stroke();
+    }
+    
+
+    // tête de note
+    ctx.fillStyle = isHL ? "#e07b00" : "#1f3c88";
+    ctx.beginPath(); ctx.ellipse(x,y,9,7,-0.3,0,2*Math.PI); ctx.fill();
+
+    // queue
+    ctx.strokeStyle = isHL ? "#e07b00" : "#1f3c88"; ctx.lineWidth=2;
+    if (i<4) { ctx.beginPath(); ctx.moveTo(x+9,y); ctx.lineTo(x+9,y-38); ctx.stroke(); }
+    else     { ctx.beginPath(); ctx.moveTo(x-9,y); ctx.lineTo(x-9,y+38); ctx.stroke(); }
+
+    // nom
+    ctx.fillStyle="#1f3c88"; ctx.font="bold 13px Arial"; ctx.textAlign="center";
+    ctx.fillText(note.name, x, 165);
+    ctx.fillStyle="#aaa"; ctx.font="10px Arial";
+    ctx.fillText(note.solfege, x, 182);
+  });
+}
+
+function handleStaffClick(e) {
+  const canvas=document.getElementById("staffCanvas");
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+  let closest=0, minDist=Infinity;
+  noteXPositions.forEach((x,i)=>{ const d=Math.abs(mx-x); if(d<minDist){minDist=d;closest=i;} });
+  if (minDist<55) {
+    const note=notes[closest];
+    drawStaff(closest);
+    playSound(note.freq, harmonics, adsr, a0);
+    document.getElementById("note-info").textContent=
+      `Note jouée : ${note.name} ${note.solfege} — ${note.freq.toFixed(2)} Hz — Période : ${(1000/note.freq).toFixed(2)} ms`;
+  }
+}
+
+// ═══════════════════════════
+// DÉFI TIMBRE
+// ═══════════════════════════
+const instrKeys=["flute","violin","piano","trumpet"];
+
+function startDefi() {
+  const k=instrKeys[Math.floor(Math.random()*instrKeys.length)];
+  defiTarget=k;
+  loadInstrument(k);
+
+  const dc=document.getElementById("defiChoices");
+  dc.innerHTML="";
+  instrKeys.forEach(key=>{
+    const btn=document.createElement("button");
+    btn.className="defi-choice";
+    btn.textContent=instruments[key].icon+" "+instruments[key].name;
+    btn.onclick=()=>answerDefi(key,btn);
+    dc.appendChild(btn);
+  });
+  document.getElementById("defi-result").textContent="Écoutez le son, puis choisissez l'instrument !";
+  playDefiSound();
+}
+
+function playDefiSound() {
+  if (!defiTarget) { alert("Lancez d'abord un défi !"); return; }
+  const instr=instruments[defiTarget];
+  playSound(f0, instr.harmonics, instr.adsr, instr.a0_instr);
+}
+
+function answerDefi(key, btn) {
+  defiScore.total++;
+  document.querySelectorAll(".defi-choice").forEach(b=>{b.disabled=true;});
+  if (key===defiTarget) {
+    btn.classList.add("correct");
+    defiScore.ok++;
+    document.getElementById("defi-result").textContent="✅ Bravo ! C'était bien le "+instruments[defiTarget].name+".";
+  } else {
+    btn.classList.add("wrong");
+    document.querySelectorAll(".defi-choice").forEach(b=>{ if(b.textContent.includes(instruments[defiTarget].name)) b.classList.add("correct"); });
+    document.getElementById("defi-result").textContent="❌ C'était le "+instruments[defiTarget].name+".";
+  }
+  document.getElementById("defi-score").textContent=` ${defiScore.ok} / ${defiScore.total}`;
+  localStorage.setItem("defiScore", JSON.stringify(defiScore));
+}
+
+// ═══════════════════════════
+// QUESTIONS
+// ═══════════════════════════
+const questions = [
+  { q:"Que se passe-t-il sur le son si on augmente la fréquence fondamentale f₀ ?",
+    options:["Le son devient plus fort","Le son devient plus aigu","Le son devient plus grave","Le timbre change"],
+    answer:1, fb:"La fréquence fondamentale détermine la hauteur perçue. Plus f₀ est élevée, plus le son est aigu." },
+  { q:"Que se passe-t-il si on augmente l'amplitude du fondamental A₁ ?",
+    options:["Le son devient plus aigu","La période change","Le son devient plus fort","Le THD augmente"],
+    answer:2, fb:"L'amplitude A₁ contrôle le volume. Augmenter A₁ rend le son plus fort sans changer sa hauteur ni son timbre." },
+  { q:"Vous augmentez uniquement l'amplitude du fondamental A₁ (sans changer les harmoniques). Que se passe-t-il au THD ?",
+    options:["Le THD augmente proportionnellement","Le THD reste identique","Le THD diminue","Le THD double"],
+    answer:2, fb:"Le THD = √(ΣAn²) / A1. Si on augmente A1, le dénominateur augmente mais les harmoniques (numérateur) restent identiques : le THD diminue." },
+  { q:"Quelle est approximativement la fréquence du Do central (Do4) ?",
+    options:["131 Hz","262 Hz","440 Hz","523 Hz"],
+    answer:1, fb:"Le Do4 est à environ 261,63 Hz. C'est une référence importante en musique." },
+  { q:"Quelle est la fréquence du La 440 (A4), référence internationale d'accordage ?",
+    options:["392 Hz","420 Hz","440 Hz","494 Hz"],
+    answer:2, fb:"Le La 440 Hz est la référence internationale depuis 1939. C'est sur cette note que les orchestres s'accordent." },
+  { q:"Si Do4 = 262 Hz, quelle est la fréquence de Do5 (une octave plus haut) ?",
+    options:["262 Hz","392 Hz","524 Hz","786 Hz"],
+    answer:2, fb:"Monter d'une octave revient à doubler la fréquence. Do4 = 262 Hz → Do5 = 524 Hz." },
+  { q:"Quel instrument possède le plus d'harmoniques?",
+    options:["Flûte","Violon","Piano","Trompette"],
+    answer:3, fb:"En analysant le THD, c'est la trompette qui semble avoir le plus grand taux d'harmoniques." },
+  { q:"Qu'est-ce que le THD (Taux de Distorsion Harmonique) ?",
+    options:["La fréquence la plus élevée du signal","Le rapport (en %) entre l'énergie des harmoniques et l'amplitude du fondamental","L'amplitude maximale du signal","La durée de l'attaque sonore"],
+    answer:1, fb:"THD = √(A2²+A3²+…) / A1 × 100%. Un signal sinusoïdal pur a THD = 0 %." },
+  { q:"Parmi ces instruments, lequel a le spectre le plus 'pur' (proche d'une sinusoïde, THD très faible) ?",
+    options:["Violon","Trompette","Flûte","Piano"],
+    answer:2, fb:"La flûte a très peu d'harmoniques. Son spectre est quasi sinusoïdal, d'où son timbre doux et cristallin." },
+  { q:"Que représente la 3ᵉ harmonique d'un son de 440 Hz ?",
+    options:["220 Hz","880 Hz","1320 Hz","660 Hz"],
+    answer:2, fb:"La nᵉ harmonique est à n×f₀. La 3ᵉ harmonique de 440 Hz vaut 3 × 440 = 1320 Hz." },
+];
+
+let qScores=new Array(questions.length).fill(null);
+
+function buildQuestions() {
+  const list = document.getElementById("questions-list");
+  list.innerHTML = "";
+
+  questions.forEach((q, qi) => {
+    const div = document.createElement("div");
+    div.className = "question-block";
+
+const buttons = q.options.map((opt, oi) =>
+  '<button class="q-opt" onclick="answerQ(' + qi + ',' + oi + ',this)">' +
+  opt +
+  '</button>'
+).join("");
+
+div.innerHTML = `
+  <p><b>Question ${qi + 1} :</b> ${q.q}</p>
+  <div class="q-options">${buttons}</div>
+  <div class="q-feedback" id="qfb-${qi}"></div>
+`;
+
+    list.appendChild(div);
+  });
+}
+
+function answerQ(qi, oi, btn) {
+  if (qScores[qi]!==null) return;
+  const q=questions[qi];
+  const fb=document.getElementById("qfb-"+qi);
+  if (oi===q.answer) {
+    btn.classList.add("correct");
+    fb.className="q-feedback show ok";
+    fb.textContent="✅ Correct ! "+q.fb;
+    qScores[qi]=1;
+  } else {
+    btn.classList.add("wrong");
+    fb.className="q-feedback show ko";
+    fb.textContent="❌ Incorrect. "+q.fb;
+    qScores[qi]=0;
+    btn.parentElement.querySelectorAll(".q-opt")[q.answer].classList.add("correct");
+  }
+  btn.parentElement.querySelectorAll(".q-opt").forEach(b=>b.disabled=true);
+  score=qScores.filter(s=>s===1).length;
+  document.getElementById("q-score").textContent=score;
+  document.getElementById("q-total").textContent=qScores.filter(s=>s!==null).length;
+}
+
+// ═══════════════════════════
+// TABS
+// ═══════════════════════════
+function showTab(id, el) {
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  el.classList.add("active");
+  if (id==="portee") drawStaff();
+}
+
+// ═══════════════════════════
+// INIT
+// ═══════════════════════════
+window.onload = function() {
+  buildHarmGrid();
+  buildQuestions();
+  updateAll();
+  updateADSR();
+  drawStaff();
+  const saved=localStorage.getItem("defiScore");
+  if (saved) {
+    defiScore=JSON.parse(saved);
+    document.getElementById("defi-score").textContent=` ${defiScore.ok} / ${defiScore.total}`;
+  }
+};
+</script>
+</body>
+</html>
+
