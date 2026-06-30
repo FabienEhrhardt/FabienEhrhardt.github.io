@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+    <meta charset="UTF-8">
+    <title>Gestionnaire de Corrigés - BTS Électrotechnique</title>
+    <!-- Bibliothèques : Excel, LaTeX et Icones -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+        };
+    </script>
+    <script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --card-bg: #ffffff;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 0; color: #333; }
+        
+        /* Barre d'outils supérieure */
+        .admin-bar {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .admin-bar input[type="file"] { font-size: 0.8em; }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-save { background: var(--success); color: white; margin-left: auto; }
+        .btn-save:hover { background: #219150; }
+
+        /* Conteneur principal */
+        #app-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+
+        /* Écran de recherche */
+        #search-screen {
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .search-group { margin: 30px 0; display: flex; justify-content: center; gap: 10px; }
+        
+        .input-num {
+            width: 120px;
+            padding: 12px;
+            font-size: 1.5em;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .btn-search { background: var(--accent); color: white; font-size: 1.2em; padding: 0 30px; }
+
+        /* Style de la carte de correction */
+        #correction-screen {
+            display: none;
+            flex-direction: column;
+            background: var(--card-bg);
+            border: 2px solid #333;
+            min-height: 600px;
+            position: relative;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .overflow-error { background-color: #ffcccc !important; }
+
+        .header-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 25px;
+            background: #eee;
+            font-weight: bold;
+            font-size: 1.4em;
+            border-bottom: 2px solid #333;
+        }
+
+        .sub-header-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 25px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #ccc;
+            align-items: center;
+            font-size: 1.1em;
+            color: #666;
+        }
+		
+		.correction-titre {
+			text-align: center;
+            padding: 10px 25px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #ccc;
+            align-items: center;
+            font-size: 1.4em;
+			font-weight: bold;
+        }
+
+        .correction-body {
+            padding: 40px;
+            flex-grow: 1;
+            font-size: 1.3em;
+            line-height: 1.6;
+            outline: none;
+        }
+
+        .image-zone {
+            margin: 20px 40px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            text-align: center;
+            cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-zone img { max-width: 100%; max-height: 450px; }
+
+        .btn-back { background: #95a5a6; color: white; }
+
+        /* Zone d'édition */
+        [contenteditable="true"] { transition: background 0.2s; }
+        [contenteditable="true"]:focus { background: #fffde7 !important; border-radius: 4px; }
+
+        @media print {
+            .admin-bar, .btn-back, .image-zone:empty { display: none !important; }
+            body { background: white; }
+            #correction-screen { border: none; box-shadow: none; width: 100%; }
+        }
+    </style>
+<style type="text/css">.CtxtMenu_InfoClose {  top:.2em; right:.2em;}
+.CtxtMenu_InfoContent {  overflow:auto; text-align:left; font-size:80%;  padding:.4em .6em; border:1px inset; margin:1em 0px;  max-height:20em; max-width:30em; background-color:#EEEEEE;  white-space:normal;}
+.CtxtMenu_Info.CtxtMenu_MousePost {outline:none;}
+.CtxtMenu_Info {  position:fixed; left:50%; width:auto; text-align:center;  border:3px outset; padding:1em 2em; background-color:#DDDDDD;  color:black;  cursor:default; font-family:message-box; font-size:120%;  font-style:normal; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 15px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius:15px;               /* Safari and Chrome */  -moz-border-radius:15px;                  /* Firefox */  -khtml-border-radius:15px;                /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */  filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true"); /* IE */}
+</style><style type="text/css">.CtxtMenu_MenuClose {  position:absolute;  cursor:pointer;  display:inline-block;  border:2px solid #AAA;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  font-family: "Courier New", Courier;  font-size:24px;  color:#F0F0F0}
+.CtxtMenu_MenuClose span {  display:block; background-color:#AAA; border:1.5px solid;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  line-height:0;  padding:8px 0 6px     /* may need to be browser-specific */}
+.CtxtMenu_MenuClose:hover {  color:white!important;  border:2px solid #CCC!important}
+.CtxtMenu_MenuClose:hover span {  background-color:#CCC!important}
+.CtxtMenu_MenuClose:hover:focus {  outline:none}
+</style><style type="text/css">.CtxtMenu_Menu {  position:absolute;  background-color:white;  color:black;  width:auto; padding:5px 0px;  border:1px solid #CCCCCC; margin:0; cursor:default;  font: menu; text-align:left; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 5px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius: 5px;             /* Safari and Chrome */  -moz-border-radius: 5px;                /* Firefox */  -khtml-border-radius: 5px;              /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */}
+.CtxtMenu_MenuItem {  padding: 1px 2em;  background:transparent;}
+.CtxtMenu_MenuArrow {  position:absolute; right:.5em; padding-top:.25em; color:#666666;  font-family: null; font-size: .75em}
+.CtxtMenu_MenuActive .CtxtMenu_MenuArrow {color:white}
+.CtxtMenu_MenuArrow.CtxtMenu_RTL {left:.5em; right:auto}
+.CtxtMenu_MenuCheck {  position:absolute; left:.7em;  font-family: null}
+.CtxtMenu_MenuCheck.CtxtMenu_RTL { right:.7em; left:auto }
+.CtxtMenu_MenuRadioCheck {  position:absolute; left: .7em;}
+.CtxtMenu_MenuRadioCheck.CtxtMenu_RTL {  right: .7em; left:auto}
+.CtxtMenu_MenuInputBox {  padding-left: 1em; right:.5em; color:#666666;  font-family: null;}
+.CtxtMenu_MenuInputBox.CtxtMenu_RTL {  left: .1em;}
+.CtxtMenu_MenuComboBox {  left:.1em; padding-bottom:.5em;}
+.CtxtMenu_MenuSlider {  left: .1em;}
+.CtxtMenu_SliderValue {  position:absolute; right:.1em; padding-top:.25em; color:#333333;  font-size: .75em}
+.CtxtMenu_SliderBar {  outline: none; background: #d3d3d3}
+.CtxtMenu_MenuLabel {  padding: 1px 2em 3px 1.33em;  font-style:italic}
+.CtxtMenu_MenuRule {  border-top: 1px solid #DDDDDD;  margin: 4px 3px;}
+.CtxtMenu_MenuDisabled {  color:GrayText}
+.CtxtMenu_MenuActive {  background-color: #606872;  color: white;}
+.CtxtMenu_MenuDisabled:focus {  background-color: #E8E8E8}
+.CtxtMenu_MenuLabel:focus {  background-color: #E8E8E8}
+.CtxtMenu_ContextMenu:focus {  outline:none}
+.CtxtMenu_ContextMenu .CtxtMenu_MenuItem:focus {  outline:none}
+.CtxtMenu_SelectionMenu {  position:relative; float:left;  border-bottom: none; -webkit-box-shadow:none; -webkit-border-radius:0px; }
+.CtxtMenu_SelectionItem {  padding-right: 1em;}
+.CtxtMenu_Selection {  right: 40%; width:50%; }
+.CtxtMenu_SelectionBox {  padding: 0em; max-height:20em; max-width: none;  background-color:#FFFFFF;}
+.CtxtMenu_SelectionDivider {  clear: both; border-top: 2px solid #000000;}
+.CtxtMenu_Menu .CtxtMenu_MenuClose {  top:-10px; left:-10px}
+</style><style id="MJX-CHTML-styles">
+mjx-container[jax="CHTML"] {
+  line-height: 0;
+}
+
+mjx-container [space="1"] {
+  margin-left: .111em;
+}
+
+mjx-container [space="2"] {
+  margin-left: .167em;
+}
+
+mjx-container [space="3"] {
+  margin-left: .222em;
+}
+
+mjx-container [space="4"] {
+  margin-left: .278em;
+}
+
+mjx-container [space="5"] {
+  margin-left: .333em;
+}
+
+mjx-container [rspace="1"] {
+  margin-right: .111em;
+}
+
+mjx-container [rspace="2"] {
+  margin-right: .167em;
+}
+
+mjx-container [rspace="3"] {
+  margin-right: .222em;
+}
+
+mjx-container [rspace="4"] {
+  margin-right: .278em;
+}
+
+mjx-container [rspace="5"] {
+  margin-right: .333em;
+}
+
+mjx-container [size="s"] {
+  font-size: 70.7%;
+}
+
+mjx-container [size="ss"] {
+  font-size: 50%;
+}
+
+mjx-container [size="Tn"] {
+  font-size: 60%;
+}
+
+mjx-container [size="sm"] {
+  font-size: 85%;
+}
+
+mjx-container [size="lg"] {
+  font-size: 120%;
+}
+
+mjx-container [size="Lg"] {
+  font-size: 144%;
+}
+
+mjx-container [size="LG"] {
+  font-size: 173%;
+}
+
+mjx-container [size="hg"] {
+  font-size: 207%;
+}
+
+mjx-container [size="HG"] {
+  font-size: 249%;
+}
+
+mjx-container [width="full"] {
+  width: 100%;
+}
+
+mjx-box {
+  display: inline-block;
+}
+
+mjx-block {
+  display: block;
+}
+
+mjx-itable {
+  display: inline-table;
+}
+
+mjx-row {
+  display: table-row;
+}
+
+mjx-row > * {
+  display: table-cell;
+}
+
+mjx-mtext {
+  display: inline-block;
+}
+
+mjx-mstyle {
+  display: inline-block;
+}
+
+mjx-merror {
+  display: inline-block;
+  color: red;
+  background-color: yellow;
+}
+
+mjx-mphantom {
+  visibility: hidden;
+}
+
+_::-webkit-full-page-media, _:future, :root mjx-container {
+  will-change: opacity;
+}
+
+mjx-assistive-mml {
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 1px 0px 0px 0px !important;
+  border: 0px !important;
+  display: block !important;
+  width: auto !important;
+  overflow: hidden !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+mjx-assistive-mml[display="block"] {
+  width: 100% !important;
+}
+
+mjx-c::before {
+  display: block;
+  width: 0;
+}
+
+.MJX-TEX {
+  font-family: MJXZERO, MJXTEX;
+}
+
+.TEX-B {
+  font-family: MJXZERO, MJXTEX-B;
+}
+
+.TEX-I {
+  font-family: MJXZERO, MJXTEX-I;
+}
+
+.TEX-MI {
+  font-family: MJXZERO, MJXTEX-MI;
+}
+
+.TEX-BI {
+  font-family: MJXZERO, MJXTEX-BI;
+}
+
+.TEX-S1 {
+  font-family: MJXZERO, MJXTEX-S1;
+}
+
+.TEX-S2 {
+  font-family: MJXZERO, MJXTEX-S2;
+}
+
+.TEX-S3 {
+  font-family: MJXZERO, MJXTEX-S3;
+}
+
+.TEX-S4 {
+  font-family: MJXZERO, MJXTEX-S4;
+}
+
+.TEX-A {
+  font-family: MJXZERO, MJXTEX-A;
+}
+
+.TEX-C {
+  font-family: MJXZERO, MJXTEX-C;
+}
+
+.TEX-CB {
+  font-family: MJXZERO, MJXTEX-CB;
+}
+
+.TEX-FR {
+  font-family: MJXZERO, MJXTEX-FR;
+}
+
+.TEX-FRB {
+  font-family: MJXZERO, MJXTEX-FRB;
+}
+
+.TEX-SS {
+  font-family: MJXZERO, MJXTEX-SS;
+}
+
+.TEX-SSB {
+  font-family: MJXZERO, MJXTEX-SSB;
+}
+
+.TEX-SSI {
+  font-family: MJXZERO, MJXTEX-SSI;
+}
+
+.TEX-SC {
+  font-family: MJXZERO, MJXTEX-SC;
+}
+
+.TEX-T {
+  font-family: MJXZERO, MJXTEX-T;
+}
+
+.TEX-V {
+  font-family: MJXZERO, MJXTEX-V;
+}
+
+.TEX-VB {
+  font-family: MJXZERO, MJXTEX-VB;
+}
+
+mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
+  font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A ! important;
+}
+
+@font-face /* 0 */ {
+  font-family: MJXZERO;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff") format("woff");
+}
+
+@font-face /* 1 */ {
+  font-family: MJXTEX;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff") format("woff");
+}
+
+@font-face /* 2 */ {
+  font-family: MJXTEX-B;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Bold.woff") format("woff");
+}
+
+@font-face /* 3 */ {
+  font-family: MJXTEX-I;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff") format("woff");
+}
+
+@font-face /* 4 */ {
+  font-family: MJXTEX-MI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Italic.woff") format("woff");
+}
+
+@font-face /* 5 */ {
+  font-family: MJXTEX-BI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Math-BoldItalic.woff") format("woff");
+}
+
+@font-face /* 6 */ {
+  font-family: MJXTEX-S1;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size1-Regular.woff") format("woff");
+}
+
+@font-face /* 7 */ {
+  font-family: MJXTEX-S2;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size2-Regular.woff") format("woff");
+}
+
+@font-face /* 8 */ {
+  font-family: MJXTEX-S3;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size3-Regular.woff") format("woff");
+}
+
+@font-face /* 9 */ {
+  font-family: MJXTEX-S4;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size4-Regular.woff") format("woff");
+}
+
+@font-face /* 10 */ {
+  font-family: MJXTEX-A;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_AMS-Regular.woff") format("woff");
+}
+
+@font-face /* 11 */ {
+  font-family: MJXTEX-C;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Regular.woff") format("woff");
+}
+
+@font-face /* 12 */ {
+  font-family: MJXTEX-CB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Bold.woff") format("woff");
+}
+
+@font-face /* 13 */ {
+  font-family: MJXTEX-FR;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Fraktur-Regular.woff") format("woff");
+}
+
+@font-face /* 14 */ {
+  font-family: MJXTEX-FRB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Fraktur-Bold.woff") format("woff");
+}
+
+@font-face /* 15 */ {
+  font-family: MJXTEX-SS;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Regular.woff") format("woff");
+}
+
+@font-face /* 16 */ {
+  font-family: MJXTEX-SSB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Bold.woff") format("woff");
+}
+
+@font-face /* 17 */ {
+  font-family: MJXTEX-SSI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Italic.woff") format("woff");
+}
+
+@font-face /* 18 */ {
+  font-family: MJXTEX-SC;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Script-Regular.woff") format("woff");
+}
+
+@font-face /* 19 */ {
+  font-family: MJXTEX-T;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Typewriter-Regular.woff") format("woff");
+}
+
+@font-face /* 20 */ {
+  font-family: MJXTEX-V;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Regular.woff") format("woff");
+}
+
+@font-face /* 21 */ {
+  font-family: MJXTEX-VB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Bold.woff") format("woff");
+}
+.timer-container{
+    min-width:260px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.timer-info{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:white;
+    font-weight:bold;
+}
+
+.timer-bar{
+    width:100%;
+    height:10px;
+    background:#555;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+#timerProgress{
+    width:100%;
+    height:100%;
+    background:#2ecc71;
+    transition:width 1s linear, background 0.3s;
+}
+
+.btn-restart{
+    background:#3498db;
+    color:white;
+}
+
+.btn-restart:hover{
+    background:#2980b9;
+}
+
+
+
+
+</style></head>
+<body>
+
+<div class="admin-bar">
+    <div class="timer-container">
+    <div class="timer-info">
+        <span id="timerText">60 s</span>
+        <button class="btn btn-restart" onclick="restartTimer()">🔄 Relancer</button>
+    </div>
+
+    <div class="timer-bar">
+        <div id="timerProgress"></div>
+    </div>
+</div>
+</div>
+
+<div id="app-container">
+    
+    <!-- ÉCRAN : RECHERCHE -->
+    <div id="search-screen" style="display: block;">
+        <h1>Correction des Exercices</h1>
+        <p>Entrez le numéro de la carte pour afficher le corrigé</p>
+        <div class="search-group">
+            <input type="number" id="inputSearch" class="input-num" placeholder="N°">
+            <button class="btn btn-search" onclick="handleSearch()">Rechercher</button>
+        </div>
+        <div id="search-error" style="color: var(--danger); display: none;">Aucun corrigé trouvé pour ce numéro.</div>
+    </div>
+
+    <!-- ÉCRAN : AFFICHAGE DU CORRIGÉ -->
+    <div id="correction-screen" style="display: none;">
+        <div class="header-line">
+            <div id="card-chapitre" class="math-field" contenteditable="true">Chapitre</div>
+            <div>N° <span id="card-numero">0</span></div>
+        </div>
+        <div class="sub-header-line">
+            <div id="card-theme" class="math-field" contenteditable="true">Thème</div>
+            <button class="btn btn-back" onclick="goToSearch()">⬅ Retour</button>
+        </div>
+		<div id="card-titre" class="correction-titre" contenteditable="true">
+            Titre de la correction...
+        </div>
+        
+        <div id="card-verso" class="correction-body math-field" contenteditable="true">
+            Texte de la correction...
+        </div>
+
+        <div id="card-image-container" class="image-zone" onclick="triggerImageUpload()">
+            <span style="color:#aaa;">+ Cliquer pour ajouter une image (ou coller)</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- DATA STORAGE (JSON INJECTÉ) -->
+<script id="database-json" type="application/json">[{"chapitre":"1000 kW","titre":"Déconnecté du réseau","theme":"Attaque","verso":"","image":""},{"numero":1,"chapitre":"1000 kW","titre":"Puissance","theme":"Borne de recharge","verso":"Formule : $ P_a=\\frac{P_u}{\\eta} $<br>$ P_a=\\frac{15}{0,75}=20 kW $","image":""},{"numero":2,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine outil","verso":"Formule : $ P=S \\times cos\\varphi $<br>$ P=40 \\times 0,8=32 kW $","image":""},{"numero":3,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $ P=V \\times I cos \\varphi $<br>$ I=\\frac{P}{V cos \\varphi}=\\frac{5000}{230 \\times 0,9}=24 A $","image":""},{"numero":4,"chapitre":"1000 kW","titre":"Puissance","theme":"Hall d'usine","verso":"Formule : $ E=P \\times t $<br>$ E=50 \\times 4=200 kWh $","image":""},{"numero":5,"chapitre":"1000 kW","titre":"Puissance","theme":"Batterie","verso":"Formule : $P=UI$<br>$P=120\\times100=12000\\;W=12\\;kW$","image":""},{"numero":6,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine outil","verso":"Formule : $P=S\\times F_p$<br>$P=50\\times0,8=40\\;kW$","image":""},{"numero":7,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $P=UI\\cos\\varphi$<br>$P=400\\times25\\times0,9=9\\;kW$","image":""},{"numero":8,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $E=P\\times t$<br>$E=15\\times8=120\\;kWh$","image":""},{"numero":9,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $I=\\frac{P}{U\\cos\\varphi}$<br>$I=\\frac{6000}{230\\times0,8}=32,6\\;A$","image":""},{"numero":10,"chapitre":"1000 kW","titre":"Puissance","theme":"Moteur","verso":"Formule : $P_p=P_a-P_u$<br>$P_u=80\\times0,8=64\\;kW$<br>$P_p=80-64=16\\;kW$","image":""},{"numero":11,"chapitre":"1000 kW","titre":"Puissance","theme":"Hall d'usine","verso":"Formule : $E=P\\times t$<br>$E=18\\times9=162\\;kWh$","image":""},{"numero":12,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"Formule : $P=S\\times F_p$<br>$P=125\\times0,84=105\\;kW$","image":""},{"numero":13,"chapitre":"1000 kW","titre":"Puissance","theme":"Pompage","verso":"Formule : $P_a=\\frac{P_u}{\\eta}$<br>$P_a=\\frac{36}{0,90}=40\\;kW$","image":""},{"numero":14,"chapitre":"1000 kW","titre":"Puissance","theme":"Convoyeur","verso":"Formule : $P_u=P_a\\times\\eta$<br>$P_u=75\\times0,92=69\\;kW$","image":""},{"numero":15,"chapitre":"1000 kW","titre":"Puissance","theme":"Compresseur","verso":"Formule : $P_p=P_a-P_u$<br>$P_p=95-88=7\\;kW$","image":""},{"numero":16,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $E=P\\times t$<br>$E=9\\times10=90\\;kWh$","image":""},{"numero":17,"chapitre":"1000 kW","titre":"Puissance","theme":"Charge continue","verso":"Formule : $P=U\\times I$<br>$P=48\\times250=12000\\;W=12\\;kW$","image":""},{"numero":18,"chapitre":"1000 kW","titre":"Puissance","theme":"Ascenseur","verso":"Formule : $P=S\\times F_p$<br>$P=75\\times0,88=66\\;kW$","image":""},{"numero":19,"chapitre":"1000 kW","titre":"Puissance","theme":"Ventilation","verso":"Formule : $P=U\\times I\\times cos\\varphi$<br>$P=400\\times18\\times0,82=5,90\\;kW$","image":""},{"numero":20,"chapitre":"1000 kW","titre":"Puissance","theme":"Photovoltaïque","verso":"Formule : $E=P\\times t$<br>$E=120\\times5=600\\;kWh$","image":""},{"numero":21,"chapitre":"1000 kW","titre":"Puissance","theme":"Borne IRVE","verso":"Formule : $I=\\frac{P}{U}$<br>$I=\\frac{22000}{400}=55\\;A$","image":""},{"numero":22,"chapitre":"1000 kW","titre":"Puissance","theme":"Groupe électrogène","verso":"Formule : $P_u=P_a\\times\\eta$<br>$P_u=160\\times0,85=136\\;kW$<br>$P_p=160-136=24\\;kW$","image":""},{"numero":23,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $P=U\\times I\\times cos\\varphi$<br>$P=230\\times20\\times0,9=4140\\;W=4,14\\;kW$","image":""},{"numero":24,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine-outil","verso":"Formule : $P=S\\times cos\\varphi$<br>$P=25\\times0,92=23\\;kW$","image":""},{"numero":25,"chapitre":"1000 kW","titre":"Puissance","theme":"Compresseur","verso":"Formule : $S=\\frac{P}{cos\\varphi}$<br>$S=\\frac{18}{0,9}=20\\;kVA$","image":""},{"numero":26,"chapitre":"1000 kW","titre":"Puissance","theme":"Ventilation","verso":"Formule : $cos\\varphi=\\frac{P}{S}$<br>$cos\\varphi=\\frac{32}{40}=0,80$","image":""},{"numero":27,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine-outil","verso":"Formule : $S=\\sqrt{P^2+Q^2}$<br>$S=\\sqrt{24^2+18^2}=30\\;kVA$","image":""},{"numero":28,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $Q=\\sqrt{S^2-P^2}$<br>$Q=\\sqrt{50^2-40^2}=30\\;kVAr$","image":""},{"numero":29,"chapitre":"1000 kW","titre":"Puissance","theme":"Distribution","verso":"Formule : $P=VIcos\\varphi$<br>$P=400\\times60\\times0,85=20,4\\;kW$","image":""},{"numero":30,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"Formule : $I=\\frac{P}{Vcos\\varphi}$<br>$I=\\frac{48000}{400\\times0,8}=150\\;A$","image":""},{"numero":31,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $P_{tot}=12+18+25=55\\;kW$","image":""},{"numero":32,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"Formule : $P_{tot}=45+60+75=180\\;kW$<br>$S=\\frac{P}{cos\\varphi}=\\frac{180}{0,9}=200\\;kVA$","image":""},{"numero":33,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $P=U\\times I$<br>$P=230\\times10=2300\\;W=2,3\\;kW$","image":""},{"numero":34,"chapitre":"1000 kW","titre":"Puissance","theme":"Batterie","verso":"Formule : $P=U\\times I$<br>$P=24\\times200=4800\\;W=4,8\\;kW$","image":""},{"numero":35,"chapitre":"1000 kW","titre":"Puissance","theme":"Moteur","verso":"Formule : $P=S\\times cos\\varphi$<br>$P=12\\times0,75=9\\;kW$","image":""},{"numero":36,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $S=\\frac{P}{cos\\varphi}$<br>$S=\\frac{18}{0,9}=20\\;kVA$","image":""},{"numero":37,"chapitre":"1000 kW","titre":"Puissance","theme":"Ventilation","verso":"Formule : $E=P\\times t$<br>$E=5\\times14=70\\;kWh$","image":""},{"numero":48,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $Q=P\\tan\\varphi$<br>$Q=15\\times\\tan(37°)=11,3\\;kVAr$","image":""},{"numero":49,"chapitre":"1000 kW","titre":"Puissance","theme":"Moteur","verso":"Formule : $S=U\\times I$<br>$S=230\\times40=9200\\;VA=9,2\\;kVA$","image":""},{"numero":50,"chapitre":"1000 kW","titre":"Puissance","theme":"Compresseur","verso":"Formule : $P=U\\times I\\times cos\\varphi$<br>$P=230\\times50\\times0,80=9,2\\;kW$","image":""},{"numero":51,"chapitre":"1000 kW","titre":"Puissance","theme":"Ventilation","verso":"Formule : $Q=U\\times I\\times sin\\varphi$<br>$Q=230\\times20\\times\\sin(30°)=2,3\\;kVAr$","image":""},{"numero":52,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $P=S\\times cos\\varphi$<br>$P=18\\times0,75=13,5\\;kW$","image":""},{"numero":53,"chapitre":"1000 kW","titre":"Puissance","theme":"Pompage","verso":"Formule : $\\varphi=\\arccos(0,80)=36,9°$<br>$Q=24\\times\\tan(36,9°)=18\\;kVAr$","image":""},{"numero":54,"chapitre":"1000 kW","titre":"Puissance","theme":"Compresseur","verso":"Formule : $\\sin\\varphi=\\sqrt{1-0,6^2}=0,8$<br>$Q=230\\times60\\times0,8=11,0\\;kVAr$","image":""},{"numero":55,"chapitre":"1000 kW","titre":"Puissance","theme":"Convoyeur","verso":"Formule : $S=\\frac{P}{cos\\varphi}$<br>$S=\\frac{12}{0,60}=20\\;kVA$","image":""},{"numero":56,"chapitre":"1000 kW","titre":"Puissance","theme":"Borne IRVE","verso":"Formule : $P=230\\times32\\times\\cos25°=6,67\\;kW$","image":""},{"numero":57,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine outil","verso":"Formule : $S=\\frac{P}{\\cos36,9°}=\\frac{18}{0,8}=22,5\\;kVA$","image":""},{"numero":58,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $\\sin\\varphi=\\sqrt{1-0,8^2}=0,6$<br>$Q=230\\times45\\times0,6=6,21\\;kVAr$","image":""},{"numero":59,"chapitre":"1000 kW","titre":"Puissance","theme":"Moteur","verso":"Formule : $P=30\\times\\cos45°=21,2\\;kW$","image":""},{"numero":60,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $P_1=6,4$ kW<br>$P_2=9$ kW<br>$P_3=4,5$ kW<br>$P_{tot}=19,9$ kW","image":""},{"numero":61,"chapitre":"1000 kW","titre":"Puissance","theme":"Bâtiment","verso":"Formule : $S_1=25$ kVA<br>$S_2=30$ kVA<br>$S_{tot}=55$ kVA","image":""},{"numero":62,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"Formule : $P_A=18$ kW<br>$P_B=S\\cos45°=\\frac{24}{0,707}\\times0,707=24$ kW (ou directement si 24 kW est active selon l'interprétation)<br>$P_C=230\\times80\\times0,9=16,56$ kW<br>$P_{tot}=58,56$ kW","image":""},{"numero":63,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $\\varphi=\\arccos(0,8)=36,9°$<br>$Q=20\\times\\tan(36,9°)=15\\;kVAr$","image":""},{"numero":64,"chapitre":"1000 kW","titre":"Puissance","theme":"Moteur","verso":"Formule : $S=\\sqrt{P^2+Q^2}$<br>$S=\\sqrt{18^2+12^2}=21,6\\;kVA$","image":""},{"numero":65,"chapitre":"1000 kW","titre":"Puissance","theme":"Éclairage","verso":"Formule : $Fp=\\frac{P}{S}$<br>$Fp=\\frac{15}{20}=0,75$","image":""},{"numero":66,"chapitre":"1000 kW","titre":"Puissance","theme":"Pompage","verso":"Formule : $\\varphi=\\arccos(0,9)=25,8°$<br>$Q=24\\times\\tan(25,8°)=11,6\\;kVAr$","image":""},{"numero":67,"chapitre":"1000 kW","titre":"Puissance","theme":"Compresseur","verso":"Formule : $S=\\sqrt{30^2+20^2}=36,1\\;kVA$<br>$Fp=\\frac{30}{36,1}=0,83$","image":""},{"numero":68,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"$P_{tot}=28\\;kW$<br>$Q_{tot}=21\\;kVAr$<br>$S_{tot}=\\sqrt{28^2+21^2}=35\\;kVA$<br>$Fp=0,80$","image":""},{"numero":69,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine outil","verso":"$Q_1=20\\tan36,9°=15$<br>$Q_2=15\\tan41,4°=13,2$<br>$P_{tot}=35$<br>$Q_{tot}=28,2$<br>$S_{tot}=44,8\\;kVA$","image":""},{"numero":70,"chapitre":"1000 kW","titre":"Puissance","theme":"Ventilation","verso":"$Q_1=24$<br>$Q_2=6$<br>$P_{tot}=42$<br>$Q_{tot}=30$<br>$S_{tot}=51,6$<br>$Fp=0,81$","image":""},{"numero":71,"chapitre":"1000 kW","titre":"Puissance","theme":"Pompage","verso":"$Q_1=25\\tan31,8°=15,5$<br>$Q_{tot}=23,5$<br>$P_{tot}=35$<br>$S_{tot}=42,1$<br>$Fp=0,83$","image":""},{"numero":72,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"$Q_B=22\\tan36,9°=16,5$<br>$P_{tot}=50$<br>$Q_{tot}=36,5$<br>$S_{tot}=61,4$<br>$Fp=0,81$","image":""},{"numero":73,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine industrielle","verso":"$Q_A=25\\tan41,4°=22$<br>$Q_C=10\\tan25,8°=4,8$<br>$P_{tot}=55$<br>$Q_{tot}=41,8$<br>$S_{tot}=68,5$<br>$Fp=0,80$","image":""},{"numero":74,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"$Q=24+10+4,8=38,8$<br>$P_{tot}=55$<br>$S_{tot}=67,2$<br>$Fp=0,82$","image":""},{"numero":75,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"$Q_B=25\\tan36,9°=18,7$<br>$P_{tot}=80$<br>$Q_{tot}=70,7$<br>$S_{tot}=106,6$<br>$Fp=0,75$","image":""},{"numero":76,"chapitre":"1000 kW","titre":"Puissance","theme":"Site industriel","verso":"$Q_1=30$<br>$Q_2=25$<br>$Q_3=9,7$<br>$Q_{tot}=72,7$<br>$P_{tot}=100$<br>$S_{tot}=124,3$<br>$Fp=0,80$","image":""},{"numero":77,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine lourde","verso":"$Q_B=40\\tan41,4°=35$<br>$P_{tot}=170$<br>$Q_{tot}=105$<br>$S_{tot}=198,5$<br>$Fp=0,86$","image":""},{"numero":78,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $Q=P\\tan\\varphi$<br>$\\varphi=\\arccos(0,8)=36,9°$<br>$Q=30\\times\\tan(36,9°)=22,5\\;kVAr$","image":""},{"numero":79,"chapitre":"1000 kW","titre":"Puissance","theme":"Machine outil","verso":"Formule : $S=\\sqrt{P^2+Q^2}$<br>$S=\\sqrt{24^2+18^2}=30\\;kVA$","image":""},{"numero":80,"chapitre":"1000 kW","titre":"Puissance","theme":"Pompage","verso":"Formule : $S=\\frac{P}{cos\\varphi}$<br>$S=\\frac{20}{0,75}=26,7\\;kVA$","image":""},{"numero":81,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $Q=P\\tan\\varphi$<br>$\\varphi=\\arccos(0,8)=36,9°$<br>$Q=60\\times\\tan(36,9°)=45\\;kVAr$","image":""},{"numero":82,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine","verso":"Formule : $S=\\frac{P}{cos\\varphi}$<br>$S=\\frac{75}{0,85}=88,2\\;kVA$","image":""},{"numero":83,"chapitre":"1000 kW","titre":"Puissance","theme":"Moteur","verso":"Formule : $P=S\\times cos\\varphi$<br>$P=120\\times0,75=90\\;kW$","image":""},{"numero":84,"chapitre":"1000 kW","titre":"Puissance","theme":"Usine lourde","verso":"Formule : $Q=P\\tan\\varphi$<br>$\\varphi=\\arccos(0,8)=36,9°$<br>$Q=140\\times\\tan(36,9°)=105\\;kVAr$","image":""},{"numero":85,"chapitre":"1000 kW","titre":"Puissance","theme":"Site industriel","verso":"Formule : $S=\\frac{P}{cos\\varphi}$<br>$S=\\frac{160}{0,85}=188\\;kVA$","image":""},{"numero":86,"chapitre":"1000 kW","titre":"Puissance","theme":"Industrie lourde","verso":"Formule : $P=S\\times cos\\varphi$<br>$P=220\\times0,75=165\\;kW$","image":""},{"numero":87,"chapitre":"1000 kW","titre":"Puissance","theme":"Atelier","verso":"Formule : $Q=P\\tan\\varphi$<br>$\\varphi=\\arccos(0,9)=25,8°$<br>$Q=180\\times\\tan(25,8°)=87,1\\;kVAr$","image":""}]</script>
+
+<script>
+    let db = [];
+    let currentCard = null;
+
+    // --- INITIALISATION ---
+    window.onload = function() {
+        const rawData = document.getElementById('database-json').textContent;
+		startTimer();
+        try {
+            db = JSON.parse(rawData);
+            updateStatus();
+        } catch(e) { db = []; }
+
+        // Initialisation des champs éditables pour le LaTeX
+        document.querySelectorAll('.math-field').forEach(setupMathEdition);
+    };
+
+    // --- GESTION EXCEL ---
+    const excelFile = document.getElementById("excelFile");
+
+	if (excelFile) {
+	excelFile.addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            
+            let added = 0;
+            rows.forEach(row => {
+                // Règle : Garder la 1ère occurrence si le numéro existe déjà
+                const exists = db.find(item => String(item.numero) === String(row.numero));
+                if (!exists) {
+                    db.push({
+                        numero: row.numero,
+                        chapitre: row.chapitre || '',
+						titre: row.titre || '',
+                        theme: row.theme || '',
+                        verso: row.verso || '',
+                        image: row.image ||''
+                    });
+                    added++;
+                }
+            });
+            alert(added + " cartes ajoutées ! Pensez à sauvegarder le fichier.");
+            updateStatus();
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    });
+	}
+
+    // --- LOGIQUE DE RECHERCHE ---
+    function handleSearch() {
+        const num = document.getElementById('inputSearch').value;
+        const result = db.find(c => String(c.numero) === String(num));
+
+        if (result) {
+            currentCard = result;
+            document.getElementById('search-error').style.display = 'none';
+            displayCard(result);
+        } else {
+            document.getElementById('search-error').style.display = 'block';
+        }
+    }
+
+    function displayCard(card) {
+        document.getElementById('search-screen').style.display = 'none';
+        const screen = document.getElementById('correction-screen');
+        screen.style.display = 'flex';
+
+        // Remplissage des champs
+        document.getElementById('card-numero').innerText = card.numero;
+        
+        const chap = document.getElementById('card-chapitre');
+        chap.innerText = card.chapitre;
+        chap.dataset.raw = card.chapitre;
+
+        const theme = document.getElementById('card-theme');
+        theme.innerText = card.theme;
+        theme.dataset.raw = card.theme;
+		
+		const titre = document.getElementById('card-titre');
+        titre.innerText = card.titre;
+        titre.dataset.raw = card.titre;
+
+        const verso = document.getElementById('card-verso');
+        verso.innerHTML = card.verso;
+        verso.dataset.raw = card.verso;
+
+        // Image
+        renderImage(card.image);
+
+        // Rendu LaTeX initial
+        MathJax.typesetPromise();
+        checkOverflow();
+    }
+
+    function goToSearch() {
+        document.getElementById('search-screen').style.display = 'block';
+        document.getElementById('correction-screen').style.display = 'none';
+        document.getElementById('inputSearch').value = '';
+    }
+
+    // --- ÉDITION LATEX INTELLIGENTE ---
+    function setupMathEdition(el) {
+        el.addEventListener('focus', function() {
+            // On affiche le texte brut (avec les $$) pour l'édition
+            this.innerText = this.dataset.raw || this.innerHTML;
+        });
+
+        el.addEventListener('blur', function() {
+            const newVal = this.innerText;
+            this.dataset.raw = newVal; // On stocke la version brute
+            
+            // Mise à jour de l'objet en mémoire
+            if (currentCard) {
+                if (this.id === 'card-chapitre') currentCard.chapitre = newVal;
+				if (this.id === 'card-theme') currentCard.theme = newVal;
+                if (this.id === 'card-titre') currentCard.titre = newVal;
+                if (this.id === 'card-verso') currentCard.verso = newVal;
+            }
+
+            // Relancer le rendu LaTeX
+            this.innerHTML = newVal;
+            MathJax.typesetPromise([this]);
+            checkOverflow();
+        });
+    }
+
+    // --- GESTION DES IMAGES (UPLOAD & PASTE) ---
+    function triggerImageUpload() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = e => {
+            const reader = new FileReader();
+            reader.onload = ev => saveImage(ev.target.result);
+            reader.readAsDataURL(e.target.files[0]);
+        };
+        input.click();
+    }
+
+    document.addEventListener('paste', e => {
+        if (document.getElementById('correction-screen').style.display === 'flex') {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let item of items) {
+                if (item.type.indexOf("image") !== -1) {
+                    const reader = new FileReader();
+                    reader.onload = ev => saveImage(ev.target.result);
+                    reader.readAsDataURL(item.getAsFile());
+                }
+            }
+        }
+    });
+
+    function saveImage(base64) {
+        if (currentCard) {
+            currentCard.image = base64;
+            renderImage(base64);
+            checkOverflow();
+        }
+    }
+
+    function renderImage(imageRef) {
+    const cont = document.getElementById('card-image-container');
+    if (imageRef) {
+        // Si c'est déjà du base64 (image collée manuellement), on l'utilise directement
+        // Sinon c'est un nom de fichier → chemin relatif
+        const src = imageRef.startsWith('data:') 
+            ? imageRef 
+            : `images/${imageRef}`;
+        cont.innerHTML = `<img src="${src}" onerror="this.parentElement.innerHTML='<span style=color:#e74c3c>Image introuvable : ${imageRef}</span>'">`;
+    } else {
+        cont.innerHTML = `<span style="color:#aaa;">+ Cliquer pour ajouter une image (ou coller)</span>`;
+    }
+}
+
+    // --- UTILITAIRES ---
+    function updateStatus() {
+		 const status = document.getElementById("db-status");
+    if (status) {
+        status.innerText = db.length + " carte(s) chargée(s)";
+    }}
+
+    function checkOverflow() {
+        const card = document.getElementById('correction-screen');
+        // Un petit délai pour laisser le rendu MathJax finir
+        setTimeout(() => {
+            if (card.scrollHeight > card.offsetHeight) {
+                card.classList.add('overflow-error');
+            } else {
+                card.classList.remove('overflow-error');
+            }
+        }, 300);
+    }
+
+    function exportFullApp() {
+        // On s'assure de revenir à l'écran recherche pour l'état initial du fichier sauvegardé
+        goToSearch();
+        
+        // On injecte la DB actuelle dans le script JSON
+        document.getElementById('database-json').textContent = JSON.stringify(db);
+        
+        // On génère le fichier
+        const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'corriges_sauvegardes.html';
+        a.click();
+    }
+
+    // Recherche via touche Entrée
+    document.getElementById('inputSearch').addEventListener('keypress', e => {
+        if (e.key === 'Enter') handleSearch();
+    });
+	
+	let timerDuration = 60;
+let timeLeft = timerDuration;
+let timerInterval = null;
+
+function startTimer() {
+
+    clearInterval(timerInterval);
+
+    timeLeft = timerDuration;
+    updateTimerDisplay();
+
+    timerInterval = setInterval(() => {
+
+        timeLeft--;
+
+        updateTimerDisplay();
+
+        if(timeLeft <= 0){
+            clearInterval(timerInterval);
+
+            document.getElementById("timerText").textContent = "Temps écoulé !";
+            document.getElementById("timerProgress").style.width = "0%";
+        }
+
+    },1000);
+}
+
+function restartTimer(){
+    startTimer();
+}
+
+function updateTimerDisplay(){
+
+    const percent = (timeLeft/timerDuration)*100;
+
+    document.getElementById("timerText").textContent = timeLeft + " s";
+
+    const bar = document.getElementById("timerProgress");
+
+    bar.style.width = percent + "%";
+
+    if(timeLeft<=10){
+        bar.style.background="#e74c3c";
+    }
+    else if(timeLeft<=20){
+        bar.style.background="#f39c12";
+    }
+    else{
+        bar.style.background="#2ecc71";
+    }
+
+}
+	
+	
+	
+</script>
+
+
+</body></html>
