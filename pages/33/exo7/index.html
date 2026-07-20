@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP – Transformateur monophasé (Modèle de Kapp)</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --blue: #1f3c88;
+  --blue-light: #f0f4ff;
+  --green: #28a745;
+  --green-dark: #1e7e34;
+  --orange: #e07b00;
+  --red: #c0392b;
+  --gray: #888;
+  --gray-light: #f5f5f5;
+  --border: #dde3f0;
+  --radius: 10px;
+}
+* { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: linear-gradient(135deg, #f4f6f9, #e9eef5); min-height: 100vh; padding: 20px; }
+.container { max-width: 1100px; margin: auto; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+.page-header { background: var(--blue); color: white; padding: 22px 30px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; }
+.page-header p { font-size: 0.88rem; opacity: 0.82; margin-top: 3px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--gray-light); flex-wrap: wrap; }
+.tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: white; font-weight: 600; }
+.tab-btn:hover:not(.active) { color: var(--blue); background: #eef2ff; }
+.tab-content { display: none; padding: 24px 30px; }
+.tab-content.active { display: block; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--blue); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 14px; }
+.card { background: var(--blue-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+.card.white { background: white; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.slider-label { min-width: 160px; font-size: 0.84rem; color: #444; }
+.slider-row input[type=range] { flex: 1; min-width: 140px; accent-color: var(--blue); }
+.slider-val { min-width: 90px; font-size: 0.84rem; font-weight: 600; color: var(--blue); text-align: right; }
+select { padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.84rem; }
+.mode-btns { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.mode-btn { padding: 9px 18px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.86rem; background: white; font-weight: 600; color: #555; }
+.mode-btn.active { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.readout-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; }
+.readout-card h4 { font-size: 0.86rem; color: var(--blue); margin-bottom: 10px; }
+.readout-line { display: flex; justify-content: space-between; font-size: 0.86rem; padding: 4px 0; border-bottom: 1px dashed var(--border); }
+.readout-line b { color: #222; }
+.transfo-zone { display: flex; gap: 24px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.transfo-box { width: 130px; height: 90px; border-radius: 10px; border: 3px solid var(--green-dark); background: #eaffea; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-dark); font-size: 0.95rem; text-align: center; transition: 0.4s; }
+.transfo-box.dead { border-color: var(--red); background: #ffe0e0; color: var(--red); }
+.transfo-box.warm { border-color: var(--orange); background: #fff3e0; color: var(--orange); }
+.heat-wrap { flex: 1; min-width: 200px; }
+.heat-bar { width: 100%; height: 16px; background: #e6e6e6; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.heat-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--orange), var(--red)); transition: width 0.4s; }
+.status-msg { font-size: 0.86rem; font-weight: 600; margin-top: 6px; min-height: 20px; }
+.status-msg.dead { color: var(--red); }
+.btn { border: none; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-size: 0.86rem; font-weight: 600; transition: 0.2s; }
+.btn-green { background: var(--green); color: white; } .btn-green:hover { background: var(--green-dark); }
+.btn-blue { background: var(--blue); color: white; } .btn-blue:hover { background: #162d6a; }
+.btn-red { background: var(--red); color: white; } .btn-red:hover { background: #922b21; }
+.btn-gray { background: #ccc; color: #444; } .btn-gray:hover { background: #bbb; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+canvas { display: block; border-radius: 8px; border: 1px solid var(--border); background: white; margin: 0 auto; }
+.def-list { list-style: none; }
+.def-list li { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; line-height: 1.6; }
+.def-list b { color: var(--blue); }
+.plaque { display: flex; gap: 20px; flex-wrap: wrap; }
+.plaque .pv { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; text-align: center; }
+.plaque .pv .val { font-size: 1.1rem; font-weight: 700; color: var(--blue); }
+.plaque .pv .lbl { font-size: 0.72rem; color: var(--gray); }
+.question-block { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.question-block p { font-size: 0.92rem; margin-bottom: 10px; line-height: 1.6; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-opt { padding: 8px 14px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; font-size: 0.88rem; background: white; text-align: left; }
+.q-opt:hover { background: var(--blue-light); border-color: var(--blue); }
+.q-opt.correct { background: #e8f8e8; border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+.q-opt.wrong { background: #fde8e8; border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+input[type="number"] { padding: 6px; border-radius: 5px; border: 1px solid #ccc; width: 130px; margin-right: 8px; }
+.q-feedback { margin-top: 8px; font-size: 0.84rem; padding: 8px 12px; border-radius: 6px; display: none; }
+.q-feedback.show { display: block; }
+.q-feedback.ok { background: #e8f8e8; color: var(--green-dark); }
+.q-feedback.ko { background: #fde8e8; color: var(--red); }
+.score-bar { background: var(--blue-light); border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+#send { background: var(--green); color: white; border: none; padding: 9px 20px; border-radius: 7px; cursor: pointer; font-weight:600; }
+.hint { font-size: 0.8rem; color: var(--gray); margin-top: 4px; }
+@media (max-width: 700px) { .readout-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>⚡ TP – Transformateur monophasé et modèle de Kapp</h1>
+  <p>Banc d'essai virtuel : essai à vide, court-circuit et charge — déterminez le modèle équivalent</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('banc',this)">🔌 Banc d'essai</button>
+  <button class="tab-btn" onclick="showTab('kapp',this)">📐 Modèle de Kapp</button>
+  <button class="tab-btn" onclick="showTab('fresnel',this)">📊 Fresnel &amp; chute de tension</button>
+  <button class="tab-btn" onclick="showTab('questions',this)">❓ Questions</button>
+</div>
+
+<!-- ═══════ TAB BANC D'ESSAI ═══════ -->
+<div id="tab-banc" class="tab-content active">
+
+  <div class="card">
+    <div class="section-title">Plaque signalétique</div>
+    <div class="plaque">
+      <div class="pv"><div class="val" id="pl-sn"></div><div class="lbl">Puissance apparente nominale</div></div>
+      <div class="pv"><div class="val" id="pl-v1n"></div><div class="lbl">Tension primaire nominale</div></div>
+      <div class="pv"><div class="val" id="pl-f"></div><div class="lbl">Fréquence</div></div>
+    </div>
+    <p class="hint">Le rapport de transformation, les pertes fer, les pertes Joule et les éléments du modèle ne sont volontairement pas indiqués : c'est à vous de les déterminer par l'essai !</p>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">Réglages du banc</div>
+    <div class="slider-row">
+      <span class="slider-label">Tension primaire V1</span>
+      <input type="range" id="sl-v1" min="0" max="300" value="0" step="1" oninput="onV1Change()">
+      <span class="slider-val" id="v-v1">0 V</span>
+    </div>
+
+    <div class="mode-btns">
+      <button class="mode-btn active" id="mode-ouvert" onclick="setMode('ouvert')">Circuit ouvert (à vide)</button>
+      <button class="mode-btn" id="mode-cc" onclick="setMode('cc')">Court-circuit</button>
+      <button class="mode-btn" id="mode-charge" onclick="setMode('charge')">Charge</button>
+    </div>
+
+    <div id="charge-controls" style="display:none;">
+      <div class="slider-row">
+        <span class="slider-label">Charge (% de I2n)</span>
+        <input type="range" id="sl-charge" min="0" max="150" value="50" step="1" oninput="onLoadChange()">
+        <span class="slider-val" id="v-charge">50 %</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Facteur de puissance de la charge</span>
+        <select id="sel-pf" onchange="onLoadChange()">
+          <option value="1|resistive">1 (résistive pure)</option>
+          <option value="0.8|inductive" selected>0,8 arrière (inductive)</option>
+          <option value="0.8|capacitive">0,8 avant (capacitive)</option>
+          <option value="0.95|inductive">0,95 arrière (inductive)</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="hint">⚠️ En court-circuit, n'appliquez qu'une faible tension primaire (quelques % de V1n) : c'est le principe même de l'essai en court-circuit. À pleine tension, le transformateur sera détruit !</p>
+  </div>
+
+  <div class="transfo-zone">
+    <div class="transfo-box" id="transfo-box">TRANSFO<br>OK</div>
+    <div class="heat-wrap">
+      <div style="font-size:0.8rem;color:#555;margin-bottom:4px;">Échauffement</div>
+      <div class="heat-bar"><div class="heat-fill" id="heat-fill"></div></div>
+      <div class="status-msg" id="status-msg"></div>
+      <div class="hint" id="lives-msg"></div>
+      <button class="btn btn-orange" style="display:none;margin-top:8px;" id="btn-replace" onclick="replaceTransfo()">🔧 Installer un transformateur de remplacement</button>
+    </div>
+  </div>
+
+  <div class="readout-grid">
+    <div class="readout-card">
+      <h4>🔎 Mesures primaire (pince wattmétrique)</h4>
+      <div class="readout-line"><span>Tension efficace V1</span><b id="r-v1">--</b></div>
+      <div class="readout-line"><span>Courant efficace I1</span><b id="r-i1">--</b></div>
+      <div class="readout-line"><span>Puissance active P1</span><b id="r-p1">--</b></div>
+      <div class="readout-line"><span>Puissance réactive Q1</span><b id="r-q1">--</b></div>
+      <div class="readout-line"><span>Puissance apparente S1</span><b id="r-s1">--</b></div>
+      <div class="readout-line"><span>Facteur de puissance</span><b id="r-pf1">--</b></div>
+    </div>
+    <div class="readout-card">
+      <h4>🔎 Mesures secondaire</h4>
+      <div class="readout-line"><span>Tension efficace V2</span><b id="r-v2">--</b></div>
+      <div class="readout-line"><span>Courant efficace I2</span><b id="r-i2">--</b></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ TAB MODELE DE KAPP ═══════ -->
+<div id="tab-kapp" class="tab-content">
+  <div class="card white">
+    <div class="section-title">Le modèle équivalent de Kapp (ramené au secondaire)</div>
+    <p style="font-size:0.88rem;line-height:1.6;color:#444;margin-bottom:14px;">
+      Un transformateur réel n'est pas parfait : une partie de l'énergie primaire est perdue dans le fer du circuit magnétique,
+      une autre dans la résistance des enroulements, et le flux de fuite crée une chute de tension en charge.
+      Le modèle de Kapp représente ces imperfections par des éléments simples placés autour d'un transformateur idéal de rapport <b>m</b>.
+    </p>
+    <svg viewBox="0 0 640 260" style="width:100%;max-width:640px;display:block;margin:auto;">
+      <line x1="30" y1="60" x2="30" y2="200" stroke="#1f3c88" stroke-width="2"/>
+      <circle cx="30" cy="130" r="22" fill="none" stroke="#1f3c88" stroke-width="2"/>
+      <path d="M20,130 Q30,110 40,130 Q30,150 20,130" fill="none" stroke="#1f3c88" stroke-width="1.5"/>
+      <text x="30" y="235" text-anchor="middle" font-size="12" fill="#1f3c88">V1</text>
+      <line x1="30" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
+      <line x1="30" y1="200" x2="150" y2="200" stroke="#333" stroke-width="2"/>
+
+      <line x1="150" y1="60" x2="150" y2="90" stroke="#333" stroke-width="2"/>
+      <rect x="135" y="90" width="30" height="45" fill="none" stroke="#c0392b" stroke-width="2"/>
+      <line x1="150" y1="135" x2="150" y2="165" stroke="#333" stroke-width="2"/>
+      <text x="180" y="115" font-size="13" fill="#c0392b" font-weight="600">Rf</text>
+
+      <line x1="150" y1="165" x2="150" y2="200" stroke="#333" stroke-width="2"/>
+      <line x1="210" y1="60" x2="210" y2="90" stroke="#333" stroke-width="2"/>
+      <path d="M210,90 q8,10 0,20 q-8,10 0,20 q8,10 0,20" fill="none" stroke="#e07b00" stroke-width="2"/>
+      <line x1="210" y1="150" x2="210" y2="200" stroke="#333" stroke-width="2"/>
+      <text x="230" y="115" font-size="13" fill="#e07b00" font-weight="600">Lm</text>
+      <line x1="150" y1="60" x2="210" y2="60" stroke="#333" stroke-width="2"/>
+      <line x1="150" y1="200" x2="210" y2="200" stroke="#333" stroke-width="2"/>
+
+      <line x1="210" y1="60" x2="270" y2="60" stroke="#333" stroke-width="2"/>
+      <line x1="210" y1="200" x2="270" y2="200" stroke="#333" stroke-width="2"/>
+      <line x1="290" y1="70" x2="290" y2="190" stroke="#1f3c88" stroke-width="3"/>
+      <line x1="310" y1="70" x2="310" y2="190" stroke="#1f3c88" stroke-width="3"/>
+      <line x1="298" y1="60" x2="302" y2="60" stroke="#333" stroke-width="1"/>
+      <text x="300" y="30" text-anchor="middle" font-size="13" fill="#1f3c88" font-weight="700">m</text>
+      <line x1="270" y1="60" x2="290" y2="70" stroke="#333" stroke-width="2"/>
+      <line x1="270" y1="200" x2="290" y2="190" stroke="#333" stroke-width="2"/>
+      <line x1="310" y1="70" x2="330" y2="60" stroke="#333" stroke-width="2"/>
+      <line x1="310" y1="190" x2="330" y2="200" stroke="#333" stroke-width="2"/>
+
+      <line x1="330" y1="60" x2="370" y2="60" stroke="#333" stroke-width="2"/>
+      <rect x="370" y="50" width="45" height="20" fill="none" stroke="#c0392b" stroke-width="2"/>
+      <text x="392" y="42" text-anchor="middle" font-size="13" fill="#c0392b" font-weight="600">Rs</text>
+      <line x1="415" y1="60" x2="440" y2="60" stroke="#333" stroke-width="2"/>
+      <path d="M440,60 q6,-8 12,0 q6,8 12,0 q6,-8 12,0" fill="none" stroke="#e07b00" stroke-width="2"/>
+      <text x="464" y="42" text-anchor="middle" font-size="13" fill="#e07b00" font-weight="600">Xs</text>
+      <line x1="476" y1="60" x2="560" y2="60" stroke="#333" stroke-width="2"/>
+      <line x1="330" y1="200" x2="560" y2="200" stroke="#333" stroke-width="2"/>
+      <line x1="560" y1="60" x2="560" y2="200" stroke="#28a745" stroke-width="2" stroke-dasharray="4,3"/>
+      <text x="590" y="135" font-size="12" fill="#28a745">Charge</text>
+      <text x="560" y="235" text-anchor="middle" font-size="12" fill="#1f3c88">V2</text>
+    </svg>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">Ce que modélise chaque élément</div>
+    <ul class="def-list">
+      <li><b>m</b> — rapport de transformation à vide, \( m = \dfrac{V_{2}}{V_{1}} \) (sans dimension). Il caractérise le nombre de spires de chaque enroulement.</li>
+      <li><b>R<sub>f</sub></b> — résistance fictive placée au primaire, en parallèle. Elle modélise les <b>pertes fer</b> (pertes par hystérésis et par courants de Foucault dans le circuit magnétique). Elle est parcourue par le courant \(I_{fer}\), en phase avec V1.</li>
+      <li><b>L<sub>m</sub> (X<sub>m</sub>)</b> — inductance magnétisante, en parallèle avec Rf. Elle modélise le courant réactif \(I_{\mu}\) nécessaire pour créer le flux magnétique dans le circuit magnétique (en quadrature arrière avec V1).</li>
+      <li><b>R<sub>s</sub></b> — résistance série équivalente, ramenée au secondaire. Elle modélise les <b>pertes Joule</b> (pertes cuivre) dans les deux enroulements.</li>
+      <li><b>X<sub>s</sub></b> — réactance de fuite série équivalente, ramenée au secondaire. Elle modélise le flux de fuite (non canalisé par le circuit magnétique) et est responsable, avec Rs, de la <b>chute de tension</b> en charge.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Méthode expérimentale</div>
+    <p style="font-size:0.86rem;line-height:1.7;color:#444;">
+      <b>1. Essai à vide</b> (secondaire ouvert, V1 = V1n) : le courant I1 est faible, donc les pertes Joule sont négligeables.
+      La puissance active mesurée P1<sub>0</sub> représente alors les pertes fer. Le rapport V2/V1 donne m. La puissance réactive
+      Q1<sub>0</sub> permet de calculer Xm.<br><br>
+      <b>2. Essai en court-circuit</b> (secondaire en court-circuit, V1 réduit pour amener I2 à sa valeur nominale I2n) :
+      la tension étant faible, les pertes fer sont négligeables. La puissance active mesurée P1<sub>cc</sub> représente alors
+      les pertes Joule au courant nominal : \( R_s = \dfrac{P_{1cc}}{I_{2n}^2} \). L'impédance \( Z_s = \dfrac{m \cdot V_{1cc}}{I_{2n}} \)
+      permet ensuite d'obtenir Xs.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════ TAB FRESNEL & CHUTE DE TENSION ═══════ -->
+<div id="tab-fresnel" class="tab-content">
+  <div class="card white">
+    <div class="section-title">Diagramme de Fresnel du modèle de Kapp</div>
+    <p class="hint" style="margin-bottom:10px;">Passez en mode « Charge » avec un courant non nul dans l'onglet Banc d'essai pour visualiser la construction \( \vec{V_2} = \vec{V_{20}} - R_s\vec{I_2} - jX_s\vec{I_2} \).</p>
+    <canvas id="canvasFresnel" width="560" height="320"></canvas>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">Chute de tension en fonction de la charge</div>
+    <p class="hint">Réglez le mode Charge, ajustez le pourcentage de charge, puis cliquez sur « Enregistrer ce point » pour tracer V2 = f(I2). Gardez V1 constant (par exemple V1n) pendant toute la série de mesures.</p>
+    <div class="btn-row">
+      <button class="btn btn-blue" onclick="recordPoint()">📍 Enregistrer ce point</button>
+      <button class="btn btn-gray" onclick="clearPoints()">🗑️ Effacer les points</button>
+    </div>
+    <canvas id="canvasChute" width="560" height="320"></canvas>
+  </div>
+</div>
+
+<!-- ═══════ TAB QUESTIONS ═══════ -->
+<div id="tab-questions" class="tab-content">
+  <div class="score-bar">
+    <span>Score : <b id="q-score">0</b> / <b id="q-total">0</b> questions répondues</span>
+  </div>
+  <div id="questions-list"></div>
+  <button id="send" onclick="envoyerScore()">Envoyer le résultat</button>
+</div>
+
+</div><!-- /container -->
+
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// PARAMÈTRES DU TRANSFORMATEUR (générés aléatoirement, inconnus de l'élève)
+// ═══════════════════════════════════════════
+function rand(a,b){ return a+Math.random()*(b-a); }
+function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+const Vn1 = 230;
+const freq = 50;
+const omega = 2*Math.PI*freq;
+
+const Sn = choice([250,400,630,1000]);
+const V2n = choice([12,24,48,110]);
+const m = V2n/Vn1;
+const I1n = Sn/Vn1;
+const I2n = Sn/V2n;
+
+const pcu_pct = rand(0.02,0.04);
+const Rs = (pcu_pct*Sn)/(I2n*I2n);
+
+const ucc_pct = rand(0.04,0.08);
+const Zs = ucc_pct*V2n/I2n;
+const Xs = Math.sqrt(Math.max(Zs*Zs-Rs*Rs,0));
+
+const pfer_pct = rand(0.01,0.03);
+const Pfer = pfer_pct*Sn;
+const Rf = (Vn1*Vn1)/Pfer;
+
+const i10_pct = rand(0.03,0.08);
+const I10 = i10_pct*I1n;
+const S10 = Vn1*I10;
+const Q10 = Math.sqrt(Math.max(S10*S10-Pfer*Pfer,0));
+const Xm = (Vn1*Vn1)/Q10;
+const Lm = Xm/omega;
+
+const Pj_nominal = Rs*I2n*I2n;
+const P2_nominal = V2n*I2n*0.8; // cos phi = 0.8 pour la question rendement
+const rendement_nominal = P2_nominal/(P2_nominal+Pfer+Pj_nominal);
+
+// ═══════════════════════════════════════════
+// COMPLEXES
+// ═══════════════════════════════════════════
+function cMulReal(k,a){ return {re:k*a.re, im:k*a.im}; }
+function cDivReal(num, den){
+  const d2 = den.re*den.re+den.im*den.im;
+  return {re: num*den.re/d2, im: -num*den.im/d2};
+}
+function cMul(a,b){ return {re:a.re*b.re-a.im*b.im, im:a.re*b.im+a.im*b.re}; }
+function cAdd(a,b){ return {re:a.re+b.re, im:a.im+b.im}; }
+function cAbs(a){ return Math.hypot(a.re,a.im); }
+
+function computeTransformer(V1, mode, loadPct, pf, pfType){
+  let Zload;
+  if(mode==='ouvert') Zload = {re:1e9, im:0};
+  else if(mode==='cc') Zload = {re:0.001, im:0};
+  else {
+    const Imag = Math.max(loadPct/100*I2n, 1e-6);
+    const Vapprox = m*V1;
+    const Zmag = Vapprox/Imag;
+    const phi = Math.acos(pf) * (pfType==='capacitive'?-1:1);
+    Zload = {re: Zmag*Math.cos(phi), im: Zmag*Math.sin(phi)};
+  }
+  const V20 = m*V1;
+  const Ztot = {re: Zload.re+Rs, im: Zload.im+Xs};
+  const I2 = cDivReal(V20, Ztot);
+  const V2c = cMul(Zload, I2);
+
+  const Ife = {re: V1/Rf, im:0};
+  const Imagc = {re:0, im: -V1/Xm};
+  const I10c = cAdd(Ife, Imagc);
+  const I1c = cAdd(I10c, cMulReal(m, I2));
+
+  const I1mag = cAbs(I1c);
+  const P1 = V1*I1c.re;
+  const Q1 = -V1*I1c.im;
+  const S1 = V1*I1mag;
+  const PF1 = S1>1e-9? P1/S1 : 1;
+
+  return {
+    I1:I1mag, P1, Q1, S1, PF1,
+    V2:cAbs(V2c), I2:cAbs(I2),
+    V2re:V2c.re, V2im:V2c.im,
+    I2re:I2.re, I2im:I2.im,
+    V20
+  };
+}
+
+// ═══════════════════════════════════════════
+// ÉTAT DU BANC D'ESSAI
+// ═══════════════════════════════════════════
+let state = { V1:0, mode:'ouvert', loadPct:50, pf:0.8, pfType:'inductive' };
+let dead = false;
+let lives = 2; // transformateurs de secours
+let heat = 0;
+let points = [];
+
+function onV1Change(){
+  state.V1 = parseFloat(document.getElementById('sl-v1').value);
+  document.getElementById('v-v1').textContent = state.V1 + ' V';
+  updateAll();
+}
+function onLoadChange(){
+  state.loadPct = parseFloat(document.getElementById('sl-charge').value);
+  document.getElementById('v-charge').textContent = state.loadPct + ' %';
+  const [pf,type] = document.getElementById('sel-pf').value.split('|');
+  state.pf = parseFloat(pf);
+  state.pfType = type;
+  updateAll();
+}
+function setMode(mode){
+  if(dead) return;
+  state.mode = mode;
+  ['ouvert','cc','charge'].forEach(m2=>{
+    document.getElementById('mode-'+m2).classList.toggle('active', m2===mode);
+  });
+  document.getElementById('charge-controls').style.display = (mode==='charge')?'block':'none';
+  updateAll();
+}
+
+function fmt(v, unit, dec){
+  if(dead) return '---';
+  return v.toFixed(dec===undefined?2:dec) + ' ' + unit;
+}
+
+function updateAll(){
+  const r = computeTransformer(state.V1, state.mode, state.loadPct, state.pf, state.pfType);
+  document.getElementById('r-v1').textContent = fmt(state.V1,'V',1);
+  document.getElementById('r-i1').textContent = fmt(r.I1,'A',3);
+  document.getElementById('r-p1').textContent = fmt(r.P1,'W',1);
+  document.getElementById('r-q1').textContent = fmt(r.Q1,'var',1);
+  document.getElementById('r-s1').textContent = fmt(r.S1,'VA',1);
+  document.getElementById('r-pf1').textContent = dead?'---':r.PF1.toFixed(3);
+  document.getElementById('r-v2').textContent = fmt(r.V2,'V',2);
+  document.getElementById('r-i2').textContent = fmt(r.I2,'A',3);
+  drawFresnel(r);
+  drawChute();
+  return r;
+}
+
+// ═══════════════════════════════════════════
+// PLAQUE SIGNALÉTIQUE
+// ═══════════════════════════════════════════
+document.getElementById('pl-sn').textContent = Sn + ' VA';
+document.getElementById('pl-v1n').textContent = Vn1 + ' V';
+document.getElementById('pl-f').textContent = freq + ' Hz';
+
+// ═══════════════════════════════════════════
+// THERMIQUE / DESTRUCTION
+// ═══════════════════════════════════════════
+function destroy(msg){
+  dead = true;
+  lives--;
+  document.getElementById('transfo-box').className = 'transfo-box dead';
+  document.getElementById('transfo-box').innerHTML = '💀 MORT';
+  const sm = document.getElementById('status-msg');
+  sm.className = 'status-msg dead';
+  sm.textContent = '⚠️ Le transformateur est mort ! ' + msg;
+  ['sl-v1','sl-charge','sel-pf'].forEach(id=>document.getElementById(id).disabled=true);
+  document.getElementById('mode-ouvert').disabled = true;
+  document.getElementById('mode-cc').disabled = true;
+  document.getElementById('mode-charge').disabled = true;
+  if(lives>=0){
+    document.getElementById('btn-replace').style.display='inline-block';
+    document.getElementById('lives-msg').textContent = lives+' transformateur(s) de remplacement restant(s).';
+  } else {
+    document.getElementById('btn-replace').style.display='none';
+    document.getElementById('lives-msg').textContent = "Plus aucun transformateur disponible : relancez l'exercice pour recommencer.";
+  }
+  updateAll();
+}
+
+function replaceTransfo(){
+  dead = false;
+  heat = 0;
+  document.getElementById('transfo-box').className = 'transfo-box';
+  document.getElementById('transfo-box').innerHTML = 'TRANSFO<br>OK';
+  document.getElementById('status-msg').className = 'status-msg';
+  document.getElementById('status-msg').textContent = '';
+  document.getElementById('btn-replace').style.display='none';
+  document.getElementById('lives-msg').textContent='';
+  ['sl-v1','sl-charge','sel-pf'].forEach(id=>document.getElementById(id).disabled=false);
+  document.getElementById('mode-ouvert').disabled = false;
+  document.getElementById('mode-cc').disabled = false;
+  document.getElementById('mode-charge').disabled = false;
+  document.getElementById('sl-v1').value = 0;
+  state.V1 = 0;
+  document.getElementById('v-v1').textContent = '0 V';
+  updateAll();
+}
+
+setInterval(function(){
+  if(dead) return;
+  const r = computeTransformer(state.V1, state.mode, state.loadPct, state.pf, state.pfType);
+  const dt = 0.4;
+
+  if(state.V1 > 1.4*Vn1){ destroy('(surtension : claquage dielectrique de l isolant)'); return; }
+  if(r.I2 > 8*I2n){ destroy('(courant destructeur : court-circuit sous tension trop élevée)'); return; }
+
+  let heatRate = 0;
+  const ratio = I2n>0? r.I2/I2n : 0;
+  if(ratio>1) heatRate += (ratio*ratio-1)*6;
+  else heatRate -= 8;
+  if(state.V1 > 1.15*Vn1) heatRate += (state.V1/Vn1-1.15)*50;
+
+  heat = Math.max(0, Math.min(100, heat+heatRate*dt));
+  document.getElementById('heat-fill').style.width = heat+'%';
+  const box = document.getElementById('transfo-box');
+  if(!dead){
+    box.className = 'transfo-box' + (heat>60?' warm':'');
+  }
+  if(heat>=100){ destroy('(surchauffe thermique prolongée)'); }
+}, 400);
+
+// ═══════════════════════════════════════════
+// DIAGRAMME DE FRESNEL
+// ═══════════════════════════════════════════
+function drawArrow(ctx,x1,y1,x2,y2,color,label){
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const angle=Math.atan2(y2-y1,x2-x1);
+  const hs=8;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hs*Math.cos(angle-Math.PI/6), y2-hs*Math.sin(angle-Math.PI/6));
+  ctx.lineTo(x2-hs*Math.cos(angle+Math.PI/6), y2-hs*Math.sin(angle+Math.PI/6));
+  ctx.closePath(); ctx.fill();
+  ctx.font='12px Arial'; ctx.textAlign='left';
+  ctx.fillText(label, (x1+x2)/2+4, (y1+y2)/2-4);
+}
+
+function drawFresnel(r){
+  const canvas=document.getElementById('canvasFresnel');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  if(dead || state.mode!=='charge' || r.I2<0.01){
+    ctx.fillStyle='#888'; ctx.font='13px Arial'; ctx.textAlign='center';
+    ctx.fillText('Passez en mode Charge (courant non nul) pour afficher le diagramme.', W/2, H/2);
+    return;
+  }
+  const originX=100, originY=H-60;
+  const V20v={re:r.V20,im:0};
+  const RsI2={re:Rs*r.I2re, im:Rs*r.I2im};
+  const XsI2={re:-Xs*r.I2im, im:Xs*r.I2re};
+  const p0={re:0,im:0};
+  const p1=V20v;
+  const p2={re:p1.re-RsI2.re, im:p1.im-RsI2.im};
+  const p3={re:p2.re-XsI2.re, im:p2.im-XsI2.im};
+  const maxMag=Math.max(cAbs(p1),cAbs(p3),1e-6);
+  const scale=180/maxMag;
+  function toPx(v){ return {x: originX+v.re*scale, y: originY-v.im*scale}; }
+
+  ctx.strokeStyle='#ccc'; ctx.beginPath(); ctx.moveTo(20,originY); ctx.lineTo(W-20,originY); ctx.stroke();
+
+  drawArrow(ctx, toPx(p0).x,toPx(p0).y, toPx(p1).x,toPx(p1).y, '#1f3c88', 'V20 = m·V1');
+  drawArrow(ctx, toPx(p1).x,toPx(p1).y, toPx(p2).x,toPx(p2).y, '#c0392b', 'Rs·I2');
+  drawArrow(ctx, toPx(p2).x,toPx(p2).y, toPx(p3).x,toPx(p3).y, '#e07b00', 'jXs·I2');
+  drawArrow(ctx, toPx(p0).x,toPx(p0).y, toPx(p3).x,toPx(p3).y, '#28a745', 'V2');
+}
+
+// ═══════════════════════════════════════════
+// CHUTE DE TENSION V2 = f(I2)
+// ═══════════════════════════════════════════
+function recordPoint(){
+  if(dead){ alert('Le transformateur est mort, remplacez-le avant de mesurer.'); return; }
+  if(state.mode!=='charge'){ alert('Passez en mode Charge pour enregistrer un point de mesure.'); return; }
+  const r = computeTransformer(state.V1, state.mode, state.loadPct, state.pf, state.pfType);
+  points.push({I2:r.I2, V2:r.V2});
+  drawChute();
+}
+function clearPoints(){ points=[]; drawChute(); }
+
+function drawChute(){
+  const canvas=document.getElementById('canvasChute');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const mg={l:55,r:20,t:20,b:40};
+  const pw=W-mg.l-mg.r, ph=H-mg.t-mg.b;
+  const maxI=I2n*1.6, maxV=V2n*1.15;
+
+  ctx.strokeStyle='#333'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(mg.l,mg.t); ctx.lineTo(mg.l,mg.t+ph); ctx.lineTo(mg.l+pw,mg.t+ph); ctx.stroke();
+  ctx.fillStyle='#333'; ctx.font='11px Arial'; ctx.textAlign='center';
+  ctx.fillText('I2 (A)', mg.l+pw/2, H-8);
+  ctx.save(); ctx.translate(14, mg.t+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText('V2 (V)',0,0); ctx.restore();
+
+  function X(i){ return mg.l + Math.min(i/maxI,1)*pw; }
+  function Y(v){ return mg.t+ph - Math.min(Math.max(v,0)/maxV,1)*ph; }
+
+  const V20now = m*state.V1;
+  ctx.setLineDash([4,3]); ctx.strokeStyle='#aaa';
+  ctx.beginPath(); ctx.moveTo(X(0),Y(V20now)); ctx.lineTo(X(maxI),Y(V20now)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#aaa'; ctx.font='11px Arial'; ctx.textAlign='left';
+  ctx.fillText('V20 = m·V1 (actuel)', mg.l+4, Y(V20now)-4);
+
+  if(points.length>0){
+    ctx.strokeStyle='#1f3c88'; ctx.lineWidth=2;
+    ctx.beginPath();
+    points.forEach((p,idx)=>{ const x=X(p.I2),y=Y(p.V2); if(idx===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke();
+    ctx.fillStyle='#e07b00';
+    points.forEach(p=>{ const x=X(p.I2),y=Y(p.V2); ctx.beginPath(); ctx.arc(x,y,4,0,2*Math.PI); ctx.fill(); });
+  }
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function showTab(id, el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='fresnel') updateAll();
+}
+
+// ═══════════════════════════════════════════
+// QUESTIONS
+// ═══════════════════════════════════════════
+let theme = "33";
+let nomExo = "exo7";
+
+const questions = [
+  { type:'calc', q:"À partir de l'essai à vide (V1 = V1n), déterminez le rapport de transformation m = V2/V1.",
+    reponse:m, tol:0.06, unite:"",
+    fb:`m = V2/V1 = ${m.toFixed(4)} (soit V2n ≈ ${V2n} V pour V1n = ${Vn1} V)` },
+  { type:'calc', q:"Toujours à vide sous V1n, déterminez les pertes fer Pfer (en W) à partir de la puissance active mesurée au primaire.",
+    reponse:Pfer, tol:0.1, unite:"W",
+    fb:`À vide, le courant est faible : les pertes Joule sont négligeables, donc P1₀ ≈ Pfer = ${arrondi(Pfer)} W.` },
+  { type:'calc', q:"En déduire la résistance fictive de pertes fer Rf (en Ω), ramenée au primaire.",
+    reponse:Rf, tol:0.15, unite:"Ω",
+    fb:`Rf = V1n² / Pfer = ${arrondi(Rf)} Ω.` },
+  { type:'calc', q:"À l'aide de la puissance réactive Q1₀ mesurée à vide, déterminez la réactance magnétisante Xm (en Ω).",
+    reponse:Xm, tol:0.2, unite:"Ω",
+    fb:`Xm = V1n² / Q1₀ = ${arrondi(Xm)} Ω (soit Lm = Xm/ω ≈ ${(Lm*1000).toFixed(1)} mH).` },
+  { type:'calc', q:"Faites l'essai en court-circuit (V1 réduit) pour amener I2 à sa valeur nominale I2n = "+arrondi(I2n)+" A. Déterminez Rs (en Ω), ramenée au secondaire, à partir de la puissance active mesurée.",
+    reponse:Rs, tol:0.1, unite:"Ω",
+    fb:`En court-circuit, la tension est faible donc les pertes fer sont négligeables : Rs = P1cc / I2n² = ${arrondi(Rs)} Ω.` },
+  { type:'calc', q:"Déterminez la réactance de fuite Xs (en Ω) à partir de l'impédance de court-circuit ramenée au secondaire.",
+    reponse:Xs, tol:0.15, unite:"Ω",
+    fb:`Zs = m·V1cc / I2n, puis Xs = √(Zs² − Rs²) = ${arrondi(Xs)} Ω.` },
+  { type:'calc', q:"Calculez les pertes Joule (en W) au courant secondaire nominal I2n = "+arrondi(I2n)+" A.",
+    reponse:Pj_nominal, tol:0.1, unite:"W",
+    fb:`Pj = Rs × I2n² = ${arrondi(Pj_nominal)} W.` },
+  { type:'calc', q:"Pour une charge nominale à cos φ2 = 0,8 arrière, calculez le rendement du transformateur (en %).",
+    reponse:rendement_nominal*100, tol:0.1, unite:"%",
+    fb:`η = P2 / (P2 + Pfer + Pj) avec P2 = V2n·I2n·cosφ2 ≈ ${arrondi(rendement_nominal*100)} %.` },
+  { type:'qcm', q:"Que modélise l'élément Rf du modèle de Kapp ?",
+    options:["Les pertes Joule dans les enroulements","Les pertes fer dans le circuit magnétique","La chute de tension en charge","Le courant magnétisant"],
+    answer:1, fb:"Rf modélise les pertes fer (hystérésis + courants de Foucault) : c'est pour cela qu'on la détermine par l'essai à vide." },
+  { type:'qcm', q:"Que modélisent Rs et Xs ensemble ?",
+    options:["Les pertes fer","Le rapport de transformation","Les pertes Joule et la chute de tension en charge","Le courant magnétisant"],
+    answer:2, fb:"Rs (résistif) et Xs (fuite) sont responsables des pertes Joule et de la chute de tension quand le transformateur est en charge." },
+  { type:'qcm', q:"Pourquoi l'essai en court-circuit se fait-il sous tension primaire réduite et non sous V1n ?",
+    options:["Pour économiser de l'énergie","Pour éviter un courant secondaire destructeur, puisque l'impédance de court-circuit est très faible","Parce que le fer ne peut pas fonctionner en court-circuit","Cela n'a pas d'importance"],
+    answer:1, fb:"L'impédance série (Rs, Xs) est très faible : sous V1n, le courant serait très supérieur au courant nominal et détruirait le transformateur." },
+  { type:'qcm', q:"Lors de l'essai à vide, pourquoi peut-on assimiler la puissance active mesurée aux pertes fer ?",
+    options:["Parce que le courant à vide est faible, donc les pertes Joule associées sont négligeables","Parce qu'il n'y a pas de courant du tout","Parce que Rs est nulle","Ce n'est jamais vrai"],
+    answer:0, fb:"Le courant à vide I10 est faible devant I1n : les pertes Joule (en I²) sont donc négligeables devant les pertes fer." }
+];
+
+let qScores = new Array(questions.length).fill(null);
+let nbquestion = questions.length;
+
+function buildQuestions(){
+  const list=document.getElementById('questions-list');
+  list.innerHTML='';
+  questions.forEach((q,qi)=>{
+    const div=document.createElement('div');
+    div.className='question-block';
+    if(q.type==='qcm'){
+      const buttons=q.options.map((opt,oi)=>
+        '<button class="q-opt" onclick="answerQCM('+qi+','+oi+',this)">'+opt+'</button>'
+      ).join('');
+      div.innerHTML = `<p><b>Question ${qi+1} :</b> ${q.q}</p>
+        <div class="q-options">${buttons}</div>
+        <div class="q-feedback" id="qfb-${qi}"></div>`;
+    } else {
+      div.innerHTML = `<p><b>Question ${qi+1} :</b> ${q.q}</p>
+        <input type="number" step="any" id="qi-${qi}">
+        <span>${q.unite}</span>
+        <button class="btn btn-blue" onclick="answerCalc(${qi})">Valider</button>
+        <div class="q-feedback" id="qfb-${qi}"></div>`;
+    }
+    list.appendChild(div);
+  });
+  MathJax.typeset();
+}
+
+function refreshScore(){
+  score = qScores.filter(s=>s===1).length;
+  document.getElementById('q-score').textContent = score;
+  document.getElementById('q-total').textContent = qScores.filter(s=>s!==null).length;
+}
+
+function answerCalc(qi){
+  if(qScores[qi]!==null) return;
+  const q=questions[qi];
+  const input=document.getElementById('qi-'+qi);
+  const fb=document.getElementById('qfb-'+qi);
+  const val=parseFloat(input.value);
+  if(isNaN(val)){ fb.className='q-feedback show ko'; fb.textContent='Merci de saisir une valeur numérique.'; return; }
+  const tol = q.tol!==undefined? q.tol : 0.1;
+  const ok = Math.abs(val-q.reponse) <= tol*Math.max(Math.abs(q.reponse),1e-9);
+  if(ok){ qScores[qi]=1; fb.className='q-feedback show ok'; fb.textContent='✅ Correct ! '+q.fb; }
+  else { qScores[qi]=0; fb.className='q-feedback show ko'; fb.textContent='❌ Pas tout à fait. '+q.fb; }
+  input.disabled=true;
+  refreshScore();
+  MathJax.typeset();
+}
+
+function answerQCM(qi, oi, btn){
+  if(qScores[qi]!==null) return;
+  const q=questions[qi];
+  const fb=document.getElementById('qfb-'+qi);
+  if(oi===q.answer){
+    btn.classList.add('correct'); qScores[qi]=1;
+    fb.className='q-feedback show ok'; fb.textContent='✅ Correct ! '+q.fb;
+  } else {
+    btn.classList.add('wrong'); qScores[qi]=0;
+    fb.className='q-feedback show ko'; fb.textContent='❌ Incorrect. '+q.fb;
+    btn.parentElement.querySelectorAll('.q-opt')[q.answer].classList.add('correct');
+  }
+  btn.parentElement.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+  refreshScore();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.onload = function(){
+  buildQuestions();
+  updateAll();
+};
+</script>
+</body>
+</html>

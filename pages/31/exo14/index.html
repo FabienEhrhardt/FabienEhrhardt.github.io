@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP – Contrôleur d'installation CA 6116N</title>
+<style>
+:root {
+  --blue: #1f3c88;
+  --blue-light: #f0f4ff;
+  --green: #28a745;
+  --green-dark: #1e7e34;
+  --green-light: #eafaf0;
+  --orange: #e07b00;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --gray: #888;
+  --gray-light: #f5f5f5;
+  --border: #dde3f0;
+  --radius: 10px;
+}
+* { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: linear-gradient(135deg, #f4f6f9, #e9eef5); min-height: 100vh; padding: 20px; }
+.container { max-width: 1150px; margin: auto; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+.page-header { background: var(--blue); color: white; padding: 22px 30px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; }
+.page-header p { font-size: 0.88rem; opacity: 0.85; margin-top: 4px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--gray-light); flex-wrap: wrap; }
+.tab-btn { padding: 10px 14px; border: none; background: none; cursor: pointer; font-size: 0.8rem; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: white; font-weight: 600; }
+.tab-btn:hover:not(.active) { color: var(--blue); background: #eef2ff; }
+.tab-content { display: none; padding: 24px 30px; }
+.tab-content.active { display: block; }
+h2.mtitle { font-size: 1.15rem; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+.subtitle { font-size: 0.85rem; color: var(--gray); margin-bottom: 16px; }
+.section-title { font-size: 0.95rem; font-weight: 700; color: var(--blue); border-left: 4px solid var(--blue); padding-left: 10px; margin: 18px 0 10px; }
+.card { background: var(--blue-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.6; color: #333; }
+.safety-box { border-radius: var(--radius); padding: 12px 18px; margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; display:flex; align-items:center; gap:10px; }
+.safety-tension { background: var(--red-light); border: 2px solid var(--red); color: var(--red); }
+.safety-hors { background: var(--green-light); border: 2px solid var(--green); color: var(--green-dark); }
+.safety-icon { font-size: 1.4rem; }
+.wiring-box { background: white; border: 1px dashed var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; font-size: 0.87rem; }
+.wiring-box ul { margin: 6px 0 0 20px; }
+.wiring-box li { margin-bottom: 4px; }
+.badge-term { display:inline-block; padding: 1px 8px; border-radius: 5px; font-weight: 700; font-size: 0.78rem; color:white; margin-right:4px; }
+.b-rouge { background:#c0392b; } .b-bleu { background:#2874a6; } .b-vert { background:#1e8449; }
+.b-noir { background:#333; } .b-gris { background:#888; }
+table.param-table { width:100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 6px; }
+table.param-table th, table.param-table td { border: 1px solid var(--border); padding: 7px 10px; text-align:left; vertical-align: top; }
+table.param-table th { background: var(--blue); color:white; font-size: 0.8rem; }
+table.param-table tr:nth-child(even) { background: #f7f9ff; }
+.nfc-box { background: #fff8ee; border: 1px solid var(--orange); border-left: 5px solid var(--orange); border-radius: 8px; padding: 12px 18px; font-size: 0.87rem; line-height: 1.6; margin-top: 8px; }
+.nfc-box b { color: var(--orange); }
+.result-box { background: #f5f5f5; border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; font-size: 0.87rem; line-height: 1.6; }
+.recap-wrap { overflow-x:auto; }
+.pill { display:inline-block; padding:2px 9px; border-radius:12px; font-size:0.72rem; font-weight:700; }
+.pill-tension { background: var(--red-light); color: var(--red); border:1px solid var(--red); }
+.pill-hors { background: var(--green-light); color: var(--green-dark); border:1px solid var(--green); }
+.question-block { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.question-block p { font-size: 0.92rem; margin-bottom: 10px; line-height: 1.6; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-opt { padding: 8px 14px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; font-size: 0.88rem; background: white; text-align: left; transition: 0.15s; }
+.q-opt:hover { background: var(--blue-light); border-color: var(--blue); }
+.q-opt.correct { background: #e8f8e8; border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+.q-opt.wrong { background: #fde8e8; border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+.q-feedback { margin-top: 8px; font-size: 0.84rem; padding: 8px 12px; border-radius: 6px; display: none; }
+.q-feedback.show { display: block; }
+.q-feedback.ok { background: #e8f8e8; color: var(--green-dark); }
+.q-feedback.ko { background: #fde8e8; color: var(--red); }
+.score-bar { background: var(--blue-light); border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.score-bar span { font-size: 0.88rem; color: var(--blue); font-weight: 500; }
+#send { background: #28a745; color: white; border: none; padding: 9px 22px; border-radius: 6px; cursor: pointer; font-size:0.9rem; font-weight:600; }
+#send:hover { background: #1e7e34; }
+@media (max-width: 700px) { .tab-btn { font-size: 0.72rem; padding: 8px 10px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>🔌 TP – Prise en main du contrôleur d'installation CA 6116N</h1>
+  <p>Chauvin Arnoux CA 6116N — Paramétrage des mesures selon la norme NF C 15-100</p>
+</div>
+
+<div class="tabs" id="tabsNav"></div>
+<div id="tabsContainer"></div>
+
+</div><!-- /container -->
+
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════
+// DONNÉES DES ONGLETS "MESURES"
+// ═══════════════════════════════════════════════
+let theme = "31";
+let nomExo = "exo14";
+let score = 0;
+let nbquestion = 10;
+
+const onglets = [
+
+{
+  id:"intro", icon:"📋", label:"Prise en main",
+  html:`
+  <h2 class="mtitle">Le contrôleur d'installation, à quoi ça sert ?</h2>
+  <p class="subtitle">Vérifier qu'une installation électrique respecte la norme NF C 15-100 avant sa mise en service, et diagnostiquer une installation existante.</p>
+
+  <div class="card">
+  Le CA 6116N est un appareil de mesure portatif qui regroupe, sur un seul commutateur à 13 positions, toutes les mesures nécessaires à la <b>vérification réglementaire d'une installation basse tension</b> : tension, continuité, isolement, prise de terre, impédance de boucle, test des différentiels, courant, sens de rotation des phases, puissance et harmoniques.
+  </div>
+
+  <div class="section-title">Les commandes de l'appareil</div>
+  <div class="wiring-box">
+  <ul>
+    <li><b>Commutateur central</b> : sélectionne la fonction de mesure (ou OFF / SET-UP).</li>
+    <li><b>4 touches de fonction</b> : leur rôle change selon l'écran affiché (icônes en bas de l'écran).</li>
+    <li><b>Bouton TEST</b> : lance la mesure.</li>
+    <li><b>Pavé directionnel + OK</b> : navigation dans les menus et la mémoire.</li>
+    <li><b>Touche d'aide (?)</b> : affiche le schéma de branchement de la fonction en cours — à utiliser sans hésiter en TP !</li>
+    <li><b>Bornes</b> : L / N / PE (cordon tripode), Ω / COM (continuité), MΩ (isolement), H / S / E (terre 3P), RA SEL (piquet auxiliaire), I (pince ampèremétrique).</li>
+  </ul>
+  </div>
+
+  <div class="section-title">La distinction la plus importante : sous tension ou hors tension ?</div>
+  <div class="safety-box safety-tension"><span class="safety-icon">⚡</span> SOUS TENSION : l'installation reste alimentée. L'appareil injecte un courant très faible (quelques mA), sans danger, pour mesurer à travers l'installation en fonctionnement.</div>
+  <div class="safety-box safety-hors"><span class="safety-icon">🔒</span> HORS TENSION : l'installation (ou la partie testée) doit être coupée et vérifiée hors tension avant de brancher l'appareil. Certaines mesures (isolement) génèrent elles-mêmes une tension d'essai dangereuse.</div>
+  <p style="font-size:0.85rem;color:#555;margin-bottom:14px;">Avant toute mesure hors tension : coupez l'alimentation, <b>vérifiez l'absence de tension</b> (VAT) avec l'appareil lui-même (il affiche toujours la tension en entrant dans une fonction), consignez si besoin.</p>
+
+  <div class="section-title">Vue d'ensemble des 13 mesures</div>
+  <div class="recap-wrap">
+  <table class="param-table">
+  <tr><th>Mesure</th><th>Régime</th><th>Obligatoire NF C15-100 ?</th></tr>
+  <tr><td>Tension</td><td><span class="pill pill-tension">Sous tension</span></td><td>Préalable systématique</td></tr>
+  <tr><td>Continuité / Résistance</td><td><span class="pill pill-hors">Hors tension</span></td><td>Oui — continuité du PE</td></tr>
+  <tr><td>Isolement</td><td><span class="pill pill-hors">Hors tension</span></td><td>Oui — résistance d'isolement</td></tr>
+  <tr><td>Terre 3P</td><td><span class="pill pill-hors">Hors tension</span></td><td>Oui — si installation neuve / barrette ouverte</td></tr>
+  <tr><td>Boucle Zs</td><td><span class="pill pill-tension">Sous tension</span></td><td>Oui — dimensionnement des protections (TN/TT)</td></tr>
+  <tr><td>Terre sous tension (Ra/Za)</td><td><span class="pill pill-tension">Sous tension</span></td><td>Oui — schéma TT sans couper l'installation</td></tr>
+  <tr><td>Terre sélective</td><td><span class="pill pill-tension">Sous tension</span></td><td>Complémentaire — plusieurs terres en parallèle</td></tr>
+  <tr><td>Impédance de ligne Zi</td><td><span class="pill pill-tension">Sous tension</span></td><td>Oui — tout régime de neutre, notamment IT</td></tr>
+  <tr><td>Test différentiel (RCD)</td><td><span class="pill pill-tension">Sous tension</span></td><td>Oui — obligatoire</td></tr>
+  <tr><td>Courant / courant de fuite</td><td><span class="pill pill-tension">Sous tension</span></td><td>Diagnostic</td></tr>
+  <tr><td>Sens de rotation de phase</td><td><span class="pill pill-tension">Sous tension</span></td><td>Avant raccordement moteur triphasé</td></tr>
+  <tr><td>Puissance</td><td><span class="pill pill-tension">Sous tension</span></td><td>Diagnostic / bilan énergétique</td></tr>
+  <tr><td>Harmoniques</td><td><span class="pill pill-tension">Sous tension</span></td><td>Diagnostic qualité du réseau</td></tr>
+  </table>
+  </div>
+
+  <div class="section-title">Seuils réglementaires indicatifs à retenir</div>
+  <div class="nfc-box">
+  <b>Isolement</b> — R ≥ 0,25 MΩ sous 250 V DC (TBT / milieu humide) · R ≥ 0,5 MΩ sous 500 V DC (circuits ≤ 500 V, cas domestique standard) · R ≥ 1 MΩ sous 1000 V DC (circuits &gt; 500 V).<br><br>
+  <b>Prise de terre (schéma TT)</b> — R<sub>A</sub> × I<sub>Δn</sub> ≤ U<sub>L</sub> (U<sub>L</sub> = 50 V en local sec, 25 V en local humide).<br><br>
+  <b>Impédance de boucle Zs (schéma TN)</b> — Z<sub>s</sub> ≤ U<sub>0</sub> / I<sub>a</sub>, où I<sub>a</sub> est le courant qui assure le déclenchement du disjoncteur dans le temps de coupure maximal imposé (dépend du calibre et de la courbe du disjoncteur, voir tableau normatif).<br><br>
+  <b>Différentiel</b> — doit déclencher entre I<sub>Δn</sub> et 2×I<sub>Δn</sub> en moins de 300 ms (type standard) ou 500 ms (type S), et ne doit pas déclencher à 0,5×I<sub>Δn</sub>.<br><br>
+  Ces valeurs sont indicatives : reportez-vous toujours au tableau complet de la norme et au calibre réel des protections installées.
+  </div>
+  `
+},
+
+{
+  id:"tension", icon:"⚡", label:"Tension",
+  safety:"tension",
+  intro:"L'appareil mesure en permanence la tension présente sur ses bornes, quelle que soit la position du commutateur (sauf SET-UP). C'est la toute première vérification avant d'engager une autre mesure.",
+  wiring:[
+    "Cordon tripode : <span class='badge-term b-rouge'>L</span> phase, <span class='badge-term b-bleu'>N</span> neutre, <span class='badge-term b-vert'>PE</span> terre.",
+    "Ou pointes de touche directement sur les bornes à contrôler."
+  ],
+  param:[["Aucun paramétrage requis","L'appareil détermine automatiquement AC/DC, la fréquence et la position de la phase par rapport au PE."]],
+  result:"Affichage simultané de U<sub>L-PE</sub>, U<sub>L-N</sub>, U<sub>N-PE</sub> et de la fréquence. Le symbole de phase confirme le bon branchement du cordon.",
+  nfc:"Permet de vérifier la tension nominale de l'installation et la présence effective du conducteur de protection avant toute mesure hors tension."
+},
+
+{
+  id:"continuite", icon:"🔗", label:"Continuité",
+  safety:"hors",
+  intro:"Mesure la résistance d'un conducteur (typiquement le PE, ou une liaison équipotentielle) en générant un faible courant continu entre les bornes Ω et COM.",
+  wiring:[
+    "Cordons branchés sur <span class='badge-term b-noir'>Ω</span> et <span class='badge-term b-gris'>COM</span>, aux deux extrémités du conducteur à tester.",
+    "L'objet testé ne doit <b>jamais</b> être sous tension."
+  ],
+  param:[
+    ["Courant de mesure","200 mA (conforme IEC 61557, obligatoire pour une mesure normative avec inversion de polarité) ou 12 mA (confort, préserve l'autonomie) ou kΩ pour une résistance plus élevée."],
+    ["Mode","Impulsion (une mesure) ou permanent (mesure en continu)."],
+    ["Compensation des cordons","À effectuer avant la mesure si des cordons non fournis sont utilisés (menu dédié)."],
+    ["Seuil d'alarme","2 Ω par défaut — signal sonore si la mesure est inférieure au seuil (validation de la continuité)."]
+  ],
+  result:"R+, R- (mesure bidirectionnelle sous 200 mA) et R moyenne. Un résultat négatif indique un défaut de compensation des cordons.",
+  nfc:"Vérifie la continuité du conducteur de protection PE et des liaisons équipotentielles — exigence NF C 15-100 sur tout circuit."
+},
+
+{
+  id:"isolement", icon:"🛡️", label:"Isolement",
+  safety:"hors",
+  intro:"L'appareil applique une tension d'essai continue (jusqu'à 1000 V) entre les bornes COM et MΩ et calcule R = U / I. Mesure potentiellement dangereuse : ne jamais toucher les pointes de touche pendant l'essai.",
+  wiring:[
+    "Cordons sur <span class='badge-term b-gris'>COM</span> et <span class='badge-term b-noir'>MΩ</span>.",
+    "Mesure typique : entre phase(s)+neutre reliés d'un côté, et la terre de l'autre.",
+    "Utiliser deux cordons simples (pas le cordon tripode) pour éviter les fuites qui faussent la mesure.",
+    "L'installation doit être hors tension et déconnectée de toute charge sensible (électronique)."
+  ],
+  param:[
+    ["Tension d'essai U<sub>N</sub>","50, 100, 250, 500 ou 1000 V selon le circuit testé."],
+    ["Seuil d'alarme","Par défaut R = U<sub>N</sub> / 1 mA."],
+    ["Indexation","Possibilité d'indexer la mesure (L-N, L-PE, L1-PE, etc.) pour localiser un défaut."]
+  ],
+  result:"Résistance d'isolement en MΩ. Le bargraphe permet une lecture rapide si la mesure est instable (charge capacitive).",
+  nfc:"R ≥ 0,25 MΩ sous 250 V DC (TBT) · R ≥ 0,5 MΩ sous 500 V DC (circuits ≤ 500 V — cas standard 230/400 V) · R ≥ 1 MΩ sous 1000 V DC (circuits > 500 V)."
+},
+
+{
+  id:"terre3p", icon:"🌍", label:"Terre 3P",
+  safety:"hors",
+  intro:"Seule méthode permettant de mesurer une résistance de terre sur une installation neuve, hors tension, à l'aide de deux piquets auxiliaires (méthode dite des « 62 % »).",
+  wiring:[
+    "Piquets branchés sur <span class='badge-term b-noir'>H</span> et <span class='badge-term b-bleu'>S</span>, alignés avec la prise de terre.",
+    "Borne <span class='badge-term b-vert'>E</span> reliée à la prise de terre à contrôler.",
+    "Distance S↔terre ≈ 62 % de la distance H↔terre.",
+    "<b>La barrette de terre de l'installation doit être ouverte</b> pendant la mesure, et remise en place ensuite."
+  ],
+  param:[
+    ["Type de mesure","Rapide (R<sub>E</sub> seule) ou détaillée (R<sub>E</sub> + résistances de piquets R<sub>S</sub>, R<sub>H</sub>)."],
+    ["Compensation du cordon E","À réaliser avant mesure de faible valeur."],
+    ["Seuil d'alarme","50 Ω par défaut."]
+  ],
+  result:"R<sub>E</sub> (résistance de terre), et en mode détaillé R<sub>S</sub> et R<sub>H</sub>. Pour valider, déplacer le piquet S de ±10 % de la distance et comparer les 3 résultats (doivent être proches).",
+  nfc:"Détermine la valeur de la prise de terre pour le calcul R<sub>A</sub> × I<sub>Δn</sub> ≤ U<sub>L</sub>, indispensable en schéma TT."
+},
+
+{
+  id:"boucle", icon:"🔁", label:"Boucle Zs",
+  safety:"tension",
+  intro:"Mesure l'impédance de la boucle de défaut entre phase et PE. Sert à calculer le courant de court-circuit et à vérifier que les protections (disjoncteurs, différentiels) sont bien dimensionnées.",
+  wiring:[
+    "Cordon tripode sur <span class='badge-term b-rouge'>L</span>, <span class='badge-term b-bleu'>N</span>, <span class='badge-term b-vert'>PE</span>, branché directement sur la prise à tester.",
+    "L'appareil détecte et commute automatiquement L/N si besoin."
+  ],
+  param:[
+    ["Courant de mesure","6, 9 ou 12 mA (sans risque de déclenchement) ou <b>TRIP</b> (courant fort, meilleure précision, mais peut déclencher le différentiel de l'installation)."],
+    ["Tension de référence U<sub>REF</sub>","U<sub>LN</sub> mesurée ou valeur normalisée (220/230 V, etc.), pour le calcul de I<sub>k</sub>."],
+    ["Lissage (SMOOTH)","Moyenne sur plusieurs mesures — plus long mais plus stable."],
+    ["Alarme","Sur Z<sub>s</sub>/R<sub>s</sub> et/ou sur I<sub>k</sub>."]
+  ],
+  result:"Z<sub>s</sub> (ou R<sub>s</sub> en mode sans disjonction), inductance L<sub>s</sub>, et courant de court-circuit I<sub>k</sub> = U<sub>REF</sub> / Z<sub>s</sub>.",
+  nfc:"En schéma TN : Z<sub>s</sub> ≤ U<sub>0</sub> / I<sub>a</sub> où I<sub>a</sub> assure la coupure automatique dans le temps maximal imposé par le calibre du disjoncteur. En schéma TT : donne une estimation rapide de la résistance de terre sans piquet."
+},
+
+{
+  id:"terretension", icon:"🌐", label:"Terre sous tension",
+  safety:"tension",
+  intro:"Mesure la résistance de terre sans déconnecter l'installation ni la barrette de terre — pratique en milieu urbain où la mesure hors tension (3P) est impossible.",
+  wiring:[
+    "Cordon tripode branché sur la prise de l'installation à tester.",
+    "Piquet auxiliaire planté à plus de 25 m de la prise de terre, branché sur <span class='badge-term b-gris'>RA SEL</span>."
+  ],
+  param:[
+    ["Courant","6/9/12 mA (résultat = R<sub>A</sub> seule) ou <b>TRIP</b> (résultat = Z<sub>A</sub> + calcul de la tension de défaut U<sub>Fk</sub>)."],
+    ["Lissage","Optionnel, pour stabiliser la mesure."]
+  ],
+  result:"R<sub>A</sub> (ou Z<sub>A</sub> en TRIP) et, en TRIP, la tension de défaut U<sub>Fk</sub> = I<sub>k</sub> × Z<sub>A</sub>. Valider en déplaçant le piquet de ±10 % : les 3 mesures doivent converger.",
+  nfc:"Vérifie directement R<sub>A</sub> × I<sub>Δn</sub> ≤ U<sub>L</sub> en schéma TT, sans interruption de service."
+},
+
+{
+  id:"terreselective", icon:"🎯", label:"Terre sélective",
+  safety:"tension",
+  intro:"Permet d'isoler et de mesurer une seule prise de terre parmi plusieurs raccordées en parallèle (typique en schéma TN), grâce à une pince ampèremétrique.",
+  wiring:[
+    "Cordon tripode sur la prise à tester.",
+    "Piquet auxiliaire à plus de 25 m, sur <span class='badge-term b-gris'>RA SEL</span>.",
+    "Pince ampèremétrique enserrant la branche de terre à sélectionner."
+  ],
+  param:[
+    ["Courant","TRIP obligatoire (courant fort nécessaire pour que le courant capté par la pince soit mesurable)."],
+    ["Compensation des cordons","Indispensable — à refaire si les cordons changent."]
+  ],
+  result:"R<sub>ASEL</sub> et I<sub>SEL</sub> (courant capté par la pince), ainsi que Z<sub>A</sub>/R<sub>A</sub>/L<sub>a</sub> globaux sur la page suivante.",
+  nfc:"Complète la mesure de terre sous tension quand plusieurs prises de terre sont en parallèle sur un même réseau TN — sinon la valeur globale mesurée n'est pas significative."
+},
+
+{
+  id:"zi", icon:"🧮", label:"Impédance Zi",
+  safety:"tension",
+  intro:"Mesure l'impédance de la boucle Phase-Neutre (ou entre deux phases), utile quel que soit le régime de neutre de l'installation — y compris en schéma IT où la mesure de boucle Zs classique est impossible.",
+  wiring:[
+    "Cordon tripode sur <span class='badge-term b-rouge'>L</span> / <span class='badge-term b-bleu'>N</span> (le <span class='badge-term b-vert'>PE</span> n'est pas indispensable, on peut relier PE et N)."
+  ],
+  param:[
+    ["Sélection de fonction","Choisir Zi (et non DV, chute de tension — cette fonction n'existe pas sur le CA 6116N, réservée au CA 6117)."],
+    ["Compensation des cordons","Pour les mesures de faible valeur."],
+    ["U<sub>REF</sub>","Idem mesure de boucle."]
+  ],
+  result:"Z<sub>i</sub>, R<sub>i</sub>, L<sub>i</sub> et courant de court-circuit I<sub>k</sub> = U<sub>LN</sub> / Z<sub>i</sub>.",
+  nfc:"Sert au dimensionnement des protections (fusibles/disjoncteurs) indépendamment du régime de neutre."
+},
+
+{
+  id:"rcd", icon:"🚨", label:"Différentiel",
+  safety:"tension",
+  intro:"Vérifie qu'un interrupteur différentiel déclenche correctement. Trois types de test : rampe (courant de déclenchement exact), impulsion (temps de déclenchement), non-disjonction (vérifie qu'il ne déclenche pas à 0,5×I<sub>Δn</sub>).",
+  wiring:[
+    "Cordon tripode branché sur une prise en aval du différentiel à tester.",
+    "Piquet auxiliaire optionnel (>25 m) sur <span class='badge-term b-gris'>RA SEL</span> pour une mesure plus précise de la tension de défaut U<sub>F</sub>."
+  ],
+  param:[
+    ["I<sub>DN</sub>","Calibre du différentiel testé : 6/10/30/100/300/500/650/1000 mA ou variable."],
+    ["Type","STD (standard), S (sélectif, avec délai de démagnétisation) ou G."],
+    ["Forme du signal","AC (alternances +/-), A/F (alternances positives ou négatives seules)."],
+    ["Mode","Rampe (courant de déclenchement) / Impulsion x1, x2, x5 / x0,5 (test de non-disjonction, doit tenir 1 ou 2 s)."],
+    ["Vérification préalable U<sub>F</sub>","Courant de test 0,2 à 0,5×I<sub>DN</sub> avant le test proprement dit, pour s'assurer que la tension de défaut ne dépasse pas U<sub>L</sub>."]
+  ],
+  result:"Courant de déclenchement I<sub>a</sub> et temps T<sub>a</sub> (mode rampe), ou temps de déclenchement T<sub>a</sub> (mode impulsion), ainsi que U<sub>F</sub>.",
+  nfc:"Le différentiel doit déclencher entre I<sub>Δn</sub> et 2×I<sub>Δn</sub> en moins de 300 ms (type standard) ou 500 ms (type S), en moins de 40 ms à 5×I<sub>Δn</sub>, et ne doit pas déclencher à 0,5×I<sub>Δn</sub>. Obligatoire sur les circuits prises et salle de bains (30 mA type AC/A minimum)."
+},
+
+{
+  id:"courant", icon:"🔌", label:"Courant",
+  safety:"tension",
+  intro:"Mesure de courant efficace (charge normale ou courant de fuite), via une pince ampèremétrique spécifique en option — fonctionnement par transformateur de courant.",
+  wiring:[
+    "Pince branchée sur la borne <span class='badge-term b-noir'>I</span>.",
+    "Ouvrir la pince à la gâchette et enserrer le conducteur à mesurer.",
+    "Pour un courant très faible : passer le conducteur plusieurs fois dans la pince et diviser le résultat par le nombre de tours."
+  ],
+  param:[["Alarme","Seuil réglable, par défaut 200 A."]],
+  result:"Courant efficace en A ou mA. Possibilité d'indexer la mesure (phase 1/2/3, N, PE, ou somme 3L pour un courant de fuite global).",
+  nfc:"Permet de vérifier le courant d'emploi réel d'un circuit, ou de mesurer un courant de fuite avant de choisir la sensibilité d'un différentiel."
+},
+
+{
+  id:"rotation", icon:"🔃", label:"Rotation phases",
+  safety:"tension",
+  intro:"Vérifie l'ordre des trois phases d'un réseau triphasé, indispensable avant de raccorder un moteur (sens de rotation).",
+  wiring:[
+    "Cordon 3 cordons : <span class='badge-term b-rouge'>rouge</span> sur L1, <span class='badge-term b-bleu'>bleu</span> sur L2, <span class='badge-term b-vert'>vert</span> sur L3."
+  ],
+  param:[["Aucun paramétrage","Lancer directement la mesure au bouton TEST."]],
+  result:"Un signe + indique un sens direct, un signe − un sens inverse. Les trois tensions composées U12, U23, U31 sont également affichées.",
+  nfc:"N'est pas une exigence NF C 15-100 à proprement parler, mais une vérification indispensable avant mise en service d'un récepteur triphasé."
+},
+
+{
+  id:"puissance", icon:"📈", label:"Puissance",
+  safety:"tension",
+  intro:"Mesure la puissance active et le facteur de puissance, en monophasé ou en triphasé équilibré, à l'aide de la pince ampèremétrique spécifique C177A.",
+  wiring:[
+    "Monophasé : cordon 3 cordons sur <span class='badge-term b-rouge'>L</span> / <span class='badge-term b-vert'>PE</span>, pince sur le conducteur de phase (puissance totale) ou sur une charge (puissance partielle).",
+    "Triphasé équilibré : cordon sur deux tensions composées (ex. U12), pince sur le conducteur de la 3<sup>e</sup> phase (I3)."
+  ],
+  param:[["Type de réseau","Monophasé ou triphasé équilibré (en tension et en courant)."]],
+  result:"Puissance active P (signe + = consommée, − = fournie), tension, courant, et facteur de puissance PF (signe + = charge inductive, − = charge capacitive).",
+  nfc:"Diagnostic / bilan énergétique — pas une exigence réglementaire directe, mais utile pour dimensionner ou analyser une installation."
+},
+
+{
+  id:"harmoniques", icon:"🌊", label:"Harmoniques",
+  safety:"tension",
+  intro:"Décompose un signal de tension ou de courant en harmoniques (FFT jusqu'au rang 50), pour diagnostiquer la pollution harmonique d'un réseau.",
+  wiring:[
+    "Cordon 3 cordons sur <span class='badge-term b-rouge'>L</span> / <span class='badge-term b-vert'>PE</span> pour l'analyse en tension.",
+    "Pince C177A pour l'analyse en courant."
+  ],
+  param:[
+    ["FFT U ou FFT I","Choix de la grandeur analysée."],
+    ["Affichage","Linéaire, logarithmique, ou liste alphanumérique (H_RMS)."],
+    ["Calcul du taux de distorsion","THD-F (par rapport au fondamental) ou THD-R / DF (par rapport à la valeur efficace)."]
+  ],
+  result:"Spectre en histogramme, amplitude et fréquence de l'harmonique sélectionnée, et taux de distorsion global.",
+  nfc:"Diagnostic de la qualité du réseau — un THD élevé peut indiquer une charge non-linéaire problématique (variateurs, alimentations à découpage...)."
+},
+
+];
+
+// ═══════════════════════════════════════════════
+// QUESTIONS DU QUIZ FINAL
+// ═══════════════════════════════════════════════
+const questions = [
+  { q:"Pour mesurer la continuité du conducteur de protection PE, dans quel état doit être le circuit testé ?",
+    options:["Sous tension, courant fort","Hors tension, obligatoirement","Peu importe","Sous tension, courant faible"],
+    answer:1, fb:"La mesure de continuité génère elle-même un courant de test : le circuit testé ne doit jamais être sous tension pendant la mesure." },
+  { q:"Sur une installation domestique standard en 230/400 V, quelle est la résistance d'isolement minimale exigée (test sous 500 V) ?",
+    options:["0,25 MΩ","0,5 MΩ","1 MΩ","5 MΩ"],
+    answer:1, fb:"Pour les circuits ≤ 500 V (cas domestique standard), la résistance d'isolement doit être ≥ 0,5 MΩ sous une tension d'essai de 500 V DC." },
+  { q:"Pourquoi faut-il ouvrir la barrette de terre avant une mesure de terre 3P ?",
+    options:["Pour protéger l'appareil","Pour isoler la prise de terre du reste de l'installation et mesurer sa résistance réelle","Ce n'est pas nécessaire","Pour activer le mode TRIP"],
+    answer:1, fb:"Sans ouvrir la barrette, on mesurerait la résistance de terre en parallèle avec toute l'installation, faussant complètement le résultat." },
+  { q:"En mesure de terre 3P, quelle est la méthode de placement des piquets recommandée par la notice ?",
+    options:["Méthode des 50 %","Méthode des 62 %","Méthode du triangle équilatéral","Peu importe la distance"],
+    answer:1, fb:"La méthode des « 62 % » consiste à placer le piquet S à environ 62 % de la distance entre la prise de terre et le piquet H." },
+  { q:"En mesure de boucle Zs, à quoi correspond le mode TRIP ?",
+    options:["Un courant de mesure faible, sans risque","Un courant de mesure fort, plus précis mais qui peut déclencher le différentiel","Un mode réservé à l'isolement","Un mode qui coupe automatiquement l'installation"],
+    answer:1, fb:"Le mode TRIP utilise un courant fort pour une meilleure précision, au prix d'un risque de déclenchement du différentiel protégeant le circuit testé." },
+  { q:"Quelle relation doit vérifier la résistance de terre RA en schéma TT ?",
+    options:["RA + IΔn ≤ UL","RA × IΔn ≤ UL","RA / IΔn ≤ UL","RA = UL × IΔn"],
+    answer:1, fb:"En schéma TT, la condition de sécurité est RA × IΔn ≤ UL (UL = 50 V en local sec, 25 V en local humide)." },
+  { q:"Quel accessoire est indispensable pour mesurer la puissance ou le courant avec le CA 6116N ?",
+    options:["Un piquet de terre","Une pince ampèremétrique","Un cordon tripode uniquement","Un multimètre externe"],
+    answer:1, fb:"Les mesures de courant, de puissance et d'harmoniques en courant nécessitent une pince ampèremétrique en option (MN77 ou C177A)." },
+  { q:"En test de différentiel, quel est le temps de déclenchement maximal imposé pour un différentiel standard testé à IΔn ?",
+    options:["40 ms","100 ms","300 ms","1 seconde"],
+    answer:2, fb:"Un différentiel de type standard doit déclencher en moins de 300 ms lorsqu'il est testé au courant IΔn (500 ms pour un type S sélectif)." },
+  { q:"Quelle mesure permet de vérifier l'ordre des phases avant de raccorder un moteur triphasé ?",
+    options:["Mesure de puissance","Mesure d'harmoniques","Sens de rotation de phase","Mesure de Zi"],
+    answer:2, fb:"La fonction « sens de rotation de phase » compare les trois tensions et indique un sens direct (+) ou inverse (−)." },
+  { q:"Pourquoi utiliser la mesure d'impédance de ligne Zi plutôt que la boucle Zs sur une installation en schéma IT ?",
+    options:["Zi est plus rapide dans tous les cas","La boucle Zs (Phase-PE) n'est pas exploitable en IT à cause de la forte impédance de mise à la terre du transformateur","Zi ne nécessite pas de cordon","Il n'y a aucune différence"],
+    answer:1, fb:"En schéma IT, la mise à la terre du transformateur est fortement impédante voire isolée : la mesure Zs Phase-PE n'a pas de sens, on utilise Zi (Phase-Neutre ou entre phases)." },
+];
+
+// ═══════════════════════════════════════════════
+// CONSTRUCTION DES ONGLETS
+// ═══════════════════════════════════════════════
+function safetyBoxHtml(type){
+  if(type==="tension") return `<div class="safety-box safety-tension"><span class="safety-icon">⚡</span> Mesure réalisée SOUS TENSION — l'installation reste alimentée.</div>`;
+  if(type==="hors") return `<div class="safety-box safety-hors"><span class="safety-icon">🔒</span> Mesure réalisée HORS TENSION — coupez et vérifiez l'absence de tension avant de brancher l'appareil.</div>`;
+  return "";
+}
+
+function buildMeasureTab(o){
+  let paramRows = o.param.map(p=>`<tr><td><b>${p[0]}</b></td><td>${p[1]}</td></tr>`).join("");
+  let wiringItems = o.wiring.map(w=>`<li>${w}</li>`).join("");
+  return `
+  <h2 class="mtitle">${o.icon} ${o.label}</h2>
+  ${safetyBoxHtml(o.safety)}
+  <div class="card">${o.intro}</div>
+
+  <div class="section-title">🔧 Branchement</div>
+  <div class="wiring-box"><ul>${wiringItems}</ul></div>
+
+  <div class="section-title">⚙️ Paramétrage à l'écran</div>
+  <table class="param-table">${paramRows}</table>
+
+  <div class="section-title">📊 Lecture du résultat</div>
+  <div class="result-box">${o.result}</div>
+
+  <div class="section-title">📐 Lien avec la NF C 15-100</div>
+  <div class="nfc-box">${o.nfc}</div>
+  `;
+}
+
+function buildTabs(){
+  const nav = document.getElementById("tabsNav");
+  const container = document.getElementById("tabsContainer");
+  let navHtml = "";
+  let contentHtml = "";
+
+  onglets.forEach((o,i)=>{
+    navHtml += `<button class="tab-btn${i===0?" active":""}" onclick="showTab('${o.id}',this)">${o.icon} ${o.label}</button>`;
+    let bodyHtml = (o.id==="intro") ? o.html : buildMeasureTab(o);
+    contentHtml += `<div id="tab-${o.id}" class="tab-content${i===0?" active":""}">${bodyHtml}</div>`;
+  });
+
+  // Onglet quiz
+  navHtml += `<button class="tab-btn" onclick="showTab('quiz',this)">❓ Quiz final</button>`;
+  contentHtml += `
+  <div id="tab-quiz" class="tab-content">
+    <h2 class="mtitle">❓ Quiz final — Avez-vous bien tout compris ?</h2>
+    <p class="subtitle">10 questions pour vérifier votre maîtrise du CA 6116N et des mesures NF C 15-100.</p>
+    <div class="score-bar"><span>Score : <b id="q-score">0</b> / <b id="q-total">0</b> questions répondues</span></div>
+    <div id="questions-list"></div>
+    <button id="send" onclick="envoyerScore()">Envoyer le résultat</button>
+  </div>`;
+
+  nav.innerHTML = navHtml;
+  container.innerHTML = contentHtml;
+}
+
+function showTab(id, el){
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  el.classList.add("active");
+}
+
+// ═══════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════
+let qScores = new Array(questions.length).fill(null);
+
+function buildQuestions(){
+  const list = document.getElementById("questions-list");
+  list.innerHTML = "";
+  questions.forEach((q, qi) => {
+    const div = document.createElement("div");
+    div.className = "question-block";
+    const buttons = q.options.map((opt, oi) =>
+      '<button class="q-opt" onclick="answerQ(' + qi + ',' + oi + ',this)">' + opt + '</button>'
+    ).join("");
+    div.innerHTML = `
+      <p><b>Question ${qi + 1} :</b> ${q.q}</p>
+      <div class="q-options">${buttons}</div>
+      <div class="q-feedback" id="qfb-${qi}"></div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function answerQ(qi, oi, btn){
+  if (qScores[qi]!==null) return;
+  const q = questions[qi];
+  const fb = document.getElementById("qfb-"+qi);
+  if (oi===q.answer) {
+    btn.classList.add("correct");
+    fb.className="q-feedback show ok";
+    fb.textContent="✅ Correct ! " + q.fb;
+    qScores[qi]=1;
+  } else {
+    btn.classList.add("wrong");
+    fb.className="q-feedback show ko";
+    fb.textContent="❌ Incorrect. " + q.fb;
+    qScores[qi]=0;
+    btn.parentElement.querySelectorAll(".q-opt")[q.answer].classList.add("correct");
+  }
+  btn.parentElement.querySelectorAll(".q-opt").forEach(b=>b.disabled=true);
+  score = qScores.filter(s=>s===1).length;
+  document.getElementById("q-score").textContent = score;
+  document.getElementById("q-total").textContent = qScores.filter(s=>s!==null).length;
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.onload = function(){
+  buildTabs();
+  buildQuestions();
+};
+</script>
+</body>
+</html>

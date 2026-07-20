@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP – Régulation TOR / PID</title>
+<style>
+:root {
+  --blue: #1f3c88;
+  --blue-light: #f0f4ff;
+  --green: #28a745;
+  --green-dark: #1e7e34;
+  --orange: #e07b00;
+  --red: #c0392b;
+  --gray: #888;
+  --gray-light: #f5f5f5;
+  --border: #dde3f0;
+  --radius: 10px;
+}
+* { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: linear-gradient(135deg, #f4f6f9, #e9eef5); min-height: 100vh; padding: 20px; }
+.container { max-width: 1150px; margin: auto; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+.page-header { background: var(--blue); color: white; padding: 22px 30px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; }
+.page-header p { font-size: 0.88rem; opacity: 0.82; margin-top: 3px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--gray-light); flex-wrap: wrap; }
+.tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: white; font-weight: 600; }
+.tab-btn:hover:not(.active) { color: var(--blue); background: #eef2ff; }
+.tab-content { display: none; padding: 24px 30px; }
+.tab-content.active { display: block; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--blue); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 14px; }
+.card { background: var(--blue-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+.card.white { background: white; }
+p.txt { font-size: 0.9rem; line-height: 1.7; color: #444; margin-bottom: 10px; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.slider-label { min-width: 190px; font-size: 0.82rem; color: #444; }
+.slider-row input[type=range] { flex: 1; }
+.slider-row.p input[type=range] { accent-color: var(--red); }
+.slider-row.i input[type=range] { accent-color: var(--green); }
+.slider-row.d input[type=range] { accent-color: var(--blue); }
+.slider-val { min-width: 70px; font-size: 0.82rem; font-weight: 600; color: var(--blue); text-align: right; }
+canvas { display: block; border-radius: 8px; border: 1px solid var(--border); background: white; margin: auto; }
+.btn { border: none; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-size: 0.86rem; font-weight: 600; transition: 0.2s; }
+.btn-green { background: var(--green); color: white; } .btn-green:hover { background: var(--green-dark); }
+.btn-blue { background: var(--blue); color: white; } .btn-blue:hover { background: #162d6a; }
+.btn-orange { background: var(--orange); color: white; } .btn-orange:hover { background: #c06a00; }
+.btn-red { background: var(--red); color: white; } .btn-red:hover { background: #922b21; }
+.btn-gray { background: #ddd; color: #444; } .btn-gray:hover { background: #ccc; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.indicators { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.ind-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; text-align: center; min-width: 96px; }
+.ind-card .ind-val { font-size: 1.15rem; font-weight: 700; color: var(--blue); }
+.ind-card .ind-label { font-size: 0.7rem; color: var(--gray); }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.78rem; color: #555; margin-top: 6px; justify-content: center; }
+.legend span.dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+.diagram-wrap { width: 100%; overflow-x: auto; }
+.diagram-svg { width: 100%; height: auto; display: block; min-width: 640px; }
+.slider-row.pert input[type=range] { accent-color: var(--red); }
+.preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.question-block { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.question-block p { font-size: 0.92rem; margin-bottom: 10px; line-height: 1.6; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-opt { padding: 8px 14px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; font-size: 0.88rem; background: white; text-align: left; transition: 0.15s; }
+.q-opt:hover { background: var(--blue-light); border-color: var(--blue); }
+.q-opt.correct { background: #e8f8e8; border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+.q-opt.wrong { background: #fde8e8; border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+.q-feedback { margin-top: 8px; font-size: 0.84rem; padding: 8px 12px; border-radius: 6px; display: none; }
+.q-feedback.show { display: block; }
+.q-feedback.ok { background: #e8f8e8; color: var(--green-dark); }
+.q-feedback.ko { background: #fde8e8; color: var(--red); }
+.score-bar { background: var(--blue-light); border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.score-bar span { font-size: 0.88rem; color: var(--blue); font-weight: 500; }
+#send { background: #28a745; color: white; border: none; padding: 7px 20px; border-radius: 6px; cursor: pointer; }
+.state-pill { display:inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
+.state-on { background:#e8f8e8; color: var(--green-dark); }
+.state-off { background:#f0f0f0; color: #777; }
+@media (max-width: 700px) { .slider-label { min-width: 130px; } .indicators { justify-content: center; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>🎯 TP – Régulation TOR et PID</h1>
+  <p>Simulez, réglez et observez en temps réel le comportement d'un système asservi</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('intro',this)">📘 Principe</button>
+  <button class="tab-btn" onclick="showTab('tor',this)">🔲 Régulation TOR</button>
+  <button class="tab-btn" onclick="showTab('pid',this)">🎛️ Régulation PID</button>
+  <button class="tab-btn" onclick="showTab('questions',this)">❓ Questions</button>
+</div>
+
+<!-- ════════ TAB INTRO ════════ -->
+<div id="tab-intro" class="tab-content active">
+  <div class="card">
+    <div class="section-title">Le système étudié</div>
+    <p class="txt">On régule la température d'une <b>enceinte thermique</b> (four, étuve...) autour d'une consigne. 
+    Une résistance chauffante reçoit une commande <b>u</b> (0 à 100 % de puissance). La température évolue selon un modèle du 1er ordre réaliste : 
+    plus on chauffe, plus la température monte, avec une inertie thermique (constante de temps) et des pertes vers l'ambiance.</p>
+    <p class="txt">Vous allez comparer <b>deux stratégies de commande</b> : le <b>Tout Ou Rien (TOR)</b> et le <b>correcteur PID</b>, 
+    puis observer leur réaction face à une <b>perturbation</b> (ouverture d'une porte, appel d'air froid...).</p>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">La boucle fermée (asservissement)</div>
+    <div class="diagram-wrap">
+    <svg class="diagram-svg" viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#1f3c88"/>
+        </marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#1e7e34"/>
+        </marker>
+      </defs>
+
+      <!-- chaîne directe -->
+      <line x1="10" y1="60" x2="55" y2="60" stroke="#1f3c88" stroke-width="2" marker-end="url(#arrowBlue)"/>
+      <text x="8" y="45" font-size="12" fill="#1f3c88" font-weight="600">Consigne</text>
+
+      <circle cx="80" cy="60" r="22" fill="white" stroke="#1f3c88" stroke-width="2"/>
+      <text x="80" y="65" font-size="16" fill="#1f3c88" text-anchor="middle" font-weight="700">Σ</text>
+      <text x="63" y="42" font-size="12" fill="#1e7e34" font-weight="700">+</text>
+      <text x="63" y="90" font-size="12" fill="#c0392b" font-weight="700">−</text>
+
+      <line x1="102" y1="60" x2="150" y2="60" stroke="#1f3c88" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+      <rect x="150" y="35" width="130" height="50" rx="8" fill="white" stroke="#1f3c88" stroke-width="2"/>
+      <text x="215" y="56" font-size="12" fill="#1f3c88" text-anchor="middle" font-weight="700">Correcteur</text>
+      <text x="215" y="72" font-size="10.5" fill="#1f3c88" text-anchor="middle">(TOR ou PID)</text>
+
+      <line x1="280" y1="60" x2="320" y2="60" stroke="#1f3c88" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+      <rect x="320" y="35" width="120" height="50" rx="8" fill="white" stroke="#e07b00" stroke-width="2"/>
+      <text x="380" y="56" font-size="12" fill="#e07b00" text-anchor="middle" font-weight="700">Actionneur</text>
+      <text x="380" y="72" font-size="10.5" fill="#e07b00" text-anchor="middle">résistance chauffante</text>
+
+      <line x1="440" y1="60" x2="480" y2="60" stroke="#1f3c88" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+      <rect x="480" y="35" width="140" height="50" rx="8" fill="white" stroke="#1f3c88" stroke-width="2"/>
+      <text x="550" y="56" font-size="12" fill="#1f3c88" text-anchor="middle" font-weight="700">Système</text>
+      <text x="550" y="72" font-size="10.5" fill="#1f3c88" text-anchor="middle">enceinte thermique</text>
+
+      <line x1="620" y1="60" x2="680" y2="60" stroke="#1f3c88" stroke-width="2" marker-end="url(#arrowBlue)"/>
+      <text x="686" y="65" font-size="12" fill="#1f3c88" font-weight="600">Sortie (T mesurée)</text>
+
+      <!-- chemin de retour (mesure) -->
+      <line x1="680" y1="60" x2="720" y2="60" stroke="#1e7e34" stroke-width="2" stroke-dasharray="6,4"/>
+      <line x1="720" y1="60" x2="720" y2="180" stroke="#1e7e34" stroke-width="2" stroke-dasharray="6,4"/>
+      <line x1="720" y1="180" x2="460" y2="180" stroke="#1e7e34" stroke-width="2" stroke-dasharray="6,4"/>
+
+      <rect x="340" y="155" width="120" height="50" rx="8" fill="#f2fbf3" stroke="#1e7e34" stroke-width="2"/>
+      <text x="400" y="176" font-size="12" fill="#1e7e34" text-anchor="middle" font-weight="700">Capteur</text>
+      <text x="400" y="192" font-size="10.5" fill="#1e7e34" text-anchor="middle">mesure la température</text>
+
+      <line x1="340" y1="180" x2="80" y2="180" stroke="#1e7e34" stroke-width="2" stroke-dasharray="6,4"/>
+      <line x1="80" y1="180" x2="80" y2="86" stroke="#1e7e34" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowGreen)"/>
+    </svg>
+    </div>
+    <p class="txt" style="text-align:center;margin-top:22px;">C'est ce retour d'information (le <b>capteur</b>) qui permet au système de <b>corriger automatiquement</b> son comportement, 
+    y compris quand une perturbation vient le perturber.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Ce que vous allez tester</div>
+    <p class="txt">🔲 <b>Onglet TOR</b> : réglez la largeur de l'hystérésis et observez les oscillations et commutations de l'actionneur.<br>
+    🎛️ <b>Onglet PID</b> : activez/désactivez indépendamment les actions <b>P</b>, <b>I</b> et <b>D</b>, et observez leur effet propre sur la réponse : vitesse, dépassement, erreur statique, oscillations.<br>
+    ⚡ Dans les deux onglets, appliquez une <b>perturbation en échelon</b> (positive ou négative) à tout moment pour voir comment chaque régulation réagit.<br>
+    🌊 Le modèle intègre un léger <b>retard</b> capteur/actionneur (comme dans la méthode de Broïda) : avec un gain Kp trop élevé, cela peut suffire à provoquer un <b>phénomène de pompage</b> (oscillations entretenues autour de la consigne).</p>
+  </div>
+</div>
+
+<!-- ════════ TAB TOR ════════ -->
+<div id="tab-tor" class="tab-content">
+  <canvas id="canvasTOR" width="700" height="300"></canvas>
+  <div class="legend">
+    <span><span class="dot" style="background:#1f3c88;"></span>Température</span>
+    <span><span class="dot" style="background:#e07b00;"></span>Consigne</span>
+    <span><span class="dot" style="background:#28a745;"></span>Commande (marche/arrêt)</span>
+    <span><span class="dot" style="background:#f5c6c6;"></span>Perturbation active</span>
+  </div>
+
+  <div class="indicators" style="margin-top:16px;">
+    <div class="ind-card"><div class="ind-val" id="tor-Tval">20.0 °C</div><div class="ind-label">Température</div></div>
+    <div class="ind-card"><div class="ind-val" id="tor-etat"><span class="state-pill state-off">ARRÊT</span></div><div class="ind-label">Résistance</div></div>
+    <div class="ind-card"><div class="ind-val" id="tor-switch">0</div><div class="ind-label">Commutations</div></div>
+    <div class="ind-card"><div class="ind-val" id="tor-pertval">0 °C</div><div class="ind-label">Perturbation</div></div>
+    <div class="ind-card"><div class="ind-val" id="tor-time">0 s</div><div class="ind-label">Temps simulé</div></div>
+  </div>
+
+  <div class="card">
+    <div class="slider-row">
+      <span class="slider-label">🎯 Consigne</span>
+      <input type="range" id="tor-consigne" min="30" max="90" value="60" step="1" oninput="torSetConsigne(this.value)">
+      <span class="slider-val" id="tor-consigne-v">60 °C</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">↕️ Largeur d'hystérésis</span>
+      <input type="range" id="tor-hyst" min="0.5" max="12" value="2" step="0.5" oninput="torSetHyst(this.value)">
+      <span class="slider-val" id="tor-hyst-v">2.0 °C</span>
+    </div>
+    <p class="txt" style="margin-top:6px;">💡 Une hystérésis étroite donne une température plus stable... mais fait commuter la résistance beaucoup plus souvent (usure).</p>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">⚡ Perturbation (échelon réglable)</div>
+    <div class="slider-row pert">
+      <span class="slider-label">Amplitude de l'échelon</span>
+      <input type="range" id="tor-pert-amp" min="-30" max="30" value="-15" step="1" oninput="torUpdatePertLabel(this.value)">
+      <span class="slider-val" id="tor-pert-amp-v">-15 °C</span>
+    </div>
+    <p class="txt">Une valeur <b>négative</b> simule un refroidissement brutal (porte ouverte, appel d'air froid), une valeur <b>positive</b> un apport de chaleur externe. L'échelon est appliqué instantanément et reste actif jusqu'à annulation.</p>
+    <div class="btn-row" style="margin-bottom:0;">
+      <button class="btn btn-red" onclick="torPerturb()">⚡ Appliquer l'échelon</button>
+      <button class="btn btn-gray" onclick="torPerturbClear()">✖ Annuler la perturbation</button>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-green" onclick="torStart()">▶ Démarrer</button>
+    <button class="btn btn-gray" onclick="torPause()">⏸ Pause</button>
+    <button class="btn btn-blue" onclick="torReset()">↺ Réinitialiser</button>
+  </div>
+</div>
+
+<!-- ════════ TAB PID ════════ -->
+<div id="tab-pid" class="tab-content">
+  <canvas id="canvasPID" width="700" height="300"></canvas>
+  <div class="legend">
+    <span><span class="dot" style="background:#1f3c88;"></span>Température</span>
+    <span><span class="dot" style="background:#e07b00;"></span>Consigne</span>
+    <span><span class="dot" style="background:#28a745;"></span>Commande u(t) en %</span>
+    <span><span class="dot" style="background:#f5c6c6;"></span>Perturbation active</span>
+  </div>
+
+  <div class="indicators" style="margin-top:16px;">
+    <div class="ind-card"><div class="ind-val" id="pid-Tval">20.0 °C</div><div class="ind-label">Température</div></div>
+    <div class="ind-card"><div class="ind-val" id="pid-uval">0 %</div><div class="ind-label">Commande u</div></div>
+    <div class="ind-card"><div class="ind-val" id="pid-erreur">0.0 °C</div><div class="ind-label">Erreur actuelle</div></div>
+    <div class="ind-card"><div class="ind-val" id="pid-depassement">0 %</div><div class="ind-label">Dépassement max</div></div>
+    <div class="ind-card"><div class="ind-val" id="pid-treponse">–</div><div class="ind-label">Tps réponse (±5%)</div></div>
+    <div class="ind-card"><div class="ind-val" id="pid-pertval">0 °C</div><div class="ind-label">Perturbation</div></div>
+    <div class="ind-card"><div class="ind-val" id="pid-time">0 s</div><div class="ind-label">Temps simulé</div></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Réglages du correcteur — activez chaque action séparément</div>
+    <div class="slider-row p">
+      <span class="slider-label"><label><input type="checkbox" id="pid-p-on" checked onchange="pidUpdateGains()"> Action P (Kp)</label></span>
+      <input type="range" id="pid-kp" min="0" max="20" value="4" step="0.1" oninput="pidUpdateGains()">
+      <span class="slider-val" id="pid-kp-v">4.0</span>
+    </div>
+    <div class="slider-row i">
+      <span class="slider-label"><label><input type="checkbox" id="pid-i-on" onchange="pidUpdateGains()"> Action I (Ki)</label></span>
+      <input type="range" id="pid-ki" min="0" max="2" value="0.3" step="0.01" oninput="pidUpdateGains()">
+      <span class="slider-val" id="pid-ki-v">0.30</span>
+    </div>
+    <div class="slider-row d">
+      <span class="slider-label"><label><input type="checkbox" id="pid-d-on" onchange="pidUpdateGains()"> Action D (Kd)</label></span>
+      <input type="range" id="pid-kd" min="0" max="60" value="10" step="0.5" oninput="pidUpdateGains()">
+      <span class="slider-val" id="pid-kd-v">10.0</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">🎯 Consigne</span>
+      <input type="range" id="pid-consigne" min="30" max="90" value="60" step="1" oninput="pidSetConsigne(this.value)">
+      <span class="slider-val" id="pid-consigne-v">60 °C</span>
+    </div>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">Essais guidés (réglages pré-configurés)</div>
+    <div class="preset-row">
+      <button class="btn btn-gray" onclick="pidPreset('P')">P seul</button>
+      <button class="btn btn-gray" onclick="pidPreset('PI')">P + I</button>
+      <button class="btn btn-gray" onclick="pidPreset('PID')">P + I + D (réglé)</button>
+      <button class="btn btn-red" onclick="pidPreset('AGRESSIF')">Kp trop fort → pompage 🌊</button>
+    </div>
+    <p class="txt">👉 Essayez "P seul" et observez qu'il reste toujours un petit écart avec la consigne. Ajoutez ensuite l'action I : l'écart disparaît, 
+    mais un léger dépassement peut apparaître. L'action D vient alors freiner ce dépassement. Le préréglage "Kp trop fort" exploite le léger <b>retard</b> 
+    du capteur/actionneur (modélisé dans la simulation) pour provoquer un vrai <b>phénomène de pompage</b> : oscillations entretenues qui ne s'amortissent plus.</p>
+  </div>
+
+  <div class="card white">
+    <div class="section-title">⚡ Perturbation (échelon réglable)</div>
+    <div class="slider-row pert">
+      <span class="slider-label">Amplitude de l'échelon</span>
+      <input type="range" id="pid-pert-amp" min="-30" max="30" value="-15" step="1" oninput="pidUpdatePertLabel(this.value)">
+      <span class="slider-val" id="pid-pert-amp-v">-15 °C</span>
+    </div>
+    <p class="txt">Une valeur <b>négative</b> simule un refroidissement brutal, une valeur <b>positive</b> un apport de chaleur externe. 
+    L'échelon est appliqué instantanément et reste actif jusqu'à annulation.</p>
+    <div class="btn-row" style="margin-bottom:0;">
+      <button class="btn btn-red" onclick="pidPerturb()">⚡ Appliquer l'échelon</button>
+      <button class="btn btn-gray" onclick="pidPerturbClear()">✖ Annuler la perturbation</button>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-green" onclick="pidStart()">▶ Démarrer</button>
+    <button class="btn btn-gray" onclick="pidPause()">⏸ Pause</button>
+    <button class="btn btn-blue" onclick="pidReset()">↺ Réinitialiser</button>
+  </div>
+</div>
+
+<!-- ════════ TAB QUESTIONS ════════ -->
+<div id="tab-questions" class="tab-content">
+  <div class="score-bar">
+    <span>Score : <b id="q-score">0</b> / <b id="q-total">0</b> questions répondues</span>
+  </div>
+  <div id="questions-list"></div>
+  <button id="send" onclick="envoyerScore()">Envoyer le résultat</button>
+</div>
+
+</div><!-- /container -->
+
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+
+<script>
+// ═══════════════════════════════════════════
+// MODÈLE PHYSIQUE COMMUN (enceinte thermique 1er ordre)
+// dT/dt = ( -(T - Tamb_eff) + K*u ) / tau
+// ═══════════════════════════════════════════
+const TAU = 15;        // constante de temps (s)
+const K_GAIN = 0.8;    // °C par % de puissance
+const T_AMB = 20;       // température ambiante de base (°C)
+const DT = 0.3;         // pas de simulation (s) par tick
+const TICK_MS = 50;     // période réelle du timer (ms)
+const WINDOW = 220;      // fenêtre affichée (s simulées)
+const THETA_DELAY = 6;   // retard de transport capteur/actionneur (s) — indispensable pour observer le pompage
+const DELAY_STEPS = Math.max(1, Math.round(THETA_DELAY / DT));
+
+function newDelayBuffer() { return new Array(DELAY_STEPS).fill(0); }
+
+// Applique le retard de transport : la commande u calculée maintenant n'agit
+// physiquement sur le système qu'après THETA_DELAY secondes (modèle 1er ordre + retard).
+function stepPlant(state, uCmd) {
+  const uDelayed = state.uBuffer[state.uPtr];
+  state.uBuffer[state.uPtr] = uCmd;
+  state.uPtr = (state.uPtr + 1) % DELAY_STEPS;
+
+  const TambEff = T_AMB + state.perturbValue;
+  state.TambEff = TambEff;
+  const dT = DT / TAU * (-(state.T - TambEff) + K_GAIN * uDelayed);
+  state.T += dT;
+  state.tSim += DT;
+}
+
+function pushHistory(state) {
+  state.history.push({ t: state.tSim, T: state.T, u: state.u, pert: state.perturbValue !== 0 });
+}
+
+// ═══════════════════════════════════════════
+// DESSIN GRAPHIQUE COMMUN
+// ═══════════════════════════════════════════
+function drawChart(canvasId, state) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const mL = 50, mR = 15, topY = 12, tempH = 200, gap = 8, uH = 55;
+  const plotW = W - mL - mR;
+  const tMax = Math.max(WINDOW, state.tSim);
+  const tMin = tMax - WINDOW;
+  const scaleX = plotW / WINDOW;
+  const tempMin = 0, tempMax = 120;
+  function xOf(t) { return mL + (t - tMin) * scaleX; }
+  function yOfT(temp) { return topY + tempH - ((temp - tempMin) / (tempMax - tempMin)) * tempH; }
+  const uTop = topY + tempH + gap;
+
+  // fonds
+  ctx.fillStyle = "#fafafa";
+  ctx.fillRect(mL, topY, plotW, tempH);
+  ctx.fillRect(mL, uTop, plotW, uH);
+
+  // bandes de perturbation
+  ctx.fillStyle = "rgba(220,60,60,0.12)";
+  let inPert = false, pStart = 0;
+  state.history.forEach(p => {
+    if (p.t < tMin) return;
+    if (p.pert && !inPert) { inPert = true; pStart = p.t; }
+    if (!p.pert && inPert) { inPert = false; ctx.fillRect(xOf(pStart), topY, xOf(p.t) - xOf(pStart), tempH); }
+  });
+  if (inPert) ctx.fillRect(xOf(pStart), topY, xOf(state.tSim) - xOf(pStart), tempH);
+
+  // grille température
+  ctx.strokeStyle = "#e6e6e6"; ctx.lineWidth = 1;
+  for (let g = 0; g <= 6; g++) {
+    const temp = g * 20;
+    const y = yOfT(temp);
+    ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(mL + plotW, y); ctx.stroke();
+    ctx.fillStyle = "#999"; ctx.font = "10px Arial"; ctx.textAlign = "right";
+    ctx.fillText(temp, mL - 5, y + 3);
+  }
+  ctx.strokeRect(mL, topY, plotW, tempH);
+  ctx.strokeRect(mL, uTop, plotW, uH);
+
+  // ligne ambiante
+  ctx.strokeStyle = "#bbb"; ctx.setLineDash([2, 3]);
+  ctx.beginPath(); ctx.moveTo(mL, yOfT(T_AMB)); ctx.lineTo(mL + plotW, yOfT(T_AMB)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // consigne
+  ctx.strokeStyle = "#e07b00"; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(mL, yOfT(state.consigne)); ctx.lineTo(mL + plotW, yOfT(state.consigne)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // courbe température
+  ctx.strokeStyle = "#1f3c88"; ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  let first = true;
+  state.history.forEach(p => {
+    if (p.t < tMin) return;
+    const x = xOf(p.t), y = yOfT(Math.max(tempMin, Math.min(tempMax, p.T)));
+    if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // commande u(t)
+  ctx.fillStyle = "rgba(40,167,69,0.55)";
+  ctx.beginPath();
+  ctx.moveTo(mL, uTop + uH);
+  state.history.forEach(p => {
+    if (p.t < tMin) return;
+    const x = xOf(p.t), y = uTop + uH - (p.u / 100) * uH;
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(xOf(Math.min(state.tSim, tMax)), uTop + uH);
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = "#777"; ctx.font = "10px Arial"; ctx.textAlign = "left";
+  ctx.fillText("u (%)", mL + 4, uTop + 10);
+  ctx.textAlign = "right";
+  ctx.fillText("100%", mL - 5, uTop + 8);
+  ctx.fillText("0%", mL - 5, uTop + uH);
+}
+
+// ═══════════════════════════════════════════
+// RÉGULATION TOR
+// ═══════════════════════════════════════════
+function newTorState(consigne, hyst) {
+  return { T: T_AMB, u: 0, consigne: consigne, hyst: hyst, tSim: 0, history: [], switchCount: 0, running: false, perturbValue: 0, uBuffer: newDelayBuffer(), uPtr: 0 };
+}
+let torState = newTorState(60, 2);
+let torTimer = null;
+
+function torSetConsigne(v) { torState.consigne = parseFloat(v); document.getElementById("tor-consigne-v").textContent = v + " °C"; drawChart("canvasTOR", torState); }
+function torSetHyst(v) { torState.hyst = parseFloat(v); document.getElementById("tor-hyst-v").textContent = parseFloat(v).toFixed(1) + " °C"; }
+function torUpdatePertLabel(v) { document.getElementById("tor-pert-amp-v").textContent = (v > 0 ? "+" : "") + v + " °C"; }
+
+function torTick() {
+  const half = torState.hyst / 2;
+  let newU = torState.u;
+  if (torState.T < torState.consigne - half) newU = 100;
+  else if (torState.T > torState.consigne + half) newU = 0;
+  if (newU !== torState.u) torState.switchCount++;
+  torState.u = newU;
+  stepPlant(torState, newU);
+  pushHistory(torState);
+
+  document.getElementById("tor-Tval").textContent = torState.T.toFixed(1) + " °C";
+  document.getElementById("tor-etat").innerHTML = torState.u > 0
+    ? '<span class="state-pill state-on">MARCHE</span>'
+    : '<span class="state-pill state-off">ARRÊT</span>';
+  document.getElementById("tor-switch").textContent = torState.switchCount;
+  document.getElementById("tor-pertval").textContent = (torState.perturbValue > 0 ? "+" : "") + torState.perturbValue.toFixed(0) + " °C";
+  document.getElementById("tor-time").textContent = torState.tSim.toFixed(0) + " s";
+  drawChart("canvasTOR", torState);
+}
+
+function torStart() { if (torTimer) return; torState.running = true; torTimer = setInterval(torTick, TICK_MS); }
+function torPause() { clearInterval(torTimer); torTimer = null; torState.running = false; }
+function torReset() {
+  torPause();
+  torState = newTorState(parseFloat(document.getElementById("tor-consigne").value), parseFloat(document.getElementById("tor-hyst").value));
+  document.getElementById("tor-switch").textContent = 0;
+  document.getElementById("tor-pertval").textContent = "0 °C";
+  document.getElementById("tor-time").textContent = "0 s";
+  document.getElementById("tor-Tval").textContent = "20.0 °C";
+  document.getElementById("tor-etat").innerHTML = '<span class="state-pill state-off">ARRÊT</span>';
+  drawChart("canvasTOR", torState);
+}
+function torPerturb() { torState.perturbValue = parseFloat(document.getElementById("tor-pert-amp").value); }
+function torPerturbClear() { torState.perturbValue = 0; }
+
+// ═══════════════════════════════════════════
+// RÉGULATION PID
+// ═══════════════════════════════════════════
+let pidState = null;
+let pidTimer = null;
+
+function newPidState() {
+  return {
+    T: T_AMB, u: 0, consigne: 60, tSim: 0, history: [],
+    Kp: 4, Ki: 0.3, Kd: 10, pOn: true, iOn: false, dOn: false,
+    integral: 0, ePrev: 0, running: false,
+    perturbValue: 0, uBuffer: newDelayBuffer(), uPtr: 0,
+    maxOvershoot: 0, inBand: false, bandEnterTime: null, responseTime: null
+  };
+}
+pidState = newPidState();
+
+function pidUpdatePertLabel(v) { document.getElementById("pid-pert-amp-v").textContent = (v > 0 ? "+" : "") + v + " °C"; }
+
+function pidUpdateGains() {
+  pidState.Kp = parseFloat(document.getElementById("pid-kp").value);
+  pidState.Ki = parseFloat(document.getElementById("pid-ki").value);
+  pidState.Kd = parseFloat(document.getElementById("pid-kd").value);
+  pidState.pOn = document.getElementById("pid-p-on").checked;
+  pidState.iOn = document.getElementById("pid-i-on").checked;
+  pidState.dOn = document.getElementById("pid-d-on").checked;
+  document.getElementById("pid-kp-v").textContent = pidState.Kp.toFixed(1);
+  document.getElementById("pid-ki-v").textContent = pidState.Ki.toFixed(2);
+  document.getElementById("pid-kd-v").textContent = pidState.Kd.toFixed(1);
+}
+
+function pidSetConsigne(v) {
+  pidState.consigne = parseFloat(v);
+  document.getElementById("pid-consigne-v").textContent = v + " °C";
+  pidState.maxOvershoot = 0; pidState.inBand = false; pidState.bandEnterTime = null; pidState.responseTime = null;
+  drawChart("canvasPID", pidState);
+}
+
+function pidPreset(name) {
+  if (name === 'P') { setSliders(5, 0, 0, true, false, false); }
+  if (name === 'PI') { setSliders(3, 0.35, 0, true, true, false); }
+  if (name === 'PID') { setSliders(4, 0.3, 10, true, true, true); }
+  if (name === 'AGRESSIF') { setSliders(30, 0, 0, true, false, false); }
+  function setSliders(kp, ki, kd, p, i, d) {
+    document.getElementById("pid-kp").value = kp;
+    document.getElementById("pid-ki").value = ki;
+    document.getElementById("pid-kd").value = kd;
+    document.getElementById("pid-p-on").checked = p;
+    document.getElementById("pid-i-on").checked = i;
+    document.getElementById("pid-d-on").checked = d;
+    pidUpdateGains();
+  }
+}
+
+function pidTick() {
+  const e = pidState.consigne - pidState.T;
+  const deriv = (e - pidState.ePrev) / DT;
+
+  const termP = pidState.pOn ? pidState.Kp * e : 0;
+  const termI = pidState.iOn ? pidState.Ki * pidState.integral : 0;
+  const termD = pidState.dOn ? pidState.Kd * deriv : 0;
+  let uRaw = termP + termI + termD;
+  const sat = Math.max(0, Math.min(100, uRaw));
+
+  // anti-windup simple : n'intègre pas si déjà saturé dans le même sens
+  if (pidState.iOn && !((sat === 100 && e > 0) || (sat === 0 && e < 0))) {
+    pidState.integral += e * DT;
+  }
+  pidState.u = sat;
+  pidState.ePrev = e;
+
+  stepPlant(pidState, sat);
+  pushHistory(pidState);
+
+  // métriques
+  const span = pidState.consigne - T_AMB;
+  if (span > 0) {
+    const overshoot = ((pidState.T - pidState.consigne) / span) * 100;
+    if (overshoot > pidState.maxOvershoot) pidState.maxOvershoot = overshoot;
+  }
+  const band = 0.05 * Math.max(1, span);
+  if (Math.abs(pidState.consigne - pidState.T) <= band) {
+    if (!pidState.inBand) { pidState.inBand = true; pidState.bandEnterTime = pidState.tSim; }
+    pidState.responseTime = pidState.bandEnterTime;
+  } else {
+    pidState.inBand = false;
+  }
+
+  document.getElementById("pid-Tval").textContent = pidState.T.toFixed(1) + " °C";
+  document.getElementById("pid-uval").textContent = pidState.u.toFixed(0) + " %";
+  document.getElementById("pid-erreur").textContent = (pidState.consigne - pidState.T).toFixed(1) + " °C";
+  document.getElementById("pid-depassement").textContent = Math.max(0, pidState.maxOvershoot).toFixed(0) + " %";
+  document.getElementById("pid-treponse").textContent = pidState.responseTime !== null ? pidState.responseTime.toFixed(0) + " s" : "–";
+  document.getElementById("pid-pertval").textContent = (pidState.perturbValue > 0 ? "+" : "") + pidState.perturbValue.toFixed(0) + " °C";
+  document.getElementById("pid-time").textContent = pidState.tSim.toFixed(0) + " s";
+
+  drawChart("canvasPID", pidState);
+}
+
+function pidStart() { if (pidTimer) return; pidState.running = true; pidTimer = setInterval(pidTick, TICK_MS); }
+function pidPause() { clearInterval(pidTimer); pidTimer = null; pidState.running = false; }
+function pidReset() {
+  pidPause();
+  const consigne = parseFloat(document.getElementById("pid-consigne").value);
+  pidState = newPidState();
+  pidState.consigne = consigne;
+  pidUpdateGains();
+  document.getElementById("pid-Tval").textContent = "20.0 °C";
+  document.getElementById("pid-uval").textContent = "0 %";
+  document.getElementById("pid-erreur").textContent = "0.0 °C";
+  document.getElementById("pid-depassement").textContent = "0 %";
+  document.getElementById("pid-treponse").textContent = "–";
+  document.getElementById("pid-pertval").textContent = "0 °C";
+  document.getElementById("pid-time").textContent = "0 s";
+  drawChart("canvasPID", pidState);
+}
+function pidPerturb() { pidState.perturbValue = parseFloat(document.getElementById("pid-pert-amp").value); }
+function pidPerturbClear() { pidState.perturbValue = 0; }
+
+// ═══════════════════════════════════════════
+// QUESTIONS
+// ═══════════════════════════════════════════
+const questions = [
+  { q:"Dans une régulation TOR (tout ou rien), la commande de l'actionneur peut prendre :",
+    options:["Une infinité de valeurs entre 0 et 100 %","Uniquement deux valeurs (marche / arrêt)","Une valeur proportionnelle à l'erreur","Une valeur qui dépend uniquement du temps"],
+    answer:1, fb:"Le TOR ne connaît que deux états : actionneur complètement activé ou complètement désactivé." },
+  { q:"Que se passe-t-il si on réduit fortement la largeur de l'hystérésis en régulation TOR ?",
+    options:["Les oscillations autour de la consigne diminuent, mais les commutations deviennent beaucoup plus fréquentes","Les oscillations augmentent fortement","La sortie devient progressivement proportionnelle à l'erreur","Le système devient parfaitement stable sans aucune oscillation"],
+    answer:0, fb:"Une hystérésis étroite serre la température autour de la consigne, mais use davantage l'actionneur à cause des commutations rapprochées." },
+  { q:"L'action Proportionnelle (P) d'un correcteur a pour effet principal de :",
+    options:["Éliminer totalement l'erreur en régime permanent","Générer une commande proportionnelle à l'erreur, ce qui accélère la réponse","Anticiper l'évolution future de l'erreur","Empêcher toute possibilité d'oscillation"],
+    answer:1, fb:"Le terme P réagit à l'erreur présente : plus l'écart est grand, plus la commande est forte. Seule, elle laisse toujours subsister une erreur statique." },
+  { q:"Pourquoi ajoute-t-on une action Intégrale (I) à un correcteur ?",
+    options:["Pour accélérer uniquement la réponse initiale","Pour annuler l'erreur statique en régime permanent","Pour amortir les oscillations et le dépassement","Pour limiter la valeur maximale de la commande"],
+    answer:1, fb:"L'action I accumule l'erreur dans le temps : tant qu'il subsiste un écart, elle continue d'augmenter la commande jusqu'à l'annuler." },
+  { q:"L'action Dérivée (D) permet principalement de :",
+    options:["Annuler l'erreur statique en régime permanent","Anticiper l'évolution de l'erreur et amortir les dépassements","Augmenter la vitesse de réponse en régime permanent","Transformer la régulation en tout ou rien"],
+    answer:1, fb:"L'action D réagit à la vitesse de variation de l'erreur : elle « freine » la commande quand la température s'approche vite de la consigne, réduisant le dépassement." },
+  { q:"Si le gain Kp est réglé beaucoup trop élevé, on risque :",
+    options:["Une réponse plus lente mais toujours stable","Des oscillations importantes, voire une instabilité du système","Une erreur statique plus grande qu'avec un Kp faible","Aucun effet visible sur la réponse"],
+    answer:1, fb:"Un gain trop élevé amplifie excessivement la correction, ce qui peut faire osciller, voire diverger, la température autour de la consigne." },
+  { q:"Lorsqu'une perturbation apparaît sur un système en boucle fermée, le correcteur :",
+    options:["Ne réagit pas : l'écart provoqué reste définitivement","Réagit automatiquement grâce à la mesure du retour (capteur) pour corriger l'écart","Doit être reprogrammé manuellement à chaque perturbation","Provoque systématiquement l'arrêt complet du système"],
+    answer:1, fb:"C'est tout l'intérêt de la boucle fermée : le capteur détecte l'écart provoqué par la perturbation et le correcteur ajuste automatiquement la commande." },
+  { q:"Dans la boucle d'asservissement, le rôle du capteur est de :",
+    options:["Fixer la valeur de consigne","Mesurer la grandeur de sortie réelle du système pour la comparer à la consigne","Amplifier directement la commande envoyée à l'actionneur","Remplacer complètement le correcteur"],
+    answer:1, fb:"Le capteur fournit l'information de retour indispensable pour calculer l'écart (erreur) entre ce qui est demandé et ce qui est réellement obtenu." },
+  { q:"En régulation Proportionnelle seule (P), pourquoi observe-t-on une erreur statique en régime permanent ?",
+    options:["Parce qu'une commande non nulle doit être maintenue pour compenser les pertes, ce qui nécessite une erreur non nulle avec un correcteur P seul","Parce que le capteur est systématiquement imprécis","Parce que la consigne change sans cesse","Parce que le correcteur sature en permanence"],
+    answer:0, fb:"Avec un correcteur P seul, u = Kp × erreur : pour maintenir une commande non nulle en régime permanent, il faut donc que l'erreur reste elle-même non nulle." },
+  { q:"Par rapport à un correcteur PID bien réglé, une régulation TOR présente généralement :",
+    options:["Une précision supérieure et moins d'usure de l'actionneur","Des oscillations permanentes autour de la consigne et une usure accrue de l'actionneur","Une réponse totalement sans oscillation","Un coût de mise en œuvre toujours plus élevé"],
+    answer:1, fb:"Le TOR oscille par nature autour de la consigne (dans la bande d'hystérésis) et sollicite fréquemment l'actionneur, contrairement à un PID bien réglé, plus précis et plus doux." },
+];
+
+let qScores = new Array(questions.length).fill(null);
+let theme = "8";
+let nomExo = "tp_asservissement";
+let nbquestion = questions.length;
+
+function buildQuestions() {
+  const list = document.getElementById("questions-list");
+  list.innerHTML = "";
+  questions.forEach((q, qi) => {
+    const div = document.createElement("div");
+    div.className = "question-block";
+    const buttons = q.options.map((opt, oi) =>
+      '<button class="q-opt" onclick="answerQ(' + qi + ',' + oi + ',this)">' + opt + '</button>'
+    ).join("");
+    div.innerHTML = `
+      <p><b>Question ${qi + 1} :</b> ${q.q}</p>
+      <div class="q-options">${buttons}</div>
+      <div class="q-feedback" id="qfb-${qi}"></div>
+    `;
+    list.appendChild(div);
+  });
+  document.getElementById("q-total").textContent = 0;
+}
+
+function answerQ(qi, oi, btn) {
+  if (qScores[qi] !== null) return;
+  const q = questions[qi];
+  const fb = document.getElementById("qfb-" + qi);
+  if (oi === q.answer) {
+    btn.classList.add("correct");
+    fb.className = "q-feedback show ok";
+    fb.textContent = "✅ Correct ! " + q.fb;
+    qScores[qi] = 1;
+  } else {
+    btn.classList.add("wrong");
+    fb.className = "q-feedback show ko";
+    fb.textContent = "❌ Incorrect. " + q.fb;
+    qScores[qi] = 0;
+    btn.parentElement.querySelectorAll(".q-opt")[q.answer].classList.add("correct");
+  }
+  btn.parentElement.querySelectorAll(".q-opt").forEach(b => b.disabled = true);
+  score = qScores.filter(s => s === 1).length;
+  document.getElementById("q-score").textContent = score;
+  document.getElementById("q-total").textContent = qScores.filter(s => s !== null).length;
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function showTab(id, el) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + id).classList.add("active");
+  el.classList.add("active");
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.onload = function () {
+  buildQuestions();
+  pidUpdateGains();
+  drawChart("canvasTOR", torState);
+  drawChart("canvasPID", pidState);
+};
+</script>
+</body>
+</html>

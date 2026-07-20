@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP – Pince wattmétrique F407</title>
+<style>
+:root {
+  --blue: #1f3c88;
+  --blue-light: #f0f4ff;
+  --green: #28a745;
+  --green-dark: #1e7e34;
+  --orange: #e07b00;
+  --red: #c0392b;
+  --gray: #888;
+  --gray-light: #f5f5f5;
+  --border: #dde3f0;
+  --radius: 10px;
+}
+* { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: linear-gradient(135deg, #f4f6f9, #e9eef5); min-height: 100vh; padding: 20px; }
+.container { max-width: 1100px; margin: auto; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+.page-header { background: var(--blue); color: white; padding: 22px 30px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; }
+.page-header p { font-size: 0.88rem; opacity: 0.82; margin-top: 3px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--gray-light); flex-wrap: wrap; }
+.tab-btn { padding: 12px 18px; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: white; font-weight: 600; }
+.tab-btn:hover:not(.active) { color: var(--blue); background: #eef2ff; }
+.tab-content { display: none; padding: 22px 28px; }
+.tab-content.active { display: block; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--blue); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 12px; margin-top: 18px; }
+.card { background: var(--blue-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; }
+.card p, .card li { font-size: 0.9rem; line-height: 1.65; color: #333; }
+.card ul { margin-left: 18px; }
+table.ref { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px; }
+table.ref th, table.ref td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+table.ref th { background: var(--blue); color: white; }
+table.ref tr:nth-child(even) { background: #f5f7ff; }
+
+/* device simulator */
+.device { background: #202225; border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 16px; }
+.device-top { display:flex; justify-content: space-between; align-items:center; margin-bottom:10px; }
+.device-name { font-weight:700; color:#f2c14e; font-size:0.95rem; }
+.lcd { background: #b9cdb0; color:#12210f; font-family: "Consolas", monospace; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; min-height: 96px; box-shadow: inset 0 0 8px rgba(0,0,0,0.35); }
+.lcd-top { font-size: 0.72rem; color:#2b3a22; display:flex; gap:12px; margin-bottom:6px; min-height:14px; letter-spacing:0.5px; font-weight:700;}
+.lcd-line { font-size: 1.05rem; line-height: 1.55; font-weight:600; }
+.lcd-note { font-size:0.7rem; color:#3a4a30; margin-top:4px; font-style:italic;}
+.pos-row, .mode-row, .ctrl-row { display:flex; gap:6px; flex-wrap: wrap; align-items:center; margin-bottom:10px; }
+.ctrl-label { font-size:0.78rem; color:#c9ccd1; min-width:120px; }
+.pos-btn, .mode-btn { padding:7px 13px; border-radius:8px; border:2px solid #4a4d55; background:#2c2f36; color:#eee; cursor:pointer; font-weight:600; font-size:0.8rem; transition:0.15s;}
+.pos-btn.active { background: var(--orange); border-color: var(--orange); color:#1a1a1a; }
+.mode-btn.active { background: #3d8bfd; border-color:#3d8bfd; color:#fff; }
+.zero-btn { background:#7a2e2e; border-color:#7a2e2e; }
+.zero-btn:hover { background:#9a3a3a; }
+select.dev-select { padding:6px 8px; border-radius:6px; border:1px solid #555; background:#2c2f36; color:#fff; font-size:0.8rem; }
+.device-feedback { margin-top:8px; padding:9px 12px; border-radius:7px; font-size:0.82rem; background:#2c2f36; color:#e6e6e6; min-height:18px; }
+.device-feedback.ok { background:#1e3f24; color:#a9e6b0; }
+.device-feedback.ko { background:#4a1f1f; color:#f3b3b3; }
+.device-feedback.info { background:#1f3350; color:#a9c8f3; }
+
+.btn { border: none; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: 0.2s; }
+.btn-green { background: var(--green); color: white; } .btn-green:hover { background: var(--green-dark); }
+.btn-blue { background: var(--blue); color: white; } .btn-blue:hover { background: #162d6a; }
+
+.check-card { background:white; border:1px solid var(--border); border-radius: var(--radius); padding:14px 18px; margin-bottom:14px; }
+.check-card label { font-size:0.88rem; display:block; margin-bottom:6px; color:#333; }
+.check-card input[type=number] { padding:6px; border-radius:6px; border:1px solid #ccc; width:120px; }
+.check-feedback { margin-top:8px; font-size:0.85rem; padding:7px 10px; border-radius:6px; display:none; }
+.check-feedback.show { display:block; }
+.check-feedback.ok { background:#e8f8e8; color: var(--green-dark); }
+.check-feedback.ko { background:#fde8e8; color: var(--red); }
+
+.question-block { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.question-block p { font-size: 0.92rem; margin-bottom: 10px; line-height: 1.6; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-opt { padding: 8px 14px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; font-size: 0.88rem; background: white; text-align: left; transition: 0.15s; }
+.q-opt:hover { background: var(--blue-light); border-color: var(--blue); }
+.q-opt.correct { background: #e8f8e8; border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+.q-opt.wrong { background: #fde8e8; border-color: var(--red); color: var(--red); }
+.q-opt:disabled { cursor: default; }
+.q-feedback { margin-top: 8px; font-size: 0.84rem; padding: 8px 12px; border-radius: 6px; display: none; }
+.q-feedback.show { display: block; }
+.q-feedback.ok { background: #e8f8e8; color: var(--green-dark); }
+.q-feedback.ko { background: #fde8e8; color: var(--red); }
+.score-bar { background: var(--blue-light); border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.score-bar span { font-size: 0.88rem; color: var(--blue); font-weight: 500; }
+#send { background: #28a745; color: white; border: none; padding: 7px 20px; border-radius: 6px; cursor: pointer; }
+
+.wiring { display:flex; gap:14px; flex-wrap:wrap; margin: 10px 0; }
+.wire-box { flex:1; min-width:110px; background:white; border:2px solid var(--border); border-radius:10px; padding:12px; text-align:center; font-size:0.85rem; transition:0.2s; }
+.wire-box.lit { border-color: var(--orange); background:#fff8ee; box-shadow:0 0 0 3px rgba(224,123,0,0.15); }
+@media (max-width:700px){ .wiring{flex-direction:column;} }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>🔌 TP – La pince multimètre wattmétrique F407</h1>
+  <p>Mesurer un courant, une tension et une puissance en continu, en monophasé et en triphasé équilibré</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('intro',this)">📖 Présentation</button>
+  <button class="tab-btn" onclick="showTab('dc',this)">🔋 Mesure en continu</button>
+  <button class="tab-btn" onclick="showTab('mono',this)">🔌 Monophasé</button>
+  <button class="tab-btn" onclick="showTab('tri',this)">🔺 Triphasé équilibré</button>
+  <button class="tab-btn" onclick="showTab('quiz',this)">❓ Quiz final</button>
+</div>
+
+<!-- ═══════════ TAB INTRO ═══════════ -->
+<div id="tab-intro" class="tab-content active">
+  <div class="card">
+    <p>La F407 est une pince multimètre qui permet, entre autres, de mesurer une <b>tension</b>, une <b>intensité</b>,
+    une <b>résistance/continuité</b> et une <b>puissance</b> (active W, réactive var, apparente VA).
+    Elle peut fonctionner en <b>DC</b> (continu), <b>AC</b> (alternatif) ou <b>AC+DC</b> (valeur efficace vraie incluant les deux composantes).</p>
+  </div>
+
+  <div class="section-title">Le commutateur (5 positions)</div>
+  <table class="ref">
+    <tr><th>Position</th><th>Fonction</th></tr>
+    <tr><td>OFF</td><td>Arrêt</td></tr>
+    <tr><td>V</td><td>Mesure de tension (AC, DC, AC+DC)</td></tr>
+    <tr><td>Ω</td><td>Test de continuité / mesure de résistance</td></tr>
+    <tr><td>A</td><td>Mesure d'intensité par la pince (AC, DC, AC+DC)</td></tr>
+    <tr><td>W</td><td>Mesure de puissances (W, var, VA), facteur de puissance, énergie</td></tr>
+  </table>
+
+  <div class="section-title">Les trois modes AC / DC / AC+DC</div>
+  <div class="card">
+    <ul>
+      <li><b>DC</b> : composante continue uniquement. L'écran affiche aussi le <b>taux d'ondulation</b> (RIPPLE).</li>
+      <li><b>AC</b> : composante alternative uniquement (valeur efficace vraie RMS). L'écran affiche aussi le <b>facteur de crête</b> (CF).</li>
+      <li><b>AC+DC</b> : valeur efficace vraie du signal complet (alternatif + continu superposés).</li>
+    </ul>
+    <p>La touche jaune <b>SELECT</b> permet de choisir manuellement AC, DC ou AC+DC.</p>
+  </div>
+
+  <div class="section-title">Le zéro DC : une étape à ne jamais oublier</div>
+  <div class="card">
+    <p>Le capteur de courant de la pince (effet Hall) possède un léger décalage (offset). Avant toute mesure de courant ou de puissance en <b>DC</b> ou <b>AC+DC</b>,
+    il faut compenser ce zéro :</p>
+    <ul>
+      <li>La pince doit être <b>ouverte, sans conducteur enserré</b> ;</li>
+      <li>Appui long sur la touche <b>SELECT/ZERO</b> jusqu'au double bip ;</li>
+      <li>La compensation reste valable jusqu'à l'extinction de l'appareil (retour sur OFF).</li>
+    </ul>
+  </div>
+
+  <div class="section-title">Le sens de la pince</div>
+  <div class="card">
+    <p>Une flèche est gravée sur les mâchoires de la pince. Elle doit être orientée dans le sens supposé du courant,
+    <b>de la source (batterie ou réseau) vers la charge</b>. L'inverser change le signe de la mesure affichée.</p>
+  </div>
+
+  <div class="section-title">Bornes et cordons</div>
+  <div class="card">
+    <p>Deux bornes reçoivent les cordons de mesure : <b>COM</b> (cordon noir) et <b>+</b> (cordon rouge).</p>
+  </div>
+</div>
+
+<!-- ═══════════ TAB DC ═══════════ -->
+<div id="tab-dc" class="tab-content">
+  <div class="card">
+    <p><b>Contexte :</b> une batterie continue alimente un moteur à courant continu. Vous devez, à l'aide de la F407,
+    mesurer le courant, la tension, puis la puissance consommée par le moteur.</p>
+  </div>
+
+  <div class="device" id="dc-device"></div>
+
+  <div class="section-title">Vos relevés</div>
+  <div class="check-card">
+    <label>Relevez l'intensité mesurée (position A), en A</label>
+    <input type="number" step="any" id="dc-check-I"> A
+    <button class="btn btn-green" onclick="checkVal('dc','I','dc-check-I','dc-check-I-fb')">Valider</button>
+    <div class="check-feedback" id="dc-check-I-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la tension mesurée (position V), en V</label>
+    <input type="number" step="any" id="dc-check-U"> V
+    <button class="btn btn-green" onclick="checkVal('dc','U','dc-check-U','dc-check-U-fb')">Valider</button>
+    <div class="check-feedback" id="dc-check-U-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance mesurée (position W), en W</label>
+    <input type="number" step="any" id="dc-check-P"> W
+    <button class="btn btn-green" onclick="checkVal('dc','P','dc-check-P','dc-check-P-fb')">Valider</button>
+    <div class="check-feedback" id="dc-check-P-fb"></div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB MONO ═══════════ -->
+<div id="tab-mono" class="tab-content">
+  <div class="card">
+    <p><b>Contexte :</b> un récepteur monophasé est branché sur le réseau. Vous devez mesurer la tension du réseau,
+    le courant absorbé, puis les puissances active, réactive et apparente, et en déduire le facteur de puissance.</p>
+  </div>
+
+  <div class="wiring">
+    <div class="wire-box" id="mono-box-N">Neutre (N)</div>
+    <div class="wire-box" id="mono-box-L">Phase (L)</div>
+  </div>
+
+  <div class="device" id="mono-device"></div>
+
+  <div class="section-title">Vos relevés</div>
+  <div class="check-card">
+    <label>Relevez la tension mesurée (position V), en V</label>
+    <input type="number" step="any" id="mono-check-U"> V
+    <button class="btn btn-green" onclick="checkVal('mono','U','mono-check-U','mono-check-U-fb')">Valider</button>
+    <div class="check-feedback" id="mono-check-U-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez le courant mesuré (position A), en A</label>
+    <input type="number" step="any" id="mono-check-I"> A
+    <button class="btn btn-green" onclick="checkVal('mono','I','mono-check-I','mono-check-I-fb')">Valider</button>
+    <div class="check-feedback" id="mono-check-I-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance active mesurée (position W, 1ère ligne), en W</label>
+    <input type="number" step="any" id="mono-check-P"> W
+    <button class="btn btn-green" onclick="checkVal('mono','P','mono-check-P','mono-check-P-fb')">Valider</button>
+    <div class="check-feedback" id="mono-check-P-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance réactive mesurée (position W, 2ème ligne), en var</label>
+    <input type="number" step="any" id="mono-check-Q"> var
+    <button class="btn btn-green" onclick="checkVal('mono','Q','mono-check-Q','mono-check-Q-fb')">Valider</button>
+    <div class="check-feedback" id="mono-check-Q-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance apparente mesurée (position W, 3ème ligne), en VA</label>
+    <input type="number" step="any" id="mono-check-S"> VA
+    <button class="btn btn-green" onclick="checkVal('mono','S','mono-check-S','mono-check-S-fb')">Valider</button>
+    <div class="check-feedback" id="mono-check-S-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Calculez le facteur de puissance Fp = P / S</label>
+    <input type="number" step="any" id="mono-check-PF">
+    <button class="btn btn-green" onclick="checkVal('mono','PF','mono-check-PF','mono-check-PF-fb',0.03)">Valider</button>
+    <div class="check-feedback" id="mono-check-PF-fb"></div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB TRI ═══════════ -->
+<div id="tab-tri" class="tab-content">
+  <div class="card">
+    <p><b>Contexte :</b> un récepteur triphasé <b>équilibré</b> est branché sur le réseau. Vous devez mesurer la tension,
+    le courant de ligne, puis les puissances active, réactive et apparente totales, et en déduire le facteur de puissance.</p>
+  </div>
+
+  <div class="section-title">Méthode de la pince unique en triphasé équilibré</div>
+  <div class="card">
+    <p>En appuyant longuement sur SELECT, l'appareil passe en mode « puissances totales triphasées équilibrées » (case <b>3∼</b> ci-dessous).
+    On branche alors les cordons sur <b>deux phases</b> (méthode conseillée) et on enserre une phase avec la pince, en choisissant aussi son sens.
+    Vous pouvez aussi mesurer une tension simple (une phase et le neutre N).</p>
+    <p>Si la puissance active affichée est négative : inversez le sens de la pince ou l'ordre des cordons.</p>
+  </div>
+
+  <div class="wiring">
+    <div class="wire-box" id="tri-box-N">Neutre (N)</div>
+    <div class="wire-box" id="tri-box-L1">Phase L1</div>
+    <div class="wire-box" id="tri-box-L2">Phase L2</div>
+    <div class="wire-box" id="tri-box-L3">Phase L3</div>
+  </div>
+
+  <div class="device" id="tri-device"></div>
+
+  <div class="section-title">Vos relevés</div>
+  <div class="check-card">
+    <label>Relevez la tension mesurée (position V), en V</label>
+    <input type="number" step="any" id="tri-check-U"> V
+    <button class="btn btn-green" onclick="checkVal('tri','U','tri-check-U','tri-check-U-fb')">Valider</button>
+    <div class="check-feedback" id="tri-check-U-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez le courant mesuré (position A), en A</label>
+    <input type="number" step="any" id="tri-check-I"> A
+    <button class="btn btn-green" onclick="checkVal('tri','I','tri-check-I','tri-check-I-fb')">Valider</button>
+    <div class="check-feedback" id="tri-check-I-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance active totale mesurée (position W, 1ère ligne), en W</label>
+    <input type="number" step="any" id="tri-check-P"> W
+    <button class="btn btn-green" onclick="checkVal('tri','P','tri-check-P','tri-check-P-fb')">Valider</button>
+    <div class="check-feedback" id="tri-check-P-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance réactive totale mesurée (position W, 2ème ligne), en var</label>
+    <input type="number" step="any" id="tri-check-Q"> var
+    <button class="btn btn-green" onclick="checkVal('tri','Q','tri-check-Q','tri-check-Q-fb')">Valider</button>
+    <div class="check-feedback" id="tri-check-Q-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Relevez la puissance apparente totale mesurée (position W, 3ème ligne), en VA</label>
+    <input type="number" step="any" id="tri-check-S"> VA
+    <button class="btn btn-green" onclick="checkVal('tri','S','tri-check-S','tri-check-S-fb')">Valider</button>
+    <div class="check-feedback" id="tri-check-S-fb"></div>
+  </div>
+  <div class="check-card">
+    <label>Calculez le facteur de puissance Fp = P / S</label>
+    <input type="number" step="any" id="tri-check-PF">
+    <button class="btn btn-green" onclick="checkVal('tri','PF','tri-check-PF','tri-check-PF-fb',0.03)">Valider</button>
+    <div class="check-feedback" id="tri-check-PF-fb"></div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB QUIZ ═══════════ -->
+<div id="tab-quiz" class="tab-content">
+  <div class="score-bar">
+    <span>Score : <b id="q-score">0</b> / <b id="q-total">0</b> questions répondues</span>
+  </div>
+  <div id="questions-list"></div>
+  <button id="send" onclick="envoyerScore()">Envoyer le résultat</button>
+</div>
+
+</div><!-- /container -->
+
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+<script>
+let theme = "31";
+let nomExo = "exo13";
+
+// ═══════════════════════════
+// OUTILS COMPLEXES (phaseurs)
+// ═══════════════════════════
+function toRad(d){ return d*Math.PI/180; }
+function cx(mag,angleDeg){ return {re:mag*Math.cos(toRad(angleDeg)), im:mag*Math.sin(toRad(angleDeg))}; }
+function csub(a,b){ return {re:a.re-b.re, im:a.im-b.im}; }
+function cinfo(c){ return {mag:Math.hypot(c.re,c.im), angle:Math.atan2(c.im,c.re)*180/Math.PI}; }
+function closeEnough(val,expect,tol){ return Math.abs(val-expect)<=tol || Math.abs(val+expect)<=tol; }
+function rnd(min,max,dec){ let v = min + Math.random()*(max-min); return +v.toFixed(dec); }
+
+// ═══════════════════════════
+// SCÉNARIOS ALÉATOIRES (jamais affichés à l'élève)
+// ═══════════════════════════
+const scenarioDC = { Vdc: rnd(20,48,1), Idc: rnd(2,15,1) };
+
+const scenarioMono = { V: rnd(215,232,1), I: rnd(2,18,1), phi: Math.round(rnd(10,45,0)) };
+
+const scenarioTri = { U: rnd(380,400,1), I: rnd(3,20,1), phi: Math.round(rnd(15,40,0)) };
+const VphaseTri = +(scenarioTri.U/Math.sqrt(3)).toFixed(2);
+
+const PHASOR_POINTS = {
+  mono: { N:{re:0,im:0}, L: cx(scenarioMono.V,0) },
+  tri:  { N:{re:0,im:0}, L1: cx(VphaseTri,0), L2: cx(VphaseTri,-120), L3: cx(VphaseTri,120) }
+};
+const BASE_ANGLES = { mono: {L:0}, tri: {L1:0,L2:-120,L3:120} };
+function getIscenario(tab){ return tab==='mono' ? {I:scenarioMono.I, phi:scenarioMono.phi} : {I:scenarioTri.I, phi:scenarioTri.phi}; }
+
+// ═══════════════════════════
+// CONFIG DES 3 DISPOSITIFS
+// ═══════════════════════════
+const configs = {
+  dc: {
+    cordonOptions: [['none','Non branché'],['plus','Borne + batterie'],['moins','Borne − batterie']],
+    clampOptions: [['none','Ouverte (aucun conducteur)'],['fil','Sur le fil (unique conducteur)']],
+    sensLabels: [['normal','Batterie → charge'],['inv','Charge → batterie']],
+    hasTri3:false
+  },
+  mono: {
+    cordonOptions: [['none','Non branché'],['N','Neutre N'],['L','Phase L']],
+    clampOptions: [['none','Ouverte (aucun conducteur)'],['L','Sur la phase L']],
+    sensLabels: [['normal','Réseau → charge'],['inv','Charge → réseau']],
+    hasTri3:true
+  },
+  tri: {
+    cordonOptions: [['none','Non branché'],['N','Neutre N'],['L1','Phase L1'],['L2','Phase L2'],['L3','Phase L3']],
+    clampOptions: [['none','Ouverte (aucun conducteur)'],['L1','Sur la phase L1'],['L2','Sur la phase L2'],['L3','Sur la phase L3']],
+    sensLabels: [['normal','Réseau → charge'],['inv','Charge → réseau']],
+    hasTri3:true
+  }
+};
+
+let states = {
+  dc:   {pos:'OFF', mode:'DC',   clamp:'none', sens:'normal', rouge:'none', noir:'none', zero:false},
+  mono: {pos:'OFF', mode:'AC',   clamp:'none', sens:'normal', rouge:'none', noir:'none', zero:false, tri3:false},
+  tri:  {pos:'OFF', mode:'ACDC', clamp:'none', sens:'normal', rouge:'none', noir:'none', zero:false, tri3:false}
+};
+
+// ═══════════════════════════
+// CONSTRUCTION DU PANNEAU
+// ═══════════════════════════
+function buildPanel(tab){
+  const cfg = configs[tab];
+  const cont = document.getElementById(tab+'-device');
+  let html = '';
+  html += `<div class="device-top"><span class="device-name">F407</span><span id="${tab}-topmode" style="font-size:0.75rem;color:#9aa;"></span></div>`;
+  html += `<div class="lcd"><div class="lcd-top" id="${tab}-lcdtop"></div><div class="lcd-line" id="${tab}-l1">— — —</div><div class="lcd-line" id="${tab}-l2"></div><div class="lcd-line" id="${tab}-l3"></div><div class="lcd-note" id="${tab}-note"></div></div>`;
+  html += `<div class="pos-row" id="${tab}-posrow"></div>`;
+  html += `<div class="mode-row" id="${tab}-moderow"></div>`;
+  if(cfg.hasTri3){
+    html += `<div class="ctrl-row"><label style="font-size:0.8rem;color:#c9ccd1;"><input type="checkbox" id="${tab}-tri3" onchange="setTri3('${tab}',this.checked)"> Mode 3∼ (puissances totales triphasées) activé</label></div>`;
+  }
+  html += `<div class="ctrl-row"><span class="ctrl-label">Cordon rouge (+) :</span><select class="dev-select" onchange="setCordon('${tab}','rouge',this.value)">`
+        + cfg.cordonOptions.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('') + `</select>`;
+  html += `<span class="ctrl-label">Cordon noir (COM) :</span><select class="dev-select" onchange="setCordon('${tab}','noir',this.value)">`
+        + cfg.cordonOptions.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('') + `</select></div>`;
+  html += `<div class="ctrl-row"><span class="ctrl-label">Pince :</span><select class="dev-select" onchange="setClamp('${tab}',this.value)">`
+        + cfg.clampOptions.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('') + `</select>`;
+  html += `<span class="ctrl-label">Sens :</span><select class="dev-select" onchange="setSens('${tab}',this.value)">`
+        + cfg.sensLabels.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('') + `</select>`;
+  html += `<button class="btn zero-btn" onclick="doZero('${tab}')">🔧 Faire le zéro DC</button></div>`;
+  html += `<div class="device-feedback" id="${tab}-feedback">Le commutateur est sur OFF.</div>`;
+  cont.innerHTML = html;
+}
+
+// ═══════════════════════════
+// DISPATCHERS
+// ═══════════════════════════
+function setPos(tab,p){ states[tab].pos=p; if(p==='OFF'){ states[tab].zero=false; } render(tab); }
+function setMode(tab,m){ states[tab].mode=m; render(tab); }
+function setClamp(tab,v){ states[tab].clamp=v; render(tab); }
+function setSens(tab,v){ states[tab].sens=v; render(tab); }
+function setCordon(tab,which,v){ states[tab][which]=v; render(tab); }
+function setTri3(tab,v){ states[tab].tri3=v; render(tab); }
+function doZero(tab){
+  const st = states[tab];
+  const fb = document.getElementById(tab+'-feedback');
+  if(st.pos==='OFF'){ fb.className='device-feedback info'; fb.textContent="ℹ️ Positionnez d'abord le commutateur sur A ou W."; return; }
+  if(st.mode==='AC'){ fb.className='device-feedback info'; fb.textContent="ℹ️ Le zéro DC ne sert qu'en mode DC ou AC+DC."; return; }
+  if(st.clamp!=='none'){ fb.className='device-feedback ko'; fb.textContent="❌ Retirez la pince du conducteur avant de faire le zéro DC !"; return; }
+  st.zero = true;
+  fb.className='device-feedback ok'; fb.textContent="✅ Double bip : zéro DC effectué (valable jusqu'au retour sur OFF).";
+  render(tab);
+}
+
+// ═══════════════════════════
+// RENDU GÉNÉRIQUE
+// ═══════════════════════════
+function buildPosRow(tab, current){
+  document.getElementById(tab+'-posrow').innerHTML = ['OFF','V','A','W'].map(p=>
+    `<button class="pos-btn ${p===current?'active':''}" onclick="setPos('${tab}','${p}')">${p}</button>`).join('');
+}
+function buildModeRow(tab, current){
+  const modes=[['AC','AC'],['DC','DC'],['ACDC','AC+DC']];
+  document.getElementById(tab+'-moderow').innerHTML = modes.map(m=>
+    `<button class="mode-btn ${m[0]===current?'active':''}" onclick="setMode('${tab}','${m[0]}')">${m[1]}</button>`).join('');
+}
+
+function render(tab){
+  const st = states[tab];
+  buildPosRow(tab, st.pos);
+  buildModeRow(tab, st.mode);
+  if(configs[tab].hasTri3){ const cb=document.getElementById(tab+'-tri3'); if(cb) cb.checked = st.tri3; }
+  const l1=document.getElementById(tab+'-l1'), l2=document.getElementById(tab+'-l2'), l3=document.getElementById(tab+'-l3'),
+        note=document.getElementById(tab+'-note'), top=document.getElementById(tab+'-lcdtop'), fb=document.getElementById(tab+'-feedback');
+  l1.textContent="— — —"; l2.textContent=""; l3.textContent=""; note.textContent="";
+
+  if(st.pos==='OFF'){ top.textContent=''; fb.className='device-feedback'; fb.textContent="Le commutateur est sur OFF."; updateWiringBoxes(tab,st); return; }
+
+  top.textContent = (st.mode==='ACDC'?'AC+DC':st.mode) + (st.tri3?'  3∼':'');
+  fb.className='device-feedback'; fb.textContent="";
+
+  if(tab==='dc') renderDC(st,l1,l2,l3,note,fb);
+  else renderPhasorTab(tab,st,l1,l2,l3,note,fb);
+
+  updateWiringBoxes(tab,st);
+}
+
+function updateWiringBoxes(tab,st){
+  if(tab==='mono'){
+    const bn=document.getElementById('mono-box-N'), bl=document.getElementById('mono-box-L');
+    if(bn) bn.classList.toggle('lit', st.rouge==='N'||st.noir==='N');
+    if(bl) bl.classList.toggle('lit', st.rouge==='L'||st.noir==='L');
+  } else if(tab==='tri'){
+    ['N','L1','L2','L3'].forEach(k=>{
+      const b=document.getElementById('tri-box-'+k);
+      if(b) b.classList.toggle('lit', st.rouge===k||st.noir===k||st.clamp===k);
+    });
+  }
+}
+
+// ═══════════════════════════
+// MODÈLE CONTINU (DC)
+// ═══════════════════════════
+function dcSigns(st){
+  const vOK = (st.rouge!=='none' && st.noir!=='none' && st.rouge!==st.noir);
+  const signV = vOK ? ((st.rouge==='plus' && st.noir==='moins') ? 1 : -1) : null;
+  const iOK = st.clamp!=='none';
+  const signI = iOK ? ((st.sens==='normal') ? 1 : -1) : null;
+  return {vOK,signV,iOK,signI};
+}
+function dcNeedsZero(st){ return (st.mode==='DC' || st.mode==='ACDC'); }
+
+function renderDC(st,l1,l2,l3,note,fb){
+  const {vOK,signV,iOK,signI} = dcSigns(st);
+  if(st.pos==='V'){
+    if(!vOK){ note.textContent="Branchez les deux cordons sur des bornes différentes de la batterie."; return; }
+    if(st.mode==='AC'){ l1.textContent="0.0 V RMS"; l2.textContent="-- CF"; l3.textContent="0.0 V DC"; note.textContent="Tension continue pure : choisissez DC."; return; }
+    const val = signV*scenarioDC.Vdc;
+    l1.textContent = Math.abs(val).toFixed(1)+" V RMS";
+    l2.textContent = st.mode==='DC' ? "0.3 % RIPPLE" : "1.41 CF";
+    l3.textContent = val.toFixed(1)+" V DC";
+    if(signV<0) note.textContent="Polarité inversée : la composante continue est négative.";
+  } else if(st.pos==='A'){
+    if(!iOK){ note.textContent="Pince ouverte : aucun conducteur enserré."; return; }
+    if(st.mode==='AC'){ l1.textContent="0.00 A RMS"; l2.textContent="-- CF"; l3.textContent="0.0 A DC"; note.textContent="Courant continu pur : choisissez DC."; return; }
+    if(!st.zero){ l1.textContent="≈ 0.2 A"; l2.textContent="ERREUR OFFSET"; note.textContent="⚠️ Zéro DC non effectué : lecture faussée."; return; }
+    const val = signI*scenarioDC.Idc;
+    l1.textContent = val.toFixed(1)+" A RMS";
+    l2.textContent = st.mode==='DC' ? "1.2 % RIPPLE" : "1.41 CF";
+    l3.textContent = val.toFixed(1)+" A DC";
+    if(signI<0) note.textContent="La flèche de la pince est orientée à l'envers : le signe est négatif.";
+  } else if(st.pos==='W'){
+    if(!vOK || !iOK){ note.textContent="Il faut brancher les cordons ET enserrer le conducteur avec la pince."; return; }
+    if(st.mode==='AC'){ l1.textContent="0 W"; l2.textContent="—"; l3.textContent="—"; note.textContent="Puissance continue pure : choisissez DC."; return; }
+    if(!st.zero){ l1.textContent="≈ err W"; note.textContent="⚠️ Faites le zéro DC du courant avant la mesure de puissance."; return; }
+    const val = signV*signI*scenarioDC.Vdc*scenarioDC.Idc;
+    l1.textContent = val.toFixed(1)+" W";
+    l2.textContent = "—"; l3.textContent = "—";
+  }
+}
+
+// ═══════════════════════════
+// MODÈLE MONO / TRI (phaseurs)
+// ═══════════════════════════
+function getVmag(tab,st){
+  if(st.rouge==='none' || st.noir==='none' || st.rouge===st.noir) return null;
+  const pts = PHASOR_POINTS[tab];
+  return cinfo(csub(pts[st.rouge], pts[st.noir])).mag;
+}
+function getPQS(tab,st){
+  if(st.clamp==='none') return null;
+  if(st.rouge==='none' || st.noir==='none' || st.rouge===st.noir) return null;
+  const pts = PHASOR_POINTS[tab];
+  const baseA = BASE_ANGLES[tab][st.clamp];
+  const {I,phi} = getIscenario(tab);
+  const Vc = csub(pts[st.rouge], pts[st.noir]);
+  const Vinfo = cinfo(Vc);
+  let Iangle = baseA - phi;
+  if(st.sens==='inv') Iangle += 180;
+  const Iinfo = {mag:I, angle:Iangle};
+  const delta = Vinfo.angle - Iinfo.angle;
+  const tri3 = !!st.tri3;
+  const d = tri3 ? (delta-90) : delta;
+  const dr = toRad(d);
+  const mult = tri3 ? Math.sqrt(3) : 1;
+  return { Vmag:Vinfo.mag, Imag:I, P: mult*Vinfo.mag*I*Math.cos(dr), Q: mult*Vinfo.mag*I*Math.sin(dr), S: mult*Vinfo.mag*I };
+}
+
+function renderPhasorTab(tab,st,l1,l2,l3,note,fb){
+  const needZero = (st.mode==='DC' || st.mode==='ACDC');
+  if(st.pos==='V'){
+    const vmag = getVmag(tab,st);
+    if(vmag===null){ note.textContent="Branchez les deux cordons sur des points différents."; return; }
+    if(st.mode==='DC'){ l1.textContent="0.0 V"; l2.textContent="0.0 % RIPPLE"; l3.textContent="0.0 V DC"; note.textContent="Signal alternatif : choisissez AC ou AC+DC."; return; }
+    l1.textContent = vmag.toFixed(1)+" V RMS";
+    l2.textContent = "1.41 CF";
+    l3.textContent = "0.0 V DC";
+  } else if(st.pos==='A'){
+    if(st.clamp==='none'){ note.textContent="Pince ouverte : aucun conducteur enserré."; return; }
+    if(st.mode==='DC'){ l1.textContent="0.00 A"; l2.textContent="-- CF"; l3.textContent="0.0 A DC"; note.textContent="Signal alternatif : choisissez AC ou AC+DC."; return; }
+    if(needZero && !st.zero){ l1.textContent="≈ 0.15 A"; l2.textContent="ERREUR OFFSET"; note.textContent="⚠️ Zéro DC non effectué."; return; }
+    const {I} = getIscenario(tab);
+    l1.textContent = I.toFixed(1)+" A RMS";
+    l2.textContent = "1.41 CF";
+    l3.textContent = "0.0 A DC";
+  } else if(st.pos==='W'){
+    if(st.clamp==='none' || getVmag(tab,st)===null){ note.textContent="Il faut brancher les cordons ET enserrer une phase avec la pince."; return; }
+    if(st.mode==='DC'){ l1.textContent="0 W"; l2.textContent="0 var"; l3.textContent="0 VA"; note.textContent="Signal alternatif : choisissez AC ou AC+DC."; return; }
+    if(needZero && !st.zero){ l1.textContent="≈ err W"; note.textContent="⚠️ Faites le zéro DC du courant avant la mesure de puissance."; return; }
+    const r = getPQS(tab,st);
+    l1.textContent = r.P.toFixed(0)+" W";
+    l2.textContent = r.Q.toFixed(0)+" var";
+    l3.textContent = r.S.toFixed(0)+" VA";
+    if(r.P<0) note.textContent="Puissance active négative : vérifiez le sens de la pince ou l'ordre des cordons.";
+  }
+}
+
+// ═══════════════════════════
+// VALIDATION DES RELEVÉS (basée sur la lecture en direct)
+// ═══════════════════════════
+function checkVal(tab, kind, inputId, fbId, customTol){
+  const fb = document.getElementById(fbId);
+  const val = parseFloat(document.getElementById(inputId).value);
+  fb.classList.add('show');
+  const st = states[tab];
+  let expect = null;
+
+  if(tab==='dc'){
+    const {vOK,signV,iOK,signI} = dcSigns(st);
+    const zeroOK = !dcNeedsZero(st) || st.zero;
+    if(kind==='I' && iOK && st.mode!=='AC' && zeroOK) expect = signI*scenarioDC.Idc;
+    if(kind==='U' && vOK && st.mode!=='AC') expect = signV*scenarioDC.Vdc;
+    if(kind==='P' && vOK && iOK && st.mode!=='AC' && zeroOK) expect = signV*signI*scenarioDC.Vdc*scenarioDC.Idc;
+  } else {
+    const needZero = (st.mode==='DC' || st.mode==='ACDC');
+    const zeroOK = !needZero || st.zero;
+    if(kind==='U' && st.mode!=='DC'){ expect = getVmag(tab,st); }
+    if(kind==='I' && st.clamp!=='none' && st.mode!=='DC' && zeroOK){ expect = getIscenario(tab).I; }
+    if((kind==='P'||kind==='Q'||kind==='S') && st.mode!=='DC' && zeroOK){
+      const r = getPQS(tab,st);
+      if(r){ expect = kind==='P' ? r.P : kind==='Q' ? r.Q : r.S; }
+    }
+    if(kind==='PF' && st.mode!=='DC' && zeroOK){
+      const r = getPQS(tab,st);
+      if(r && r.S>0) expect = r.P/r.S;
+    }
+  }
+
+  if(expect===null || isNaN(expect)){
+    fb.className='check-feedback show ko';
+    fb.textContent="❌ La configuration actuelle de la pince ne permet pas cette lecture. Vérifiez le câblage, le mode et le zéro DC.";
+    return;
+  }
+  const tol = customTol || (0.05*Math.abs(expect)+0.3);
+  if(!isNaN(val) && closeEnough(val, expect, tol)){
+    fb.className='check-feedback show ok'; fb.textContent="✅ Correct !";
+  } else {
+    fb.className='check-feedback show ko'; fb.textContent="❌ Relisez attentivement l'écran de la pince dans sa configuration actuelle.";
+  }
+}
+
+// ═══════════════════════════
+// QUIZ FINAL
+// ═══════════════════════════
+const questions = [
+  { q:"À quoi sert la touche jaune SELECT en position V, A ou W ?",
+    options:["À éteindre l'appareil","À choisir manuellement AC, DC ou AC+DC","À activer le Bluetooth","À changer de calibre"],
+    answer:1, fb:"La touche SELECT permet de forcer AC, DC ou AC+DC ; par défaut l'appareil choisit automatiquement AC ou DC." },
+  { q:"Pourquoi faut-il faire le zéro DC avant une mesure de courant continu ?",
+    options:["Pour activer le Bluetooth","Pour compenser un léger décalage (offset) du capteur à effet Hall","Pour choisir le calibre triphasé","Ce n'est jamais nécessaire"],
+    answer:1, fb:"Le capteur à effet Hall possède un offset qu'il faut compenser pour une mesure précise en DC ou AC+DC." },
+  { q:"Pendant la compensation du zéro DC, la pince doit-elle enserrer un conducteur ?",
+    options:["Oui, toujours","Non, elle doit être ouverte, sans conducteur","Peu importe","Seulement en triphasé"],
+    answer:1, fb:"La pince doit rester ouverte pendant toute la procédure de zéro, sinon la compensation est fausse." },
+  { q:"Sur les mâchoires de la pince, une flèche est gravée. Elle doit être orientée :",
+    options:["De la charge vers la source","De la source vers la charge","Vers le haut toujours","Cela n'a aucune importance"],
+    answer:1, fb:"La flèche indique le sens conventionnel du courant, de la source vers la charge ; l'inverser change le signe de la mesure." },
+  { q:"En monophasé, comment brancher les cordons pour une mesure de puissance ?",
+    options:["Rouge sur N, noir sur L","Rouge sur L, noir sur N","Les deux sur la phase L","Cela n'a pas d'importance"],
+    answer:1, fb:"Le cordon noir (COM) se branche sur le neutre N, le cordon rouge (+) sur la phase L." },
+  { q:"En triphasé équilibré, si le cordon rouge est sur L1 et le cordon noir sur L2, sur quelle phase la méthode conseillée enserre-t-elle la pince ?",
+    options:["L1","L2","L3","Peu importe"],
+    answer:2, fb:"D'après la méthode de la pince unique, on enserre la phase qui n'est pas utilisée par les cordons, ici L3." },
+  { q:"Que signifie le symbole AC+DC affiché à l'écran ?",
+    options:["Uniquement la composante continue","Uniquement la composante alternative","La valeur efficace vraie incluant alternatif et continu superposés","Une erreur de mesure"],
+    answer:2, fb:"Le mode AC+DC affiche la valeur efficace vraie (TRMS) du signal complet, alternatif et continu superposés." },
+  { q:"Que signifie l'affichage O.L (Over Load) ?",
+    options:["La pile est faible","La capacité d'affichage / le calibre est dépassé","Le zéro DC a été fait","Le Bluetooth est actif"],
+    answer:1, fb:"O.L signale un dépassement de la capacité de mesure de l'appareil." },
+  { q:"Si en position W la puissance active affichée est négative alors que la charge est un simple récepteur, que faut-il vérifier en premier ?",
+    options:["La pile de l'appareil","Le sens de la pince ou l'ordre des cordons","La couleur des cordons","Rien, c'est normal"],
+    answer:1, fb:"Un signe négatif inattendu vient presque toujours d'une pince retournée ou de cordons rouge/noir inversés." },
+  { q:"Une charge alimentée en 400 V (composée) triphasé équilibré absorbe 12 A avec un facteur de puissance de 0,86. Quelle est la puissance active totale la plus proche ?",
+    options:["≈ 3 970 W","≈ 5 953 W","≈ 8 256 W","≈ 4 800 W"],
+    answer:1, fb:"P = √3 × U × I × Fp = 1,732 × 400 × 12 × 0,86 ≈ 5 953 W." },
+];
+
+let qScores = new Array(questions.length).fill(null);
+let nbquestion = questions.length;
+
+function buildQuestions(){
+  const list = document.getElementById("questions-list");
+  list.innerHTML = "";
+  questions.forEach((q, qi) => {
+    const div = document.createElement("div");
+    div.className = "question-block";
+    const buttons = q.options.map((opt, oi) =>
+      '<button class="q-opt" onclick="answerQ(' + qi + ',' + oi + ',this)">' + opt + '</button>'
+    ).join("");
+    div.innerHTML = `
+      <p><b>Question ${qi + 1} :</b> ${q.q}</p>
+      <div class="q-options">${buttons}</div>
+      <div class="q-feedback" id="qfb-${qi}"></div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function answerQ(qi, oi, btn) {
+  if (qScores[qi]!==null) return;
+  const q=questions[qi];
+  const fb=document.getElementById("qfb-"+qi);
+  if (oi===q.answer) {
+    btn.classList.add("correct");
+    fb.className="q-feedback show ok";
+    fb.textContent="✅ Correct ! "+q.fb;
+    qScores[qi]=1;
+  } else {
+    btn.classList.add("wrong");
+    fb.className="q-feedback show ko";
+    fb.textContent="❌ Incorrect. "+q.fb;
+    qScores[qi]=0;
+    btn.parentElement.querySelectorAll(".q-opt")[q.answer].classList.add("correct");
+  }
+  btn.parentElement.querySelectorAll(".q-opt").forEach(b=>b.disabled=true);
+  score=qScores.filter(s=>s===1).length;
+  document.getElementById("q-score").textContent=score;
+  document.getElementById("q-total").textContent=qScores.filter(s=>s!==null).length;
+}
+
+// ═══════════════════════════
+// TABS
+// ═══════════════════════════
+function showTab(id, el) {
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  el.classList.add("active");
+}
+
+// ═══════════════════════════
+// INIT
+// ═══════════════════════════
+window.onload = function(){
+  buildPanel('dc'); buildPanel('mono'); buildPanel('tri');
+  render('dc'); render('mono'); render('tri');
+  buildQuestions();
+};
+</script>
+</body>
+</html>

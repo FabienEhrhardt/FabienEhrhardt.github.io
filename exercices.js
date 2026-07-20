@@ -4,13 +4,19 @@ const listeExercices = [
         theme: "0",
         exercices: [
 			{ nom: "exo1", titre: "Conversion - Puissance de 10" },
+			{ nom: "exo2", titre: "Fonction affine - Lecture graphique" },
+			{ nom: "exo3", titre: "Pythagore - Trigonométrie" },
+			{ nom: "exo0", titre: "Formules : Unités 1" },
+			{ nom: "exo4", titre: "Formules : Unités 2" },
         ]
     },
 	{
         theme: "1",
         exercices: [
 			{ nom: "exo0", titre: "Formules : Energie / Puissance" },
+			{ nom: "exo7", titre: "Différencier source d'énergie et forme d'énergie" },
 			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" },
+			{ nom: "exo8", titre: "Éolienne – Rendements et facteur de charge" },
 			{ nom: "exo2", titre: "Formules : Energie et transferts thermiques " },
 			{ nom: "exo4", titre: "Ballon d’eau chaude – Bilan énergétique" },
 			{ nom: "exo3", titre: "Refroidissement thermique d’un module IGBT" },
@@ -40,9 +46,14 @@ const listeExercices = [
 			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
 			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" },
 			{ nom: "exo5", titre: "Calcul de puissance en monophasé" },
+			{ nom: "exo13", titre: "🔌 TP – La pince multimètre wattmétrique F407" },
 			{ nom: "exo6", titre: "Bilan de puissance en monophasé" },
 			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
 			{ nom: "exo8", titre: "Formules : Régime triphasé sinusoïdal" },
+			{ nom: "exo12", titre: "Intérêt du réseau triphasé" },
+			{ nom: "exo14", titre: "🔌 TP – Prise en main du contrôleur d'installation CA 6116N" },
+			
+			
         
 		]
     },
@@ -67,6 +78,7 @@ const listeExercices = [
 			{ nom: "exo4", titre: "Transformateur triphasé – Lecture de plaque" },
 			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
 			{ nom: "exo6", titre: "Transformateur triphasé – Choix du disjoncteur du secondaire" },
+			{ nom: "exo7", titre: "⚡ TP – Transformateur monophasé et modèle de Kapp" },
         
 		]
     },
@@ -93,6 +105,8 @@ const listeExercices = [
 			{ nom: "exo4", titre: "Simplifications sur Bernoulli" },
 			{ nom: "exo5", titre: "Simplifications sur Bernoulli : Forme généralisée" },
 			{ nom: "exo3", titre: "Écoulement dans une conduite - Abaque de pertes de charge et Bernoulli" },
+			{ nom: "exo7", titre: "🌬️ TP – Qualité de l'air intérieur : analyseur C.A 1510" },
+			{ nom: "exo8", titre: "Renouvellement de l'air — débit de ventilation" },
 			
         ]
     },
@@ -110,6 +124,7 @@ const listeExercices = [
 			{ nom: "exo8", titre: "Dimensionnement d’une batterie de secours" },
 			{ nom: "exo9", titre: "Production d’énergie électrique par combustion" },
 			{ nom: "exo10", titre: "Étude pratique de la combustion d’un carburant" },
+			{ nom: "exo11", titre: "Pile à combustible - Étude énergétique" },
 		
 		]
     },
@@ -134,9 +149,13 @@ const listeExercices = [
             { nom: "exo0", titre: "Formules : Machine à courant continu" },
 			{ nom: "exo4", titre: "Formules : Machine asynchrone" },
 			{ nom: "exo5", titre: "Formules : Machine synchrone" },
+			{ nom: "exo6", titre: "Machine à courant continu - Modèle de Thévenin" },
 			{ nom: "exo3", titre: "Étude de plaque d’un moteur triphasé asynchrone" },
 			{ nom: "exo1", titre: "Courbe C=f(n) d'un moteur asynchrone" },
-            { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" }
+            { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" },
+			{ nom: "exo6", titre: "Machine à courant continu - Modèle de Thévenin" },
+			{ nom: "exo7", titre: "Machine à courant continu - Courbe C=f(n)" },
+			{ nom: "exo8", titre: "Générateur à courant continu - Modèle de Thévenin " },
         
 		]
     },
@@ -145,7 +164,9 @@ const listeExercices = [
         exercices: [
             { nom: "exo0", titre: "Formules : Maitrise des procédés" },
 			{ nom: "exo2", titre: "Capteur 4-20 mA - Étalonnage" },
+			{ nom: "exo6", titre: "Schéma-bloc d'un système asservi"},
 			{ nom: "exo1", titre: "Performances d'un asservissement" },
+			{ nom: "exo7", titre: "🎯 TP – Régulation TOR et PID" },
 			{ nom: "exo3", titre: "Installation photovoltaïque – Étude économique" },
 			{ nom: "exo4", titre: "Efficacité énergétique – Étude économique du remplacement d’un moteur" },
 			{ nom: "exo5", titre: "Installation photovoltaïque – Réalisation d’un devis" },

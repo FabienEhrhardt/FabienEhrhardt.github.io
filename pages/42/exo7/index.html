@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP – Qualité de l'air intérieur (CA 1510)</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --blue: #1f3c88; --blue-light: #f0f4ff; --green: #28a745; --green-dark: #1e7e34;
+  --orange: #e07b00; --red: #c0392b; --gray: #888; --gray-light: #f5f5f5;
+  --border: #dde3f0; --radius: 10px;
+}
+* { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: linear-gradient(135deg, #f4f6f9, #e9eef5); min-height: 100vh; padding: 20px; }
+.container { max-width: 1100px; margin: auto; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+.page-header { background: var(--blue); color: white; padding: 22px 30px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; }
+.page-header p { font-size: 0.88rem; opacity: 0.85; margin-top: 3px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--gray-light); flex-wrap: wrap; }
+.tab-btn { padding: 12px 18px; border: none; background: none; cursor: pointer; font-size: 0.86rem; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: white; font-weight: 600; }
+.tab-btn:hover:not(.active) { color: var(--blue); background: #eef2ff; }
+.tab-content { display: none; padding: 22px 28px; }
+.tab-content.active { display: block; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--blue); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 14px; }
+.card { background: var(--blue-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; }
+.card.white { background: white; }
+canvas { display: block; margin: 14px auto; border-radius: 8px; border: 1px solid var(--border); background: white; }
+.btn { border: none; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: 0.2s; }
+.btn-green { background: var(--green); color: white; } .btn-green:hover { background: var(--green-dark); }
+.btn-blue { background: var(--blue); color: white; } .btn-blue:hover { background: #162d6a; }
+.btn-gray { background: #ccc; color: #444; } .btn-gray:hover { background: #bbb; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--blue); }
+.slider-val { min-width: 130px; font-size: 0.85rem; font-weight: 600; color: var(--blue); text-align: right; }
+.question { background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+.question p { margin-bottom: 8px; line-height: 1.5; }
+input[type="number"], input[type="text"] { padding: 6px; border-radius: 5px; border: 1px solid #ccc; width: 100px; margin-right: 5px; }
+.feedback { margin-top: 8px; padding: 8px; border-radius: 6px; background: #f8f8f8; font-weight: 500; font-size: 0.9rem; }
+.fin { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+.score-bar { background: var(--blue-light); border-radius: 8px; padding: 10px 16px; font-size: 0.88rem; color: var(--blue); font-weight: 500; margin-bottom: 14px; }
+.hint { font-size: 0.82rem; color: var(--gray); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="page-header">
+  <h1>🌬️ TP – Qualité de l'air intérieur : analyseur C.A 1510</h1>
+  <p>Mesure du CO₂, de la température et de l'humidité — introduction à la ventilation</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('intro',this)">📖 Présentation</button>
+  <button class="tab-btn" onclick="showTab('co2',this)">🫧 Mesure CO₂</button>
+  <button class="tab-btn" onclick="showTab('confort',this)">🌡️ Confort hygrothermique</button>
+  <button class="tab-btn" onclick="showTab('quiz',this)">❓ Synthèse</button>
+</div>
+
+<!-- ═══════════ TAB PRESENTATION ═══════════ -->
+<div id="tab-intro" class="tab-content active">
+  <div class="card">
+    <div class="section-title">L'appareil C.A 1510</div>
+    <p style="line-height:1.7;font-size:0.92rem;">
+      Le <b>C.A 1510</b> mesure trois grandeurs dans une pièce : la concentration de <b>CO₂</b> (capteur infrarouge NDIR,
+      0 à 5000 ppm), la <b>température</b> ambiante (-10 à 60°C) et l'<b>humidité relative</b> (5 à 95 %HR).
+      Il en déduit un indicateur de qualité de l'air, soit à partir du seul taux de CO₂ (mode 1D), soit à partir des trois
+      grandeurs combinées (mode 3D, diagramme de confort).
+    </p>
+    <p style="line-height:1.7;font-size:0.92rem;margin-top:10px;">
+      L'appareil répond au <b>décret n°2012-14 du 5 janvier 2012</b> relatif à l'évaluation des moyens d'aération et à
+      la mesure des polluants dans les établissements recevant du public.
+    </p>
+  </div>
+  <div class="card white">
+    <div class="section-title">⚠️ Piège classique</div>
+    <p style="line-height:1.7;font-size:0.92rem;">
+      Le CO₂ (dioxyde de carbone) n'est <b>pas toxique</b> aux concentrations mesurées ici : c'est un <b>indicateur</b> du
+      confinement d'une pièce (plus il y a d'occupants et moins l'air est renouvelé, plus il augmente). Il ne faut pas le
+      confondre avec le <b>CO</b> (monoxyde de carbone), un gaz toxique que cet appareil ne mesure pas.
+    </p>
+  </div>
+  <div class="question">
+    <p><b>Question :</b> Le CO₂ mesuré par le C.A 1510 est-il toxique aux concentrations rencontrées dans une salle de classe ?
+    (1 = oui, c'est un gaz toxique dangereux, 2 = non, c'est un indicateur de confinement, 3 = seulement au-delà de 10000 ppm)</p>
+    <input type="number" id="qi0"><button class="btn btn-blue" onclick="validerIntro(0)">Valider</button>
+    <div id="fbi0" class="feedback"></div>
+  </div>
+  <div class="question">
+    <p><b>Question :</b> Quel gaz toxique le C.A 1510 ne mesure-t-il PAS, et qu'il ne faut pas confondre avec le CO₂ ?
+    (1 = le monoxyde de carbone CO, 2 = le dioxygène O₂, 3 = le méthane CH₄)</p>
+    <input type="number" id="qi1"><button class="btn btn-blue" onclick="validerIntro(1)">Valider</button>
+    <div id="fbi1" class="feedback"></div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB CO2 ═══════════ -->
+<div id="tab-co2" class="tab-content">
+  <div class="card">
+    <div class="section-title">Scénario : une salle de classe occupée</div>
+    <p style="font-size:0.9rem;line-height:1.6;">
+      Un C.A 1510 est posé dans une salle de classe dès l'arrivée des élèves (t = 0 min). Déplacez le curseur temporel pour
+      simuler le passage du temps et <b>relevez</b> l'affichage de l'appareil aux instants demandés dans le quiz de synthèse.
+      L'appareil est en <b>mode 1D</b> : seuils S1 = 1000 ppm (orange) et S2 = 1700 ppm (rouge).
+    </p>
+  </div>
+  <canvas id="panelCO2" width="500" height="220"></canvas>
+  <div class="slider-row">
+    <span style="min-width:170px;font-size:0.85rem;">Temps depuis le début du cours :</span>
+    <input type="range" id="tSlider" min="0" max="90" value="0" step="1" oninput="updateCO2Panel()">
+    <span class="slider-val" id="tVal">0 min</span>
+  </div>
+  <p class="hint">💡 En vrai mode 1D l'appareil actualise la mesure toutes les minutes — ce curseur simule cette lecture dans le temps.</p>
+</div>
+
+<!-- ═══════════ TAB CONFORT ═══════════ -->
+<div id="tab-confort" class="tab-content">
+  <div class="card">
+    <div class="section-title">Relevé température / humidité</div>
+    <p style="font-size:0.9rem;line-height:1.6;">Voici l'affichage figé (HOLD) du C.A 1510 posé dans une pièce.</p>
+  </div>
+  <canvas id="panelTH" width="500" height="140"></canvas>
+
+  <div class="card">
+    <div class="section-title">Diagramme de Porcher — zone de confort hygrothermique</div>
+    <p style="font-size:0.88rem;line-height:1.6;">
+      Cliquez sur le diagramme à l'endroit correspondant à la température et à l'humidité relative lues ci-dessus.
+    </p>
+  </div>
+  <canvas id="porcher" width="600" height="420" onclick="clickPorcher(event)"></canvas>
+  <div id="porcherResult" class="feedback" style="max-width:600px;margin:0 auto 14px auto;"></div>
+
+  <div class="question">
+    <p><b>Question :</b> Calculez l'humidité absolue de cette pièce, sachant que
+    \(w = 622 \times \dfrac{P_v}{P - P_v}\) avec \(P_v = \dfrac{HR}{100}\times P_{sat}(T)\), \(P=1013{,}25\) hPa, et
+    \(P_{sat}(T)=6{,}1078\times 10^{7{,}5T/(T+237{,}3)}\) (T en °C, pressions en hPa).</p>
+    <input type="number" step="any" id="qc0"> <span>g/kg</span>
+    <button class="btn btn-blue" onclick="validerConfort(0)">Valider</button>
+    <div id="fbc0" class="feedback"></div>
+  </div>
+  <div class="question">
+    <p><b>Question :</b> D'après le diagramme, cette pièce est-elle dans la zone de confort optimal ?
+    (1 = oui, 2 = non, trop chaud/humide, 3 = non, trop froid/sec)</p>
+    <input type="number" id="qc1">
+    <button class="btn btn-blue" onclick="validerConfort(1)">Valider</button>
+    <div id="fbc1" class="feedback"></div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB QUIZ ═══════════ -->
+<div id="tab-quiz" class="tab-content">
+  <div class="score-bar">Score : <b id="scoreDisplay">0</b> / <b id="totalDisplay">0</b> questions validées</div>
+  <div id="quizQuestions"></div>
+  <div class="fin">
+    <button class="btn btn-green" onclick="envoyerScore()">Envoyer le résultat</button>
+    <button class="btn btn-gray" onclick="location.reload()">Recommencer l'exercice</button>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script src="scorm.js"></script>
+<script src="base.js"></script>
+
+<script>
+// ═══════════════════════════
+// PARAMÈTRES DE SESSION (cachés — l'élève doit les mesurer)
+// ═══════════════════════════
+let theme = "42";
+let nomExo = "exo7";
+let score=0;
+
+function rand(a,b){ return a + Math.random()*(b-a); }
+
+// --- scénario CO2 ---
+let Cext = 400;                                  // ppm air extérieur
+let Cfinal = Math.round(rand(1200,2600));         // ppm palier si la salle n'est pas aérée
+let tau = rand(15,45);                            // minutes, constante de temps de montée
+function CO2at(t){                                // t en minutes
+  return Cext + (Cfinal - Cext) * (1 - Math.exp(-t/tau));
+}
+
+// --- scénario température / humidité ---
+let Psat = T => 6.1078 * Math.pow(10, 7.5*T/(T+237.3));
+let absHum = (T,RH) => { const P=1013.25; const Pv = RH/100*Psat(T); return 622*Pv/(P-Pv); };
+
+let T0, RH0, w0;
+for(let i=0;i<30;i++){
+  T0 = Math.round(rand(15,30));
+  RH0 = Math.round(rand(20,75));
+  w0 = absHum(T0,RH0);
+  if(w0 <= 14.5) break;
+}
+
+// zone de confort optimal (approximation pédagogique — à valider avec le diagramme de référence)
+const ZONE_T = [20,24];
+const ZONE_RH = [40,60];
+
+let clicOK = false;
+let clicT=null, clicRH=null;
+
+// ═══════════════════════════
+// PANNEAU CO2 (mode 1D)
+// ═══════════════════════════
+function updateCO2Panel(){
+  const t = parseFloat(document.getElementById("tSlider").value);
+  document.getElementById("tVal").textContent = t + " min";
+  drawCO2Panel(t);
+}
+
+function drawCO2Panel(t){
+  const canvas = document.getElementById("panelCO2");
+  const ctx = canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const c = CO2at(t);
+  let bg = "#e8f8e8", txt = var_green(), icon="";
+  if(c > 1700){ bg="#fde0e0"; txt="#c0392b"; icon="▲▲"; }
+  else if(c > 1000){ bg="#fff3e0"; txt="#e07b00"; icon="▲"; }
+
+  ctx.fillStyle = "#222";
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = bg;
+  ctx.fillRect(10,10,W-20,H-20);
+
+  ctx.fillStyle="#444"; ctx.font="13px Arial"; ctx.textAlign="left";
+  ctx.fillText("C.A 1510 — mode 1D", 20, 32);
+
+  ctx.fillStyle = txt;
+  ctx.font = "bold 48px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(Math.round(c) + " ppm", W/2, 110);
+
+  ctx.font = "20px Arial";
+  ctx.fillText(icon, W/2, 145);
+
+  ctx.font="13px Arial"; ctx.fillStyle="#555";
+  ctx.fillText("Seuils : S1 = 1000 ppm (orange) · S2 = 1700 ppm (rouge)", W/2, H-25);
+
+  function var_green(){ return "#1e7e34"; }
+}
+
+// ═══════════════════════════
+// PANNEAU TEMPÉRATURE / HUMIDITÉ
+// ═══════════════════════════
+function drawTHPanel(){
+  const canvas = document.getElementById("panelTH");
+  const ctx = canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  ctx.fillStyle="#222"; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#eaf6ea"; ctx.fillRect(10,10,W-20,H-20);
+
+  ctx.fillStyle="#444"; ctx.font="13px Arial"; ctx.textAlign="left";
+  ctx.fillText("C.A 1510 — HOLD", 20, 30);
+
+  ctx.fillStyle="#1f3c88"; ctx.font="bold 34px Arial"; ctx.textAlign="center";
+  ctx.fillText(T0 + " °C", W/2 - 110, 90);
+  ctx.fillText(RH0 + " %HR", W/2 + 110, 90);
+
+  ctx.font="13px Arial"; ctx.fillStyle="#555";
+  ctx.fillText("Température", W/2-110, 115);
+  ctx.fillText("Humidité relative", W/2+110, 115);
+}
+
+// ═══════════════════════════
+// DIAGRAMME DE PORCHER
+// ═══════════════════════════
+const margin = {l:50, r:20, t:20, b:40};
+const Tmin=10, Tmax=35, Wmin=0, Wmax=15;
+
+function px(T){
+  const canvas = document.getElementById("porcher");
+  const pw = canvas.width - margin.l - margin.r;
+  return margin.l + (T-Tmin)/(Tmax-Tmin)*pw;
+}
+function py(w){
+  const canvas = document.getElementById("porcher");
+  const ph = canvas.height - margin.t - margin.b;
+  return margin.t + ph - (w-Wmin)/(Wmax-Wmin)*ph;
+}
+
+function drawPorcher(){
+  const canvas = document.getElementById("porcher");
+  const ctx = canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // cadre
+  ctx.strokeStyle="#333"; ctx.lineWidth=1.5;
+  ctx.strokeRect(margin.l, margin.t, W-margin.l-margin.r, H-margin.t-margin.b);
+
+  // grille + axes labels
+  ctx.fillStyle="#555"; ctx.font="11px Arial"; ctx.textAlign="center";
+  for(let T=Tmin; T<=Tmax; T+=5){
+    ctx.strokeStyle="#eee"; ctx.beginPath(); ctx.moveTo(px(T),margin.t); ctx.lineTo(px(T),H-margin.b); ctx.stroke();
+    ctx.fillText(T, px(T), H-margin.b+16);
+  }
+  ctx.textAlign="right";
+  for(let w=0; w<=15; w+=5){
+    ctx.strokeStyle="#eee"; ctx.beginPath(); ctx.moveTo(margin.l,py(w)); ctx.lineTo(W-margin.r,py(w)); ctx.stroke();
+    ctx.fillText(w, margin.l-6, py(w)+4);
+  }
+  ctx.fillStyle="#333"; ctx.font="12px Arial"; ctx.textAlign="center";
+  ctx.fillText("Température sèche (°C)", (margin.l+W-margin.r)/2, H-6);
+  ctx.save(); ctx.translate(14, (margin.t+H-margin.b)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText("Humidité absolue (g/kg)", 0,0); ctx.restore();
+
+  // zone de confort (T:20-24°C, RH:40-60%)
+  ctx.beginPath();
+  ctx.moveTo(px(ZONE_T[0]), py(absHum(ZONE_T[0],ZONE_RH[0])));
+  for(let T=ZONE_T[0]; T<=ZONE_T[1]; T+=0.5) ctx.lineTo(px(T), py(absHum(T,ZONE_RH[0])));
+  for(let T=ZONE_T[1]; T>=ZONE_T[0]; T-=0.5) ctx.lineTo(px(T), py(absHum(T,ZONE_RH[1])));
+  ctx.closePath();
+  ctx.fillStyle="rgba(40,167,69,0.25)";
+  ctx.fill();
+  ctx.strokeStyle="#1e7e34"; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle="#1e7e34"; ctx.font="bold 11px Arial";
+  ctx.fillText("Zone de confort", px((ZONE_T[0]+ZONE_T[1])/2), py(absHum((ZONE_T[0]+ZONE_T[1])/2,ZONE_RH[1]))-8);
+
+  // courbes iso-%HR
+  ctx.font="10px Arial";
+  [10,20,30,40,50,60,70,80,90,100].forEach(RH=>{
+    ctx.strokeStyle="#7a9cd6"; ctx.lineWidth=1;
+    ctx.beginPath();
+    let first=true, lastX=0,lastY=0;
+    for(let T=Tmin; T<=Tmax; T+=0.5){
+      const w = absHum(T,RH);
+      if(w>Wmax) break;
+      const x=px(T), y=py(w);
+      if(first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
+      lastX=x; lastY=y;
+    }
+    ctx.stroke();
+    ctx.fillStyle="#5578b5";
+    ctx.fillText(RH+"%", lastX+2, lastY-2);
+  });
+
+  // point cliqué
+  if(clicOK && clicT!==null){
+    ctx.fillStyle="#c0392b";
+    ctx.beginPath(); ctx.arc(px(clicT), py(absHum(clicT,clicRH)), 5, 0, 2*Math.PI); ctx.fill();
+  }
+}
+
+function clickPorcher(e){
+  const canvas = document.getElementById("porcher");
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX-rect.left) * (canvas.width/rect.width);
+  const my = (e.clientY-rect.top) * (canvas.height/rect.height);
+
+  // conversion pixel -> T (direct), et recherche RH la plus proche pour affichage
+  const T = Tmin + (mx-margin.l)/(canvas.width-margin.l-margin.r)*(Tmax-Tmin);
+  const w = Wmin + ( (canvas.height-margin.b-my) / (canvas.height-margin.t-margin.b) )*(Wmax-Wmin);
+
+  const trueX = px(T0), trueY = py(w0);
+  const dist = Math.hypot(mx-trueX, my-trueY);
+
+  clicT = T0; clicRH = RH0; // on affiche le point exact attendu une fois validé
+  const div = document.getElementById("porcherResult");
+
+  if(dist < 22){
+    clicOK = true;
+    const inZone = (T0>=ZONE_T[0] && T0<=ZONE_T[1] && RH0>=ZONE_RH[0] && RH0<=ZONE_RH[1]);
+    let msg = inZone
+      ? "✅ Bien placé ! Cette pièce est dans la zone de confort optimal."
+      : "✅ Bien placé ! Cette pièce est hors de la zone de confort ("+
+        (T0<ZONE_T[0]?"trop froide":(T0>ZONE_T[1]?"trop chaude":""))+
+        ((T0<ZONE_T[0]||T0>ZONE_T[1]) && (RH0<ZONE_RH[0]||RH0>ZONE_RH[1]) ? " et " : "")+
+        (RH0<ZONE_RH[0]?"trop sèche":(RH0>ZONE_RH[1]?"trop humide":""))+").";
+    div.textContent = msg;
+    div.style.background = inZone ? "#e8f8e8" : "#fff3e0";
+  } else {
+    div.textContent = "❌ Pas tout à fait — recliquez plus près de T="+T0+"°C et RH="+RH0+"%HR.";
+    div.style.background = "#fde0e0";
+  }
+  drawPorcher();
+}
+
+// ═══════════════════════════
+// QUESTIONS TAB INTRO
+// ═══════════════════════════
+let introScores = [null,null];
+const introReponses = [2, 1];
+const introFb = [
+  "Le CO₂ n'est pas toxique à ces concentrations : c'est un indicateur du confinement de l'air, lié à l'occupation et au manque de renouvellement d'air.",
+  "Le monoxyde de carbone (CO) est un gaz toxique, produit par une combustion incomplète — le C.A 1510 ne le mesure pas."
+];
+function validerIntro(i){
+  if(introScores[i]!==null) return;
+  const v = parseFloat(document.getElementById("qi"+i).value);
+  const fb = document.getElementById("fbi"+i);
+  const ok = (v===introReponses[i]);
+  introScores[i] = ok?1:0;
+  if(ok) score++;
+  fb.innerHTML = (ok?"✅ Correct. ":"❌ Incorrect. ")+introFb[i];
+}
+
+// ═══════════════════════════
+// QUESTIONS TAB CONFORT
+// ═══════════════════════════
+let confortScores=[null,null];
+function validerConfort(i){
+  if(confortScores[i]!==null) return;
+  const fb = document.getElementById("fbc"+i);
+  if(i===0){
+    const v = parseFloat(document.getElementById("qc0").value);
+    const ok = !isNaN(v) && Math.abs(v-w0) <= 0.15*w0;
+    confortScores[0]=ok?1:0;
+    if(ok) score++;
+    fb.innerHTML = (ok?"✅ Correct. ":"❌ Incorrect. ")+
+      `\\(P_{sat}(${T0})=${Psat(T0).toFixed(2)}\\;hPa\\), \\(P_v=${(RH0/100*Psat(T0)).toFixed(2)}\\;hPa\\) → \\(w=${w0.toFixed(2)}\\;g/kg\\)`;
+  } else {
+    const v = parseFloat(document.getElementById("qc1").value);
+    const inZone = (T0>=ZONE_T[0] && T0<=ZONE_T[1] && RH0>=ZONE_RH[0] && RH0<=ZONE_RH[1]);
+    const correctAns = inZone ? 1 : (T0>ZONE_T[1]||RH0>ZONE_RH[1] ? 2 : 3);
+    const ok = (v===correctAns);
+    confortScores[1]=ok?1:0;
+    if(ok) score++;
+    fb.innerHTML = (ok?"✅ Correct.":"❌ Incorrect.")+" Reportez-vous au diagramme de Porcher que vous venez de compléter.";
+  }
+  MathJax.typeset();
+}
+
+// ═══════════════════════════
+// QUIZ DE SYNTHÈSE (10 questions)
+// ═══════════════════════════
+let tQ1 = Math.round(rand(5,25));
+let tQ2 = Math.round(rand(40,85));
+const cQ1 = Math.round(CO2at(tQ1));
+const cQ2 = Math.round(CO2at(tQ2));
+function qualite(c){ return c>1700?"mauvaise":(c>1000?"moyenne":"bonne"); }
+
+const quizQuestions = [
+  { texte:`En vous plaçant à t = ${tQ1} min sur le curseur de l'onglet "Mesure CO₂", relevez la valeur affichée.`,
+    type:"calcul", reponse: cQ1, tolerance:0.03, unite:"ppm",
+    feedback:`À t=${tQ1} min, le C.A 1510 affichait environ ${cQ1} ppm.` },
+  { texte:`Toujours à t = ${tQ1} min, la qualité de l'air est-elle jugée bonne, moyenne ou mauvaise ? (1=bonne, 2=moyenne, 3=mauvaise)`,
+    reponse: (cQ1>1700?3:(cQ1>1000?2:1)),
+    feedback:`À ${cQ1} ppm, on compare aux seuils S1=1000 ppm et S2=1700 ppm : qualité ${qualite(cQ1)}.` },
+  { texte:`En vous plaçant à t = ${tQ2} min, relevez la valeur affichée par l'appareil.`,
+    type:"calcul", reponse: cQ2, tolerance:0.03, unite:"ppm",
+    feedback:`À t=${tQ2} min, le C.A 1510 affichait environ ${cQ2} ppm.` },
+  { texte:`À t = ${tQ2} min, quel est l'état de la qualité de l'air ? (1=bonne, 2=moyenne, 3=mauvaise)`,
+    reponse: (cQ2>1700?3:(cQ2>1000?2:1)),
+    feedback:`À ${cQ2} ppm, qualité ${qualite(cQ2)}.` },
+  { texte:"Entre les deux instants relevés, le taux de CO₂ a-t-il augmenté ou diminué, et pourquoi ? (1=augmenté car les élèves respirent et l'air n'est pas assez renouvelé, 2=diminué car la pièce se refroidit, 3=resté identique)",
+    reponse:1,
+    feedback:"En l'absence de renouvellement d'air suffisant, le CO₂ rejeté par la respiration des occupants s'accumule progressivement dans la pièce." },
+  { texte:"Que représente le seuil S1 = 1000 ppm sur le C.A 1510 en mode 1D ?",
+    type:"texte", reponse:["seuil bas","alerte","orange","moyen"],
+    feedback:"S1 = 1000 ppm est le seuil bas : au-delà, la qualité de l'air passe de « bonne » à « moyenne » (voyant orange)." },
+  { texte:"Le C.A 1510 mesure-t-il directement le taux de renouvellement d'air (débit de ventilation) d'une pièce ? (1=oui directement, 2=non, il faut le déduire indirectement de l'évolution du CO2 et du volume de la pièce)",
+    reponse:2,
+    feedback:"L'appareil mesure une concentration de CO₂ ; le débit de ventilation nécessaire se calcule ensuite à partir de cette mesure, du volume de la pièce et du nombre d'occupants — ce sera l'objet d'un futur exercice de mécanique des fluides." },
+  { texte:`Dans l'onglet « Confort hygrothermique », quelle température avez-vous relevée sur l'appareil ?`,
+    type:"calcul", reponse: T0, tolerance:0.001, unite:"°C",
+    feedback:`La température affichée était ${T0} °C.` },
+  { texte:`Quelle humidité relative avez-vous relevée sur l'appareil ?`,
+    type:"calcul", reponse: RH0, tolerance:0.001, unite:"%HR",
+    feedback:`L'humidité relative affichée était ${RH0} %HR.` },
+  { texte:"D'après le diagramme de Porcher, quels sont les deux paramètres qui définissent la zone de confort optimal, en plus du taux de CO₂ pris en compte séparément ? (1=température et humidité, 2=pression et débit, 3=luminosité et bruit)",
+    reponse:1,
+    feedback:"Le diagramme de Porcher croise la température sèche et l'humidité (relative ou absolue) pour définir une zone de confort hygrothermique." },
+];
+
+let quizDone = [];
+function buildQuiz(){
+  const zone = document.getElementById("quizQuestions");
+  zone.innerHTML = "";
+  quizQuestions.forEach((q,i)=>{
+    let inputHTML = (q.type==="texte")
+      ? `<input type="text" id="qq${i}">`
+      : `<input type="number" step="any" id="qq${i}">`;
+    zone.innerHTML += `
+      <div class="question">
+        <p><b>Question ${i+1} :</b> ${q.texte}</p>
+        ${inputHTML} <span>${q.unite||""}</span>
+        <button class="btn btn-blue" onclick="validerQuiz(${i})">Valider</button>
+        <div id="fbq${i}" class="feedback"></div>
+      </div>`;
+    quizDone[i]=false;
+  });
+  document.getElementById("totalDisplay").textContent = quizQuestions.length;
+}
+
+function validerQuiz(i){
+  if(quizDone[i]) return;
+  const q = quizQuestions[i];
+  const fb = document.getElementById("fbq"+i);
+  let ok=false;
+  if(q.type==="texte"){
+    const v = document.getElementById("qq"+i).value.toLowerCase();
+    ok = q.reponse.some(m=>v.includes(m.toLowerCase()));
+  } else {
+    const v = parseFloat(document.getElementById("qq"+i).value);
+    if(!isNaN(v)){
+      const tol = q.tolerance||0.05;
+      ok = Math.abs(v-q.reponse) <= tol*Math.abs(q.reponse||1);
+    }
+  }
+  quizDone[i]=true;
+  if(ok) score++;
+  fb.innerHTML = (ok?"✅ Bonne réponse. ":"❌ Incorrect. ")+q.feedback;
+  document.getElementById("scoreDisplay").textContent = score;
+}
+
+// ═══════════════════════════
+// TABS
+// ═══════════════════════════
+function showTab(id, el){
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  el.classList.add("active");
+}
+
+// ═══════════════════════════
+// INIT
+// ═══════════════════════════
+// 'score' est déjà déclaré (et initialisé à 0) dans base.js — on ne le redéclare pas ici.
+let nbquestion = quizQuestions.length + introReponses.length + 2; // quiz + intro + confort
+
+window.onload = function(){
+  drawCO2Panel(0);
+  drawTHPanel();
+  drawPorcher();
+  buildQuiz();
+};
+</script>
+</body>
+</html>

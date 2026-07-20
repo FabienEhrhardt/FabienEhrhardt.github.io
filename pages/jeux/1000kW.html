@@ -542,10 +542,10 @@ mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
   src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Bold.woff") format("woff");
 }
 .timer-container{
-    min-width:260px;
+    width:300px;
     display:flex;
     flex-direction:column;
-    gap:5px;
+    gap:8px;
 }
 
 .timer-info{
@@ -558,17 +558,19 @@ mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
 
 .timer-bar{
     width:100%;
-    height:10px;
-    background:#555;
-    border-radius:8px;
+    height:20px;               /* plus épaisse */
+    background:#222;
+    border:2px solid white;
+    border-radius:10px;
     overflow:hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.5);
 }
 
 #timerProgress{
     width:100%;
     height:100%;
     background:#2ecc71;
-    transition:width 1s linear, background 0.3s;
+    transition:width 1s linear;
 }
 
 .btn-restart{
@@ -588,14 +590,20 @@ mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
 
 <div class="admin-bar">
     <div class="timer-container">
+
     <div class="timer-info">
         <span id="timerText">60 s</span>
-        <button class="btn btn-restart" onclick="restartTimer()">🔄 Relancer</button>
+
+        <button class="btn btn-restart"
+                onclick="restartTimer()">
+            🔄 Relancer
+        </button>
     </div>
 
     <div class="timer-bar">
         <div id="timerProgress"></div>
     </div>
+
 </div>
 </div>
 
