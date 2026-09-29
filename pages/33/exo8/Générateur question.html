@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Générateur de questions QCM</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #eef2f7;
+    text-align: center;
+}
+
+#container {
+    width: 800px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+textarea {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 10px;
+    font-family: monospace;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+}
+
+#output {
+    height: 300px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+<h2>⚙️ Générateur de questions QCM</h2>
+
+<p>Colle ici ton Excel (format tabulation ou CSV)</p>
+
+<textarea id="input"></textarea>
+
+<button onclick="generer()">Générer</button>
+
+<h3>Résultat :</h3>
+<p id="copieMsg"></p>
+<button onclick="copier()">📋 Copier le résultat</button>
+<textarea id="output"></textarea>
+
+</div>
+
+<script>
+function copier() {
+    let texte = document.getElementById("output");
+
+    navigator.clipboard.writeText(texte.value);
+
+    let msg = document.getElementById("copieMsg");
+    msg.innerText = "✅ Copié !";
+
+    setTimeout(() => msg.innerText = "", 2000);
+}
+
+
+function generer() {
+
+    let input = document.getElementById("input").value.trim();
+
+    let lignes = input.split("\n");
+
+    let resultat = "const questions = [\n";
+
+    lignes.forEach(ligne => {
+
+        // Gestion tabulation ou ;
+        let cols = ligne.split("\t");
+        if (cols.length < 5) cols = ligne.split(";");
+
+        if (cols.length >= 5) {
+
+            let texte = cols[0].trim();
+
+            let rep1 = formatLatex(cols[1]);
+            let rep2 = formatLatex(cols[2]);
+            let rep3 = formatLatex(cols[3]);
+            let rep4 = formatLatex(cols[4]);
+
+            resultat += `{
+    texte: "${texte}",
+    choix: [
+        "${rep1}",
+        "${rep2}",
+        "${rep3}",
+        "${rep4}"
+    ]
+},\n`;
+        }
+    });
+
+    resultat += "];";
+
+    document.getElementById("output").value = resultat;
+}
+
+// =====================
+// FORMAT LATEX
+// =====================
+function formatLatex(texte) {
+
+    texte = texte.trim();
+
+    // éviter double ajout si déjà présent
+    if (!texte.startsWith("\\(")) {
+        texte = "\\\\(" + texte;
+    }
+
+    if (!texte.endsWith("\\)")) {
+        texte = texte + "\\\\)";
+    }
+
+    return texte;
+}
+
+</script>
+
+</body>
+</html>

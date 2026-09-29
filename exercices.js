@@ -39,8 +39,10 @@ const listeExercices = [
             { nom: "exo9", titre: "Formules : Régime continu" },
 			{ nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" },
 			{ nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
+			{ nom: "exo16", titre: "Expression temporelle de signaux sinusoïdaux"},
 			{ nom: "exo10", titre: "📟 TP – Maîtrise de l'oscilloscope numérique" },
 			{ nom: "exo11", titre: "Utilisation oscilloscope et signaux sinusoïdaux" },
+			{ nom: "exo15", titre: "Schéma des symboles électriques" },
 			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
 			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
 			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
@@ -79,6 +81,7 @@ const listeExercices = [
 			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
 			{ nom: "exo6", titre: "Transformateur triphasé – Choix du disjoncteur du secondaire" },
 			{ nom: "exo7", titre: "⚡ TP – Transformateur monophasé et modèle de Kapp" },
+			{ nom: "exo8", titre: "Schéma des montages avancés" },
         
 		]
     },
