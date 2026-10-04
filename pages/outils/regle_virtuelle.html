@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesurer sur un graphique – Règles virtuelles</title>
+<style>
+:root{ --blue:#1f3c88; --blue-light:#f0f4ff; --green:#28a745; --green-dark:#1e7e34; --orange:#e07b00; --gray:#666; --border:#dde3f0; }
+*{ box-sizing:border-box; font-family:"Segoe UI",Roboto,Arial,sans-serif; }
+html,body{ margin:0; height:100%; }
+body{ display:flex; flex-direction:column; background:#e9eef5; }
+header{ background:var(--blue); color:#fff; padding:8px 14px; }
+header h1{ font-size:1.05rem; margin:0; font-weight:600; }
+.toolbar{ background:#fff; border-bottom:2px solid var(--border); padding:8px 12px; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
+.group{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-right:14px; border-right:1px solid var(--border); }
+.group:last-child{ border-right:none; }
+button, .btn{ background:var(--green); color:#fff; border:none; padding:7px 12px; border-radius:6px; cursor:pointer; font-size:.85rem; font-weight:600; transition:.15s; }
+button:hover, .btn:hover{ background:var(--green-dark); }
+button.blue, .btn.blue{ background:var(--blue); } button.blue:hover, .btn.blue:hover{ background:#162d6a; }
+button.orange{ background:var(--orange); } button.orange:hover{ background:#c06a00; }
+button.gray{ background:#9aa3b5; } button.gray:hover{ background:#7f889a; }
+label{ font-size:.82rem; color:#333; display:flex; align-items:center; gap:5px; }
+input[type=number]{ width:62px; padding:4px; border:1px solid #ccc; border-radius:5px; }
+input[type=text]{ width:140px; padding:4px 6px; border:1px solid #ccc; border-radius:5px; }
+input[type=range]{ width:90px; accent-color:var(--blue); }
+.hint{ background:var(--blue-light); color:var(--blue); font-size:.78rem; padding:5px 14px; border-bottom:1px solid var(--border); }
+#stage{ position:relative; flex:1; min-height:200px; overflow:hidden; }
+#cv:focus{ outline:none; }
+#cv{ position:absolute; inset:0; touch-action:none; display:block; }
+</style>
+</head>
+<body>
+
+<header><h1>📏 Mesurer sur un graphique – règles virtuelles</h1></header>
+
+<div class="toolbar">
+  <div class="group">
+    <button class="blue" id="btnOpen">📂 Ouvrir une image</button>
+    <input type="file" id="file" accept="image/*" style="display:none">
+  </div>
+
+  <div class="group">
+    <span style="font-size:.8rem;color:var(--gray);min-width:44px;">Zoom</span>
+	<button class="blue" id="zOut" title="Dézoomer">−</button>
+    <button class="blue" id="zIn" title="Zoomer">+</button>
+    <button class="blue" id="zFit">Ajuster</button>
+    <span id="zoomLbl" style="font-size:.8rem;color:var(--gray);min-width:44px;"></span>
+  </div>
+
+  <div class="group">
+    <button class="orange" id="addGH">➕ Repère horizontal</button>
+    <button class="orange" id="addGV">➕ Repère vertical</button>
+    <button class="orange" id="addMark">✚ Croix</button>
+    <button class="gray" id="clearAll">🧹 Effacer</button>
+  </div>
+
+  <div class="group" style="width:100%; border-right:none;">
+    <label><input type="checkbox" id="showH" checked> Règle horizontale</label>
+    <label><input type="checkbox" id="showV" checked> Règle verticale</label>
+    <label>Largeur de l'image sur la règle <input type="number" id="widthCm" min="2" max="200" step="1" value="20"> cm</label>
+  </div>
+</div>
+<div class="hint">Glisser une règle = la déplacer · Glisser le <b style="color:#e03131">rond rouge</b> = déplacer le zéro · Molette = zoom · Glisser le fond = déplacer l'image · Double-clic sur un repère ou une croix = le supprimer · Ctrl+V = coller une image</div>
+
+<div id="stage"><canvas id="cv"></canvas></div>
+
+<script>
+// =====================================================
+// ÉTAT
+// =====================================================
+const RT = 54;                 // épaisseur des règles (px écran)
+const S = {
+  img:null, iw:0, ih:0,
+  zoom:1, panX:0, panY:0,
+  ppc:40,                      // pixels image par cm de règle
+  opacity:0.5, showMm:true,
+  H:{visible:true,x:0,y:0,len:20,org:0,side:1},
+  V:{visible:true,x:0,y:0,len:20,org:0,side:-1},
+  order:['H','V'],
+  guides:[], marks:[], markCount:0
+};
+
+const stage = document.getElementById('stage');
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let dpr = 1, CW = 0, CH = 0;
+
+const X = wx => wx*S.zoom + S.panX;
+const Y = wy => wy*S.zoom + S.panY;
+const WX = sx => (sx - S.panX)/S.zoom;
+const WY = sy => (sy - S.panY)/S.zoom;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+function resize(){
+  const r = stage.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  CW = r.width; CH = r.height;
+  cv.width = Math.round(CW*dpr); cv.height = Math.round(CH*dpr);
+  cv.style.width = CW+'px'; cv.style.height = CH+'px';
+  draw();
+}
+new ResizeObserver(resize).observe(stage);
+
+// =====================================================
+// CHARGEMENT D'IMAGE
+// =====================================================
+function loadFile(file){
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onerror = () => alert("Impossible de lire ce fichier.");
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      try{ setImage(img); }
+      catch(err){ alert("Erreur à l'affichage de l'image : "+err.message); console.error(err); }
+    };
+    img.onerror = () => alert("Ce fichier n'est pas une image lisible (formats conseillés : PNG, JPG, GIF, WebP).");
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setImage(img){
+  S.img = img; S.iw = img.naturalWidth; S.ih = img.naturalHeight;
+  S.ppc = S.iw / (parseFloat(document.getElementById('widthCm').value) || 20);
+  const hCm = Math.max(1, Math.floor(S.iw/S.ppc + 1e-9)), vCm = Math.max(1, Math.floor(S.ih/S.ppc + 1e-9));
+  S.H = {visible:true, x:0, y:S.ih, len:hCm, org:0, side:1};
+  S.V = {visible:true, x:0, y:0, len:vCm, org:0, side:-1};
+  S.order = ['H','V'];
+  S.guides = []; S.marks = []; S.markCount = 0;
+  document.getElementById('showH').checked = true;
+  document.getElementById('showV').checked = true;
+  fit();
+}
+
+document.getElementById('btnOpen').addEventListener('click', () => document.getElementById('file').click());
+document.getElementById('file').addEventListener('change', e => { loadFile(e.target.files[0]); e.target.value=''; });
+
+// Collage (Ctrl+V) : écouté sur tout le document
+function handlePaste(e){
+  const cd = e.clipboardData; if(!cd) return;
+  let file = null;
+  if(cd.files && cd.files.length){ file = [...cd.files].find(f => f.type.startsWith('image/')) || null; }
+  if(!file && cd.items){
+    for(const it of cd.items){ if(it.kind==='file' && it.type.startsWith('image/')){ file = it.getAsFile(); break; } }
+  }
+  if(file){ e.preventDefault(); loadFile(file); }
+}
+document.addEventListener('paste', handlePaste);
+window.addEventListener('paste', handlePaste);
+cv.tabIndex = 0;   // permet de donner le focus à la zone de dessin
+cv.addEventListener('pointerdown', () => cv.focus());
+
+stage.addEventListener('dragover', e => e.preventDefault());
+stage.addEventListener('drop', e => { e.preventDefault(); if(e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]); });
+
+// =====================================================
+// VUE : zoom / ajuster
+// =====================================================
+function fit(){
+  if(!S.img){ draw(); return; }
+  const mL=80, mR=20, mT=20, mB=80;
+  const aw = CW-mL-mR, ah = CH-mT-mB;
+  S.zoom = clamp(Math.min(aw/S.iw, ah/S.ih), 0.05, 16);
+  S.panX = mL + (aw - S.iw*S.zoom)/2;
+  S.panY = mT + (ah - S.ih*S.zoom)/2;
+  draw();
+}
+function zoomAt(mx,my,f){
+  const nz = clamp(S.zoom*f, 0.05, 16); f = nz/S.zoom;
+  S.panX = mx - (mx - S.panX)*f; S.panY = my - (my - S.panY)*f; S.zoom = nz; draw();
+}
+document.getElementById('zIn').onclick  = () => zoomAt(CW/2,CH/2,1.25);
+document.getElementById('zOut').onclick = () => zoomAt(CW/2,CH/2,1/1.25);
+document.getElementById('zFit').onclick = fit;
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = cv.getBoundingClientRect();
+  zoomAt(e.clientX-r.left, e.clientY-r.top, Math.pow(1.0015, -e.deltaY));
+}, {passive:false});
+
+// =====================================================
+// GÉOMÉTRIE DES RÈGLES (coordonnées écran)
+// =====================================================
+function geomH(){
+  const r = S.H, L = r.len*S.ppc;
+  const edge = Y(r.y), top = r.side>0 ? edge : edge-RT;
+  return {left:X(r.x), right:X(r.x+L), edge, top, bottom:top+RT, ox:X(r.x + r.org*S.ppc)};
+}
+function geomV(){
+  const r = S.V, L = r.len*S.ppc;
+  const edge = X(r.x), left = r.side>0 ? edge : edge-RT;
+  return {left, right:left+RT, edge, top:Y(r.y), bottom:Y(r.y+L), oy:Y(r.y + L - r.org*S.ppc)};
+}
+function handlePos(n){
+  if(n==='H'){ const g=geomH(); return {x:g.ox, y:g.edge + S.H.side*(RT-11)}; }
+  const g=geomV(); return {x:g.edge + S.V.side*(RT-11), y:g.oy};
+}
+function rectOf(n){
+  if(n==='H'){ const g=geomH(); return {x:g.left,y:g.top,w:g.right-g.left,h:RT}; }
+  const g=geomV(); return {x:g.left,y:g.top,w:RT,h:g.bottom-g.top};
+}
+
+// =====================================================
+// DESSIN
+// =====================================================
+function labelStep(cmPx){ for(const s of [1,2,5,10,20,50,100]) if(cmPx*s>=30) return s; return 100; }
+const fmt = v => (v<0?'\u2212':'') + Math.abs(v);
+
+function drawH(){
+  const r=S.H; if(!r.visible) return;
+  const g=geomH(), s=r.side, mmPx=S.ppc*S.zoom/10, w=g.right-g.left;
+  ctx.save();
+  ctx.globalAlpha = S.opacity; ctx.fillStyle='#fff3b0'; ctx.fillRect(g.left,g.top,w,RT);
+  ctx.globalAlpha = 1; ctx.strokeStyle='#8a6d00'; ctx.lineWidth=1.5; ctx.strokeRect(g.left,g.top,w,RT);
+  ctx.beginPath(); ctx.rect(g.left,g.top,w,RT); ctx.clip();
+  const kmin=Math.ceil((g.left-g.ox)/mmPx), kmax=Math.floor((g.right-g.ox)/mmPx);
+  const step = labelStep(mmPx*10);
+  ctx.strokeStyle='#222'; ctx.fillStyle='#222'; ctx.font='12px "Segoe UI",Arial';
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=1;
+  for(let k=kmin;k<=kmax;k++){
+    const x=g.ox+k*mmPx, cm=(k%10===0), five=(k%5===0);
+    if(!cm && !five && !(S.showMm && mmPx>=3)) continue;
+    if(!cm && five && mmPx*5<6) continue;
+    const L = cm?18:(five?12:7);
+    ctx.beginPath(); ctx.moveTo(x,g.edge); ctx.lineTo(x,g.edge+s*L); ctx.stroke();
+    if(cm && (k/10)%step===0) ctx.fillText(fmt(k/10), x, g.edge+s*31);
+  }
+  ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(g.left,g.edge); ctx.lineTo(g.right,g.edge); ctx.stroke();
+  ctx.fillStyle='#8a6d00'; ctx.font='bold 11px Arial'; ctx.fillText('cm', g.right-16, g.edge+s*44);
+  ctx.strokeStyle='#e03131'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(g.ox,g.top); ctx.lineTo(g.ox,g.bottom); ctx.stroke();
+  ctx.restore();
+  const h=handlePos('H'); drawHandle(h.x,h.y,'\u2194');
+}
+
+function drawV(){
+  const r=S.V; if(!r.visible) return;
+  const g=geomV(), s=r.side, mmPx=S.ppc*S.zoom/10, hgt=g.bottom-g.top;
+  ctx.save();
+  ctx.globalAlpha = S.opacity; ctx.fillStyle='#d7f5d0'; ctx.fillRect(g.left,g.top,RT,hgt);
+  ctx.globalAlpha = 1; ctx.strokeStyle='#2f7d1f'; ctx.lineWidth=1.5; ctx.strokeRect(g.left,g.top,RT,hgt);
+  ctx.beginPath(); ctx.rect(g.left,g.top,RT,hgt); ctx.clip();
+  const kmin=Math.ceil((g.oy-g.bottom)/mmPx), kmax=Math.floor((g.oy-g.top)/mmPx);
+  const step = labelStep(mmPx*10);
+  ctx.strokeStyle='#222'; ctx.fillStyle='#222'; ctx.font='12px "Segoe UI",Arial';
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=1;
+  for(let k=kmin;k<=kmax;k++){
+    const y=g.oy-k*mmPx, cm=(k%10===0), five=(k%5===0);
+    if(!cm && !five && !(S.showMm && mmPx>=3)) continue;
+    if(!cm && five && mmPx*5<6) continue;
+    const L = cm?18:(five?12:7);
+    ctx.beginPath(); ctx.moveTo(g.edge,y); ctx.lineTo(g.edge+s*L,y); ctx.stroke();
+    if(cm && (k/10)%step===0) ctx.fillText(fmt(k/10), g.edge+s*31, y);
+  }
+  ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(g.edge,g.top); ctx.lineTo(g.edge,g.bottom); ctx.stroke();
+  ctx.fillStyle='#2f7d1f'; ctx.font='bold 11px Arial'; ctx.fillText('cm', g.edge+s*44, g.top+14);
+  ctx.strokeStyle='#e03131'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(g.left,g.oy); ctx.lineTo(g.right,g.oy); ctx.stroke();
+  ctx.restore();
+  const h=handlePos('V'); drawHandle(h.x,h.y,'\u2195');
+}
+
+function drawHandle(x,y,sym){
+  ctx.save();
+  ctx.fillStyle='#e03131'; ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(x,y,9,0,2*Math.PI); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 12px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(sym,x,y+0.5); ctx.restore();
+}
+
+function draw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#dfe6f1'; ctx.fillRect(0,0,CW,CH);
+  if(!S.img){
+    ctx.fillStyle='#1f3c88'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='600 20px "Segoe UI",Arial';
+    ctx.fillText('Ouvrez, glissez-déposez ou collez (Ctrl+V) une image', CW/2, CH/2-12);
+    document.getElementById('zoomLbl').textContent='';
+    return;
+  }
+  document.getElementById('zoomLbl').textContent = Math.round(S.zoom*100)+' %';
+
+  // image
+  ctx.save(); ctx.shadowColor='rgba(0,0,0,.25)'; ctx.shadowBlur=12; ctx.fillStyle='#fff';
+  ctx.fillRect(X(0),Y(0),S.iw*S.zoom,S.ih*S.zoom); ctx.restore();
+  ctx.imageSmoothingEnabled = S.zoom < 3;
+  ctx.drawImage(S.img, X(0),Y(0), S.iw*S.zoom, S.ih*S.zoom);
+
+  // repères
+  ctx.save(); ctx.strokeStyle='#d6336c'; ctx.lineWidth=1.2; ctx.setLineDash([6,4]);
+  for(const gd of S.guides){
+    ctx.beginPath();
+    if(gd.o==='h'){ const y=Y(gd.pos); ctx.moveTo(0,y); ctx.lineTo(CW,y); }
+    else { const x=X(gd.pos); ctx.moveTo(x,0); ctx.lineTo(x,CH); }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // croix
+  ctx.save(); ctx.strokeStyle='#d6336c'; ctx.fillStyle='#d6336c'; ctx.lineWidth=2;
+  ctx.font='bold 14px Arial'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  for(const m of S.marks){
+    const x=X(m.x), y=Y(m.y);
+    ctx.beginPath(); ctx.moveTo(x-8,y-8); ctx.lineTo(x+8,y+8); ctx.moveTo(x+8,y-8); ctx.lineTo(x-8,y+8); ctx.stroke();
+    ctx.fillText(m.label, x+10, y-8);
+  }
+  ctx.restore();
+
+  // règles (la dernière touchée est au-dessus)
+  for(const n of S.order){ n==='H' ? drawH() : drawV(); }
+}
+
+// =====================================================
+// INTERACTIONS
+// =====================================================
+function hitTest(px,py){
+  const vis = S.order.filter(n => S[n].visible).reverse();
+  for(const n of vis){
+    const h=handlePos(n);
+    if(Math.hypot(px-h.x,py-h.y)<=13) return {t:'origin',n};
+  }
+  for(const n of vis){
+    const r=rectOf(n);
+    if(px>=r.x && px<=r.x+r.w && py>=r.y && py<=r.y+r.h) return {t:'ruler',n};
+  }
+  for(let i=S.marks.length-1;i>=0;i--){
+    const m=S.marks[i];
+    if(Math.hypot(px-X(m.x),py-Y(m.y))<=12) return {t:'mark',i};
+  }
+  for(let i=S.guides.length-1;i>=0;i--){
+    const gd=S.guides[i];
+    const d = gd.o==='h' ? Math.abs(py-Y(gd.pos)) : Math.abs(px-X(gd.pos));
+    if(d<=6) return {t:'guide',i};
+  }
+  return null;
+}
+
+let drag=null;
+function pos(e){ const r=cv.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+function toFront(n){ S.order = S.order.filter(k=>k!==n).concat(n); }
+
+cv.addEventListener('pointerdown', e => {
+  if(!S.img) return;
+  cv.setPointerCapture(e.pointerId);
+  const p=pos(e), h=hitTest(p.x,p.y);
+  drag = {h, lx:p.x, ly:p.y};
+  if(h && (h.t==='origin'||h.t==='ruler')) toFront(h.n);
+  cv.style.cursor = h ? 'grabbing' : 'grabbing';
+  draw();
+});
+
+cv.addEventListener('pointermove', e => {
+  const p=pos(e);
+  if(!S.img) return;
+  if(!drag){
+    const h=hitTest(p.x,p.y);
+    cv.style.cursor = !h ? 'grab' :
+      h.t==='origin' ? (h.n==='H'?'ew-resize':'ns-resize') :
+      h.t==='guide' ? (S.guides[h.i].o==='h'?'ns-resize':'ew-resize') : 'move';
+    return;
+  }
+  const dx=p.x-drag.lx, dy=p.y-drag.ly; drag.lx=p.x; drag.ly=p.y;
+  const h=drag.h, z=S.zoom;
+  if(!h){ S.panX+=dx; S.panY+=dy; }
+  else if(h.t==='origin'){
+    const r=S[h.n];
+    if(h.n==='H') r.org = clamp((WX(p.x)-r.x)/S.ppc, 0, r.len);
+    else r.org = clamp((r.y + r.len*S.ppc - WY(p.y))/S.ppc, 0, r.len);
+  }
+  else if(h.t==='ruler'){ const r=S[h.n]; r.x+=dx/z; r.y+=dy/z; }
+  else if(h.t==='mark'){ const m=S.marks[h.i]; m.x+=dx/z; m.y+=dy/z; }
+  else if(h.t==='guide'){ const gd=S.guides[h.i]; gd.pos += (gd.o==='h'?dy:dx)/z; }
+  draw();
+});
+
+function endDrag(e){ drag=null; cv.style.cursor='grab'; }
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+
+cv.addEventListener('dblclick', e => {
+  const p=pos(e), h=hitTest(p.x,p.y); if(!h) return;
+  if(h.t==='mark'){ S.marks.splice(h.i,1); }
+  else if(h.t==='guide'){ S.guides.splice(h.i,1); }
+  draw();
+});
+
+// =====================================================
+// BOUTONS / RÉGLAGES
+// =====================================================
+function centerWorld(){ return {x:WX(CW/2), y:WY(CH/2)}; }
+document.getElementById('addGH').onclick = () => { if(!S.img) return; S.guides.push({o:'h',pos:centerWorld().y}); draw(); };
+document.getElementById('addGV').onclick = () => { if(!S.img) return; S.guides.push({o:'v',pos:centerWorld().x}); draw(); };
+document.getElementById('addMark').onclick = () => {
+  if(!S.img) return; const c=centerWorld();
+  S.marks.push({x:c.x,y:c.y,label:String.fromCharCode(65+(S.markCount++%26))}); draw();
+};
+document.getElementById('clearAll').onclick = () => { S.guides=[]; S.marks=[]; S.markCount=0; draw(); };
+
+document.getElementById('showH').onchange = e => { S.H.visible=e.target.checked; draw(); };
+document.getElementById('showV').onchange = e => { S.V.visible=e.target.checked; draw(); };
+document.getElementById('widthCm').oninput = e => {
+  const v=parseFloat(e.target.value);
+  if(v>0 && S.img){
+    S.ppc=S.iw/v;
+    S.H.len = Math.max(1, Math.floor(S.iw/S.ppc + 1e-9));
+    S.V.len = Math.max(1, Math.floor(S.ih/S.ppc + 1e-9));
+    S.H.org = clamp(S.H.org,0,S.H.len); S.V.org = clamp(S.V.org,0,S.V.len);
+    draw();
+  }
+};
+resize();
+</script>
+</body>
+</html>
