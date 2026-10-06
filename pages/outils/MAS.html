@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moteur asynchrone triphasé virtuel</title>
+<style>
+:root{--blue:#1f3c88;--blue-light:#f0f4ff;--green:#28a745;--green-dark:#1e7e34;--orange:#e07b00;--red:#c0392b;--gray:#888;--gray-light:#f5f5f5;--border:#dde3f0;--radius:10px;}
+*{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0}
+body{background:linear-gradient(135deg,#f4f6f9,#e9eef5);min-height:100vh;padding:16px}
+.container{max-width:1500px;margin:auto;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden}
+.page-header{background:var(--blue);color:#fff;padding:18px 28px}
+.page-header h1{font-size:1.4rem;font-weight:600}
+.page-header p{font-size:.88rem;opacity:.82;margin-top:3px}
+.main{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
+.top{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+@media (max-width:1050px){.top{grid-template-columns:1fr}}
+.card{background:var(--blue-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
+.card.white{background:#fff}
+.section-title{font-size:1rem;font-weight:600;color:var(--blue);border-left:4px solid var(--blue);padding-left:10px;margin-bottom:12px}
+.subtitle{font-size:.86rem;font-weight:600;color:var(--blue);margin:12px 0 6px}
+#syn{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#syn .w{stroke:#222;stroke-width:2;fill:none}
+#syn .sc{stroke:#222;stroke-width:2;fill:#fff}
+#syn .ti{font-size:11px;font-weight:700;fill:#1f3c88;letter-spacing:.4px}
+#syn .sm{font-family:Consolas,"Courier New",monospace;font-size:13px;font-weight:700;fill:#1f3c88}
+#syn .big{font-size:16px;font-weight:700;fill:#222;text-anchor:middle;dominant-baseline:central}
+#syn .tx{font-size:11px;fill:#444}
+#syn .pl{font-family:Consolas,"Courier New",monospace;font-size:12px;fill:#333}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.srow label{min-width:150px;font-size:.84rem;color:#333}
+.srow input[type=range]{flex:1;accent-color:var(--blue);min-width:80px}
+.srow input[type=number]{width:74px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.85rem}
+.srow .u{width:46px;font-size:.82rem;color:var(--gray)}
+.btn{border:none;padding:8px 14px;border-radius:7px;cursor:pointer;font-size:.84rem;font-weight:600;transition:.2s;color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-green{background:var(--green)}.btn-green:hover{background:var(--green-dark)}
+.btn-blue{background:var(--blue)}.btn-blue:hover{background:#162d6a}
+.btn-orange{background:var(--orange)}.btn-orange:hover{background:#c06a00}
+.btn-red{background:var(--red)}.btn-red:hover{background:#922b21}
+.btn-gray{background:#9aa3b5}.btn-gray:hover{background:#838da3}
+.btn-big{width:100%;padding:12px;font-size:.95rem;margin:4px 0 12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+#alerts{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.al{font-size:.82rem;padding:6px 10px;border-radius:6px;font-weight:600}
+.al.ok{background:#e8f8e8;color:var(--green-dark)}
+.al.info{background:#e6efff;color:var(--blue)}
+.al.warn{background:#fff3df;color:#9a5b00}
+.al.bad{background:#fde8e8;color:var(--red)}
+details{margin-top:10px;font-size:.82rem;color:#444;line-height:1.55}
+summary{cursor:pointer;font-weight:600;color:var(--blue)}
+#scope{width:100%;height:auto;display:block;border-radius:8px;border:2px solid #333;background:#000;touch-action:none;cursor:col-resize}
+.scope-ctrl{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.scope-ctrl label{font-size:.84rem;display:flex;align-items:center;gap:6px}
+.scope-ctrl select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.scope-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:1050px){.scope-grid{grid-template-columns:1fr}}
+.chans{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;align-content:start}
+.chan{display:flex;align-items:center;gap:6px;font-size:.84rem}
+.chan b{min-width:34px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #333}
+.chan select{flex:1;padding:3px 4px;border:1px solid #ccc;border-radius:5px;font-size:.82rem}
+.curr{display:flex;align-items:center;gap:8px;font-size:.84rem;margin-bottom:6px}
+.curr input[type=range]{flex:1}
+.curr .ca{color:#444;font-weight:700}.curr .cb{color:var(--orange);font-weight:700}
+#rdHead{font-size:.84rem;color:var(--blue);font-weight:600;margin:6px 0}
+table.rd{width:100%;border-collapse:collapse;font-size:.82rem;background:#fff}
+table.rd th,table.rd td{border:1px solid var(--border);padding:4px 7px;text-align:center}
+table.rd th{background:var(--blue);color:#fff;font-weight:600}
+table.rd td:first-child{text-align:left;font-weight:700}
+.hint{font-size:.82rem;color:#555;line-height:1.5}
+.modal{display:none;position:fixed;inset:0;background:rgba(10,20,50,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:12px;padding:20px 24px;max-width:560px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mhead h3{color:var(--blue);font-size:1.1rem}
+.x{border:none;background:none;font-size:1.1rem;cursor:pointer;color:#666}
+.pgrid{display:grid;grid-template-columns:1fr 110px 60px;gap:8px 10px;align-items:center;margin:12px 0}
+.pgrid input{padding:5px 7px;border:1px solid #ccc;border-radius:5px;font-size:.9rem;width:100%}
+.pgrid input:disabled{background:#eee}
+.pgrid span{font-size:.82rem;color:var(--gray)}
+.pgrid label{font-size:.88rem}
+.lcd{background:#cfe0b8;border:3px solid #556b3a;border-radius:8px;padding:14px 18px;font-family:Consolas,"Courier New",monospace;font-size:1.5rem;color:#1d2b12;margin:12px 0;min-height:96px;line-height:1.6}
+.lcd.err{background:#f1d6d0;border-color:#a33;color:#7a1f14;font-size:.95rem}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <h1>🌀 Moteur asynchrone triphasé virtuel</h1>
+    <p>Banc d'essai : moteur à cage alimenté par le réseau triphasé, chargé par une machine active pilotée en couple</p>
+  </div>
+
+  <div class="main">
+    <div class="top">
+      <!-- ============ SYNOPTIQUE ============ -->
+      <div class="card white">
+        <div class="section-title">Synoptique du montage</div>
+        <svg id="syn" viewBox="0 0 900 335" xmlns="http://www.w3.org/2000/svg">
+          <text class="ti" x="12" y="18">ALIMENTATION TRIPHASÉE</text>
+          <!-- réseau -->
+          <rect class="sc" x="14" y="58" width="70" height="124" rx="8" fill="#eef2ff"/>
+          <text class="ti" x="49" y="80" text-anchor="middle">RÉSEAU</text>
+          <text class="big" x="49" y="104" style="font-size:20px">3~</text>
+          <text class="sm" id="net-U" x="49" y="140" text-anchor="middle" style="font-size:12px">400 V</text>
+          <text class="sm" id="net-f" x="49" y="160" text-anchor="middle" style="font-size:12px">50.0 Hz</text>
+          <!-- lignes -->
+          <path class="w" d="M84 80 H125 M84 120 H125 M84 160 H125 M155 80 H410 M155 120 H410 M155 160 H410"/>
+          <text class="tx" x="92" y="74">L1</text><text class="tx" x="92" y="114">L2</text><text class="tx" x="92" y="154">L3</text>
+          <!-- contacteur KM1 -->
+          <g id="km-closed"><path class="w" d="M125 80 H155 M125 120 H155 M125 160 H155"/></g>
+          <g id="km-open" style="display:none"><path class="w" d="M125 80 L150 66 M125 120 L150 106 M125 160 L150 146"/></g>
+          <path d="M139 73 V153" stroke="#777" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+          <text class="ti" x="140" y="188" text-anchor="middle">KM1</text>
+          <!-- ampèremètre -->
+          <circle class="sc" cx="200" cy="80" r="16"/><text class="big" x="200" y="80">A</text>
+          <text class="sm" id="t-i" x="200" y="52" text-anchor="middle">0.00 A</text>
+          <!-- wattmètre -->
+          <rect class="sc" x="250" y="62" width="60" height="116" rx="6"/>
+          <text class="big" x="280" y="120" style="font-size:22px">W</text>
+          <text class="sm" id="t-p" x="280" y="52" text-anchor="middle">0 W</text>
+          <!-- voltmètre -->
+          <path class="w" d="M355 80 V86 M355 114 V120"/>
+          <circle cx="355" cy="80" r="3" fill="#222"/><circle cx="355" cy="120" r="3" fill="#222"/>
+          <circle class="sc" cx="355" cy="100" r="14"/><text class="big" x="355" y="100">V</text>
+          <text class="sm" id="t-u" x="355" y="52" text-anchor="middle">0.0 V</text>
+          <!-- moteur -->
+          <text class="ti" x="465" y="46" text-anchor="middle">MOTEUR ASYNCHRONE</text>
+          <rect x="410" y="55" width="110" height="130" rx="10" fill="#f6f8ff" stroke="#1f3c88" stroke-width="2" stroke-dasharray="6 4"/>
+          <text class="tx" x="418" y="76">U1</text><text class="tx" x="418" y="116">V1</text><text class="tx" x="418" y="156">W1</text>
+          <circle class="sc" cx="470" cy="120" r="30"/>
+          <text class="big" x="470" y="113" style="font-size:20px">M</text><text class="big" x="470" y="133" style="font-size:13px">3~</text>
+          <text class="tx" x="465" y="176" text-anchor="middle">couplage étoile (Y)</text>
+          <!-- arbre -->
+          <g id="shaft" stroke="#6a7385" stroke-width="7" fill="none" stroke-dasharray="10 6"><path d="M500 120 H570 M640 120 H688 M732 120 H772"/></g>
+          <text class="ti" x="600" y="90" text-anchor="middle">COUPLEMÈTRE</text>
+          <rect class="sc" x="560" y="98" width="80" height="44" rx="5" fill="#fff0f8"/>
+          <text class="tx" x="600" y="113" text-anchor="middle">Cu</text>
+          <text class="sm" id="t-cu" x="600" y="131" text-anchor="middle">0.00 N·m</text>
+          <text class="ti" x="710" y="84" text-anchor="middle">TACHYMÈTRE</text>
+          <circle class="sc" cx="710" cy="120" r="22" fill="#f1fff0"/>
+          <g id="lock" style="display:none"><rect x="526" y="104" width="28" height="32" rx="3" fill="#f6c7c1" stroke="#c0392b" stroke-width="2.5"/><path d="M520 100 H560 M520 140 H560" stroke="#c0392b" stroke-width="3"/><text class="ti" x="540" y="156" text-anchor="middle" style="fill:#c0392b">BLOQUÉ</text></g>
+          <g id="wheel"><line x1="710" y1="102" x2="710" y2="138" stroke="#c0392b" stroke-width="3"/><line x1="692" y1="120" x2="728" y2="120" stroke="#999" stroke-width="2"/></g>
+          <text class="sm" id="t-n" x="710" y="160" text-anchor="middle">0 tr/min</text>
+          <rect class="sc" x="772" y="80" width="116" height="80" rx="8" fill="#eef7ee"/>
+          <text class="tx" x="830" y="102" text-anchor="middle" font-weight="700">CHARGE ACTIVE</text>
+          <text class="tx" x="830" y="118" text-anchor="middle">pilotée en couple</text>
+          <text class="sm" id="t-load" x="830" y="143" text-anchor="middle">C = 0 N·m</text>
+
+          <!-- état -->
+          <text class="tx" id="km-st" x="20" y="226" font-weight="700">Contacteur KM1 : ouvert</text>
+          <text class="tx" id="th-st" x="20" y="246">Relais thermique : 0 %</text>
+          <text class="tx" x="20" y="276">Charge &gt; 0 : charge résistante (fonctionnement moteur)</text>
+          <text class="tx" x="20" y="293">Charge &lt; 0 : charge entraînante (fonctionnement génératrice)</text>
+          <text class="tx" x="20" y="310">Cu &gt; 0 : l'arbre fournit du couple à la charge</text>
+
+          <!-- plaque -->
+          <rect x="430" y="196" width="458" height="130" rx="8" fill="#fffbe6" stroke="#b59b00" stroke-width="2"/>
+          <text class="pl" x="446" y="218" font-weight="700">PLAQUE SIGNALÉTIQUE</text>
+          <text class="pl" x="446" y="238">Moteur asynchrone triphasé à cage</text>
+          <text class="pl" id="pl-res" x="446" y="259">Réseau : 230 / 400 V ; 50 Hz (Y sur 400 V)</text>
+          <text class="pl" id="pl-nn" x="446" y="280">nn = 1430 tr/min</text>
+          <text class="pl" id="pl-pu" x="446" y="301">Pu = 1.5 kW ; cos φ = 0.80</text>
+          <text class="pl" id="pl-in" x="446" y="320">In = 3.5 A</text>
+        </svg>
+      </div>
+
+      <!-- ============ COMMANDES ============ -->
+      <div class="card">
+        <div class="section-title">Commandes</div>
+        <button class="btn btn-green btn-big" id="bKM">⏻ Fermer KM1 (mise sous tension)</button>
+
+        <div class="subtitle" style="margin-top:0">Réseau</div>
+        <div class="srow">
+          <label>Tension composée <b>U</b> (eff.)</label>
+          <input type="range" id="sl-U" min="0" max="480" step="1" value="400">
+          <input type="number" id="nb-U" min="0" max="480" step="1" value="400"><span class="u">V</span>
+        </div>
+        <div class="srow">
+          <label>Fréquence <b>f</b></label>
+          <input type="range" id="sl-f" min="5" max="100" step="0.5" value="50">
+          <input type="number" id="nb-f" min="5" max="100" step="0.5" value="50"><span class="u">Hz</span>
+        </div>
+
+        <div class="subtitle">Charge active (commandée en couple)</div>
+        <div class="srow">
+          <label>Couple de charge <b>C</b></label>
+          <input type="range" id="sl-C" min="-25" max="25" step="0.1" value="0">
+          <input type="number" id="nb-C" min="-25" max="25" step="0.1" value="0"><span class="u">N·m</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-blue" id="bOhm">🔌 Mesure de la résistance du stator</button>
+          <button class="btn btn-blue" id="bParam">🛠 Paramètres du moteur</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-orange" id="bRearm" style="display:none">🔁 Réarmer</button>
+          <button class="btn btn-blue" id="bLock">🔒 Bloquer le rotor (essai à rotor bloqué)</button>
+          <button class="btn btn-gray" id="bReset">↺ Réinitialiser le banc</button>
+        </div>
+        <div id="alerts"></div>
+
+        <details>
+          <summary>ℹ️ Aide et conventions</summary>
+          <p>• Le <b>voltmètre</b> mesure la tension composée du réseau, l'<b>ampèremètre</b> le courant en ligne (valeurs efficaces), le <b>wattmètre</b> la puissance active totale absorbée (négative si le moteur renvoie de l'énergie au réseau).<br>
+          • Le <b>couplemètre</b> mesure le couple transmis par l'arbre à la charge ; le <b>tachymètre</b> la vitesse en tr/min.<br>
+          • Un couple de charge <b>négatif</b> entraîne le moteur : au-dessus de la vitesse de synchronisme, la machine fonctionne en génératrice.<br>
+          • Sur l'oscilloscope, la voie v1 est la tension simple de la phase 1 et i1 le courant dans cette phase.<br>
+          • <b>Essai à rotor bloqué</b> : bloquez le rotor (moteur à l'arrêt), puis augmentez progressivement la tension à partir de 0 V en surveillant le courant (ne dépassez pas In). Sans blocage, le moteur démarre dès que son couple dépasse les frottements : il ne reste donc pas à l'arrêt.<br>
+          • Le voltmètre est placé après KM1 : il indique 0 V tant que le contacteur est ouvert.<br>
+          • Cliquez-glissez sur l'écran pour placer les curseurs A et B.</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- ============ OSCILLOSCOPE ============ -->
+    <div class="card white">
+      <div class="section-title">Oscilloscope</div>
+      <canvas id="scope"></canvas>
+      <div class="scope-ctrl">
+        <button class="btn btn-orange" id="bRun">⏸ Stop</button>
+        <button class="btn btn-blue" id="bAuto">Auto-échelle</button>
+        <label>Base de temps <select id="tbSel"></select></label>
+        <label><input type="checkbox" id="curOn" checked> Curseurs</label>
+        <label><input type="checkbox" id="intOn"> Voies supplémentaires (u12, g, Cem)</label>
+      </div>
+      <div class="scope-grid">
+        <div>
+          <div class="subtitle" style="margin-top:0">Calibres des voies</div>
+          <div class="chans" id="chans"></div>
+          <p class="hint" style="margin-top:10px">Astuce : appuyez sur <b>Stop</b> pour figer l'écran avant de lire les curseurs. Pour observer les sinusoïdes, réduisez la base de temps (20 ms/div par exemple) ; pour le démarrage, utilisez 100 ms/div ou plus.</p>
+        </div>
+        <div>
+          <div class="subtitle" style="margin-top:0">Curseurs</div>
+          <div class="curr"><span class="ca">A</span><input type="range" id="curA" min="0" max="1" step="0.001" value="0.3"></div>
+          <div class="curr"><span class="cb">B</span><input type="range" id="curB" min="0" max="1" step="0.001" value="0.7"></div>
+          <div id="rdHead"></div>
+          <div id="rdTab"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALE PARAMETRES ============ -->
+<div class="modal" id="mdParams"><div class="mbox">
+  <div class="mhead"><h3>🛠 Paramètres du moteur</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">Modèle équivalent monophasé (schéma en T) : résistance statorique Rs, résistance rotorique ramenée au stator Rr, inductance magnétisante Lm et inductance de fuite totale Ll (répartie à parts égales entre stator et rotor).</p>
+  <div class="pgrid">
+    <label for="p-p">Nombre de paires de pôles p</label><input type="number" id="p-p" step="1"><span></span>
+    <label for="p-Rs">Résistance d'un enroulement statorique Rs</label><input type="number" id="p-Rs" step="0.1"><span>Ω</span>
+    <label for="p-Rr">Résistance rotorique ramenée Rr</label><input type="number" id="p-Rr" step="0.1"><span>Ω</span>
+    <label for="p-Lm">Inductance magnétisante Lm</label><input type="number" id="p-Lm" step="10"><span>mH</span>
+    <label for="p-Ll">Inductance de fuite totale Ll</label><input type="number" id="p-Ll" step="1"><span>mH</span>
+    <label for="p-Jm">Moment d'inertie du rotor Jm</label><input type="number" id="p-Jm" step="0.005"><span>kg·m²</span>
+    <label for="p-Jc">Moment d'inertie de la charge Jc</label><input type="number" id="p-Jc" step="0.01"><span>kg·m²</span>
+    <label for="p-Cf">Couple de frottement Cf</label><input type="number" id="p-Cf" step="0.05"><span>N·m</span>
+  </div>
+  <p class="hint" id="hidMsg" style="display:none;color:#9a5b00;font-weight:600">🎲 Moteur inconnu : les valeurs sont masquées. Déterminez-les par vos mesures !</p>
+  <div class="btn-row">
+    <button class="btn btn-green" id="pDef">↺ Valeurs par défaut</button>
+    <button class="btn btn-orange" id="pRnd">🎲 Moteur inconnu</button>
+    <button class="btn btn-gray" id="pRev" style="display:none">👁 Révéler</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<!-- ============ MODALE OHMMETRE ============ -->
+<div class="modal" id="mdOhm"><div class="mbox">
+  <div class="mhead"><h3>🔌 Mesure de résistance au stator (ohmmètre)</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">L'ohmmètre est branché entre <b>deux bornes</b> du stator (U1 et V1). La mesure n'est possible que si le moteur est <b>hors tension</b> (KM1 ouvert) et <b>à l'arrêt</b>.</p>
+  <div class="lcd" id="ohmLcd"></div>
+  <div class="btn-row">
+    <button class="btn btn-green" id="ohmGo">Mesurer</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const TWO_PI=2*Math.PI, RPM=60/TWO_PI, S3=Math.sqrt(3);
+const UN=400, FN=50, FV=0.002, HTRIP=200;
+const fx=(x,d)=>{const s=x.toFixed(d);return parseFloat(s)===0?(0).toFixed(d):s;};
+
+/* ======================= MODELE ======================= */
+const DEFAULTS={p:2,Rs:4.5,Rr:3.4,Lm:0.4,Ll:0.044,Jm:0.01,Jc:0.05,Cf:0.3};
+let P={...DEFAULTS}, hiddenParams=false;
+const UI={U:400,f:50,C:0};
+let S, plaque={nn:1430,Pu:1500,In:3.5,cos:0.8,nsNom:1500};
+let K={};
+function resetState(){S={closed:false,locked:false,tripped:false,tripMsg:'',heat:0,th:0,
+  psA:0,psB:0,prA:0,prB:0,w:0,
+  va:0,vb:0,ia:0,ib:0,u12:0,pf:0,ief:0,g:0,cu:0,cem:0,dw:0};}
+resetState();
+
+function derive(){
+  const lls=P.Ll/2, Ls=P.Lm+lls, Lr=P.Lm+lls;
+  K={Lr:Lr, kM:P.Lm/Lr, sL:Ls-P.Lm*P.Lm/Lr, M:P.Lm, Jt:P.Jm+P.Jc};
+}
+
+/* --- régime permanent (schéma en T) : plaque signalétique --- */
+const cadd=(a,b)=>[a[0]+b[0],a[1]+b[1]];
+const cmul=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]];
+const cdiv=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];};
+const cabs=a=>Math.hypot(a[0],a[1]);
+function eqc(s){
+  const w=TWO_PI*FN, X=w*P.Ll/2, Xm=w*P.Lm;
+  const Zs=[P.Rs,X], Zm=[0,Xm], Zr=[P.Rr/s,X];
+  const Zp=cdiv(cmul(Zm,Zr),cadd(Zm,Zr));
+  const Z=cadd(Zs,Zp), V=[UN/S3,0], I=cdiv(V,Z);
+  const IZ=cmul(I,Zs), Vm=[V[0]-IZ[0],V[1]-IZ[1]], Ir=cdiv(Vm,Zr);
+  const Cem=3*cabs(Ir)*cabs(Ir)*P.Rr/s/(w/P.p), W=w/P.p*(1-s);
+  return {I:cabs(I),cos:I[0]/cabs(I),Cem:Cem,Cu:Cem-P.Cf-FV*W,W:W};
+}
+function computePlaque(){
+  let best=0, sm=0.2;
+  for(let s=0.002;s<1;s+=0.002){const c=eqc(s).Cem; if(c>best){best=c;sm=s;}}
+  const Cn=best/2.6; let a=1e-4,b=sm;
+  for(let i=0;i<60;i++){const m=(a+b)/2; if(eqc(m).Cu<Cn) a=m; else b=m;}
+  const r=eqc(a);
+  plaque={nn:Math.max(10,Math.round(r.W*RPM/10)*10),Pu:Math.max(0,r.Cu*r.W),In:r.I,cos:r.cos,nsNom:60*FN/P.p};
+  $('pl-nn').textContent='nn = '+plaque.nn+' tr/min';
+  $('pl-pu').textContent='Pu = '+(plaque.Pu>=1000?fx(plaque.Pu/1000,2)+' kW':Math.round(plaque.Pu)+' W')+' ; cos φ = '+fx(plaque.cos,2);
+  $('pl-in').textContent='In = '+fx(plaque.In,1)+' A (en ligne, couplage Y)';
+}
+
+/* --- dynamique (repère fixe αβ, rotor en court-circuit) --- */
+function deriv(x,vA,vB,closed,Cch){
+  const psA=x[0],psB=x[1],prA=x[2],prB=x[3],W=x[4];
+  let iA=0,iB=0,irA,irB;
+  if(closed){
+    iA=(psA-K.kM*prA)/K.sL; iB=(psB-K.kM*prB)/K.sL;
+    irA=(prA-K.M*iA)/K.Lr;  irB=(prB-K.M*iB)/K.Lr;
+  }else{ irA=prA/K.Lr; irB=prB/K.Lr; }
+  const w=P.p*W;
+  const Cem=closed?1.5*P.p*(psA*iB-psB*iA):0;
+  const Cfr=P.Cf*Math.tanh(W/1.0)+FV*W;
+  const dW=S.locked?0:(Cem-Cfr-Cch)/K.Jt;
+  return {d:[closed?vA-P.Rs*iA:0, closed?vB-P.Rs*iB:0, -P.Rr*irA-w*prB, -P.Rr*irB+w*prA, dW],iA:iA,iB:iB,Cem:Cem,Cfr:Cfr,dW:dW};
+}
+function step(h){
+  const s=S, Vp=UI.U*Math.SQRT2/S3, we=TWO_PI*UI.f;
+  const volt=tau=>[Vp*Math.cos(s.th+we*tau),Vp*Math.sin(s.th+we*tau)];
+  const closed=s.closed;
+  const Cch=s.tripped&&s.tripMsg.indexOf('survitesse')>=0?0:UI.C;
+  const x=[s.psA,s.psB,s.prA,s.prB,s.w];
+  const add=(a,b,f)=>a.map((v,i)=>v+f*b[i]);
+  const v0=volt(0),vh=volt(h/2),v1=volt(h);
+  const k1=deriv(x,v0[0],v0[1],closed,Cch).d;
+  const k2=deriv(add(x,k1,h/2),vh[0],vh[1],closed,Cch).d;
+  const k3=deriv(add(x,k2,h/2),vh[0],vh[1],closed,Cch).d;
+  const k4=deriv(add(x,k3,h),v1[0],v1[1],closed,Cch).d;
+  for(let i=0;i<5;i++) x[i]+=h/6*(k1[i]+2*k2[i]+2*k3[i]+k4[i]);
+  s.th=(s.th+we*h)%TWO_PI;
+  if(!closed){ x[0]=K.kM*x[2]; x[1]=K.kM*x[3]; }
+  if(s.locked) x[4]=0;
+  [s.psA,s.psB,s.prA,s.prB,s.w]=x;
+  const vf=volt(0), o=deriv(x,vf[0],vf[1],closed,Cch);
+  s.va=closed?vf[0]:0; s.vb=closed?vf[1]:0; s.ia=o.iA; s.ib=o.iB;
+  s.u12=1.5*s.va-(S3/2)*s.vb;
+  s.cem=o.Cem; s.dw=o.dW;
+  s.cu=o.Cem-o.Cfr-P.Jm*o.dW;
+  const pin=closed?1.5*(vf[0]*o.iA+vf[1]*o.iB):0;
+  const irms=Math.hypot(o.iA,o.iB)/Math.SQRT2;
+  const a=Math.min(1,h/0.04);
+  s.pf+=a*(pin-s.pf); s.ief+=a*(irms-s.ief);
+  const ws=we/P.p; s.g=ws>1e-6?(ws-s.w)/ws:0;
+  // relais thermique + protection survitesse
+  if(closed){ s.heat=Math.max(0,s.heat+h*((irms/plaque.In)*(irms/plaque.In)-1)); }
+  else s.heat=Math.max(0,s.heat-0.5*h);
+  if(!s.tripped){
+    if(s.heat>HTRIP){s.tripped=true; s.closed=false; s.tripMsg='thermique';}
+    else if(Math.abs(s.w*RPM)>2.5*plaque.nsNom){s.tripped=true; s.closed=false; s.tripMsg='survitesse';}
+  }
+}
+
+/* ======================= ENREGISTREMENT ======================= */
+const dtS=0.0002, NBUF=60000;
+const CH=[
+ {id:'v1', name:'v1', unit:'V',     color:'#ffd21f',tc:'#b38a00',panel:0,get:s=>s.va, scale:200,min:50, dec:0},
+ {id:'i1', name:'i1', unit:'A',     color:'#27e0ff',tc:'#0088a3',panel:0,get:s=>s.ia, scale:2,  min:0.5,dec:2},
+ {id:'u12',name:'u12',unit:'V',     color:'#ffffff',tc:'#555',   panel:0,get:s=>s.u12,scale:200,min:50, dec:0,internal:true,dash:true},
+ {id:'P',  name:'P',  unit:'W',     color:'#ffa43a',tc:'#c06a00',panel:1,get:s=>s.pf, scale:500,min:100,dec:0},
+ {id:'I',  name:'I',  unit:'A',     color:'#27e0ff',tc:'#0088a3',panel:1,get:s=>s.ief,scale:2,  min:0.5,dec:2},
+ {id:'n',  name:'n',  unit:'tr/min',color:'#7dff4f',tc:'#2a8a00',panel:2,get:s=>s.w*RPM,scale:500,min:100,dec:0},
+ {id:'g',  name:'g',  unit:'%',     color:'#c9a8ff',tc:'#6a3fb5',panel:2,get:s=>s.g*100,scale:5,min:1,dec:1,internal:true,dash:true},
+ {id:'Cu', name:'Cu', unit:'N·m',   color:'#ff7ad9',tc:'#c2188f',panel:3,get:s=>s.cu, scale:5,  min:1,  dec:2},
+ {id:'Cem',name:'Cem',unit:'N·m',   color:'#ffffff',tc:'#555',   panel:3,get:s=>s.cem,scale:5,  min:1,  dec:2,internal:true,dash:true},
+];
+const buf=CH.map(()=>new Float32Array(NBUF));
+let nSamples=0, acc=0;
+function record(){const i=nSamples%NBUF; for(let k=0;k<CH.length;k++) buf[k][i]=CH[k].get(S); nSamples++;}
+function sampleAt(k,t){
+  const jf=t/dtS, j=Math.floor(jf);
+  if(j<0||j+1>=nSamples||j<nSamples-NBUF) return NaN;
+  const fr=jf-j; return buf[k][j%NBUF]*(1-fr)+buf[k][(j+1)%NBUF]*fr;
+}
+function simAdvance(T){
+  acc+=T;
+  while(acc>=dtS){ step(dtS); record(); acc-=dtS; }
+}
+
+/* ======================= OSCILLOSCOPE ======================= */
+const SCALES=[]; for(let e=-3;e<=4;e++) for(const m of [1,2,5]) SCALES.push(parseFloat((m*Math.pow(10,e)).toPrecision(6)));
+const TB=[0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1];
+let tbIdx=5, running=true, frozenEnd=0, view=null;
+const cur={A:0.3,B:0.7,on:true};
+const cv=$('scope'), g=cv.getContext('2d');
+const SW=1000, SH=634, PL=12, PW=976, PT=10, PH=148, PG=6;
+cv.width=SW; cv.height=SH;
+const PTITLE=['TENSION ET COURANT','PUISSANCE ET COURANT EFFICACE','VITESSE','COUPLE'];
+const visible=c=>!c.internal||$('intOn').checked;
+const fmtDiv=v=>v<1?(v*1000)+' ms':v+' s';
+
+function buildScopeUI(){
+  const sel=$('tbSel'); sel.innerHTML='';
+  TB.forEach((v,i)=>{const o=document.createElement('option'); o.value=i; o.textContent=fmtDiv(v)+' / div'; sel.appendChild(o);});
+  sel.value=tbIdx;
+  const box=$('chans'); box.innerHTML='';
+  CH.forEach(c=>{
+    const d=document.createElement('div'); d.className='chan'; d.id='chan-'+c.id; if(c.internal) d.style.display='none';
+    d.innerHTML='<span class="dot" style="background:'+c.color+'"></span><b>'+c.name+'</b><select id="sc-'+c.id+'"></select>';
+    box.appendChild(d);
+    const s=d.querySelector('select');
+    SCALES.forEach(v=>{const o=document.createElement('option'); o.value=v; o.textContent=v+' '+c.unit+'/div'; s.appendChild(o);});
+    s.value=c.scale;
+    s.onchange=()=>{c.scale=parseFloat(s.value); drawScope();};
+  });
+}
+
+function drawTrace(c,k,top,tStart,T,jmin,jmax){
+  const mid=top+PH/2, ppu=(PH/6)/c.scale, spp=T/PW, dpp=spp/dtS, b=buf[k];
+  const Y=v=>clamp(mid-v*ppu,top+1,top+PH-1);
+  g.strokeStyle=c.color; g.lineWidth=1.6; g.setLineDash(c.dash?[6,4]:[]);
+  g.beginPath(); let pen=false;
+  for(let x=0;x<=PW;x++){
+    const t0=tStart+x*spp;
+    if(dpp<=1.5){
+      const jf=t0/dtS, j=Math.floor(jf);
+      if(j<jmin||j+1>jmax){pen=false;continue;}
+      const fr=jf-j, v=b[j%NBUF]*(1-fr)+b[(j+1)%NBUF]*fr, y=Y(v);
+      if(pen) g.lineTo(PL+x,y); else {g.moveTo(PL+x,y);pen=true;}
+    }else{
+      let j0=Math.max(Math.ceil(t0/dtS),jmin), j1=Math.min(Math.floor((t0+spp)/dtS),jmax);
+      if(j1<j0){pen=false;continue;}
+      let mn=Infinity,mx=-Infinity;
+      for(let j=j0;j<=j1;j++){const v=b[j%NBUF]; if(v<mn)mn=v; if(v>mx)mx=v;}
+      const y1=Y(mn),y2=Y(mx);
+      if(pen) g.lineTo(PL+x,y1); else {g.moveTo(PL+x,y1);pen=true;}
+      if(y2!==y1) g.lineTo(PL+x,y2);
+    }
+  }
+  g.stroke(); g.setLineDash([]);
+}
+
+function fmtT(t){return Math.abs(t)<1?fx(t*1000,1)+' ms':fx(t,3)+' s';}
+
+function drawScope(){
+  const Tdiv=TB[tbIdx], T=Tdiv*10;
+  const tEnd=running?Math.max(0,(nSamples-1)*dtS):frozenEnd;
+  const tStart=tEnd-T;
+  view={tStart,tEnd,T};
+  const jmin=Math.max(0,nSamples-NBUF), jmax=nSamples-1;
+  g.fillStyle='#050805'; g.fillRect(0,0,SW,SH);
+  for(let p=0;p<4;p++){
+    const top=PT+p*(PH+PG);
+    g.fillStyle='#0a120a'; g.fillRect(PL,top,PW,PH);
+    g.lineWidth=1; g.strokeStyle='#1f3a1f'; g.beginPath();
+    for(let i=0;i<=10;i++){const x=PL+i*PW/10+.5; g.moveTo(x,top); g.lineTo(x,top+PH);}
+    for(let j=0;j<=6;j++){const y=top+j*PH/6+.5; g.moveTo(PL,y); g.lineTo(PL+PW,y);}
+    g.stroke();
+    g.strokeStyle='#4f8a4f'; g.beginPath(); g.moveTo(PL,top+PH/2+.5); g.lineTo(PL+PW,top+PH/2+.5); g.stroke();
+    g.beginPath();
+    for(let i=0;i<=50;i++){const x=PL+i*PW/50+.5; g.moveTo(x,top+PH/2-3); g.lineTo(x,top+PH/2+3);}
+    g.stroke();
+    g.strokeStyle='#5f9a5f'; g.strokeRect(PL+.5,top+.5,PW-1,PH-1);
+    let li=0;
+    CH.forEach((c,k)=>{
+      if(c.panel!==p||!visible(c)) return;
+      drawTrace(c,k,top,tStart,T,jmin,jmax);
+      g.fillStyle=c.color; g.font='12px Consolas,monospace'; g.textAlign='left';
+      g.fillText(c.name+' : '+c.scale+' '+c.unit+'/div',PL+8,top+15+li*14); li++;
+    });
+    g.fillStyle='#6fa36f'; g.textAlign='right'; g.font='11px Segoe UI,Arial';
+    g.fillText(PTITLE[p],PL+PW-8,top+14);
+  }
+  g.textAlign='right'; g.font='bold 12px Consolas,monospace';
+  g.fillStyle=running?'#7dff4f':'#ff5a4a'; g.fillText(running?'● RUN':'■ STOP',PL+PW-8,PT+30);
+  g.fillStyle='#cfd8cf'; g.font='11px Consolas,monospace';
+  g.fillText(fmtDiv(Tdiv)+' / div',PL+PW-8,PT+44);
+  const lastTop=PT+3*(PH+PG);
+  g.fillStyle='#9fc59f'; g.font='10px Consolas,monospace'; g.textAlign='center';
+  for(let i=0;i<=10;i+=2){
+    const t=tStart+i*Tdiv; if(t<0) continue;
+    g.fillText(fx(t,Tdiv<0.05?3:2)+'s',clamp(PL+i*PW/10,PL+14,PL+PW-14),lastTop+PH-4);
+  }
+  if(cur.on){
+    [['A',cur.A,'#ffffff'],['B',cur.B,'#ff9a1f']].forEach(([nm,f,col])=>{
+      const x=PL+f*PW, t=tStart+f*T;
+      g.strokeStyle=col; g.lineWidth=1.3; g.setLineDash([6,4]);
+      g.beginPath(); g.moveTo(x+.5,PT); g.lineTo(x+.5,SH-10); g.stroke(); g.setLineDash([]);
+      g.fillStyle=col; g.font='bold 13px Segoe UI,Arial'; g.textAlign='center';
+      g.fillText(nm,x,PT+PH-6);
+      CH.forEach((c,k)=>{
+        if(!visible(c)) return;
+        const v=sampleAt(k,t); if(isNaN(v)) return;
+        const top=PT+c.panel*(PH+PG), y=clamp(top+PH/2-v*(PH/6)/c.scale,top+1,top+PH-1);
+        g.fillStyle=c.color; g.beginPath(); g.arc(x,y,4,0,TWO_PI); g.fill();
+        g.strokeStyle=col; g.lineWidth=1; g.stroke();
+      });
+    });
+  }
+}
+
+function updateReadout(){
+  if(!view) return;
+  const tA=view.tStart+cur.A*view.T, tB=view.tStart+cur.B*view.T, dt=tB-tA;
+  $('rdHead').innerHTML='tA = '+fmtT(tA)+' &nbsp; tB = '+fmtT(tB)+' &nbsp; Δt = '+fmtT(dt)+(Math.abs(dt)>1e-9?' &nbsp; 1/Δt = '+fx(1/Math.abs(dt),2)+' Hz':'');
+  let h='<table class="rd"><tr><th>Voie</th><th>A</th><th>B</th><th>B − A</th></tr>';
+  CH.forEach((c,k)=>{
+    if(!visible(c)) return;
+    const a=sampleAt(k,tA), b=sampleAt(k,tB);
+    const f=v=>isNaN(v)?'—':fx(v,c.dec);
+    h+='<tr><td style="color:'+c.tc+'">'+c.name+' ('+c.unit+')</td><td>'+f(a)+'</td><td>'+f(b)+'</td><td>'+((isNaN(a)||isNaN(b))?'—':fx(b-a,c.dec))+'</td></tr>';
+  });
+  $('rdTab').innerHTML=h+'</table>';
+}
+
+function stopScope(){ if(!running) return; running=false; frozenEnd=Math.max(0,(nSamples-1)*dtS); $('bRun').textContent='▶ Reprendre'; $('bRun').className='btn btn-green'; }
+function startScope(){ running=true; $('bRun').textContent='⏸ Stop'; $('bRun').className='btn btn-orange'; }
+function setCursor(w,f){ cur[w]=clamp(f,0,1); $('cur'+w).value=cur[w]; drawScope(); updateReadout(); }
+
+function autoScale(){
+  if(!view) return;
+  const j0=Math.max(0,nSamples-NBUF,Math.floor(view.tStart/dtS)), j1=Math.min(nSamples-1,Math.floor(view.tEnd/dtS));
+  CH.forEach((c,k)=>{
+    if(!visible(c)) return;
+    let mx=0; const st=Math.max(1,Math.floor((j1-j0)/4000));
+    for(let j=j0;j<=j1;j+=st) mx=Math.max(mx,Math.abs(buf[k][j%NBUF]));
+    let sc=SCALES.find(v=>v*2.7>=mx); if(sc===undefined) sc=SCALES[SCALES.length-1];
+    sc=Math.max(sc,c.min); c.scale=sc; $('sc-'+c.id).value=sc;
+  });
+  drawScope();
+}
+
+let drag=null;
+function pointerF(e){const r=cv.getBoundingClientRect(); return ((e.clientX-r.left)*SW/r.width-PL)/PW;}
+cv.addEventListener('pointerdown',e=>{
+  if(!cur.on){cur.on=true; $('curOn').checked=true;}
+  const f=pointerF(e); drag=Math.abs(f-cur.A)<=Math.abs(f-cur.B)?'A':'B';
+  stopScope(); cv.setPointerCapture(e.pointerId); setCursor(drag,f);
+});
+cv.addEventListener('pointermove',e=>{ if(drag) setCursor(drag,pointerF(e)); });
+cv.addEventListener('pointerup',()=>{drag=null;});
+cv.addEventListener('pointercancel',()=>{drag=null;});
+
+/* ======================= COMMANDES ======================= */
+function bindPair(id,apply){
+  const sl=$('sl-'+id), nb=$('nb-'+id);
+  sl.addEventListener('input',()=>{nb.value=sl.value; apply(+sl.value);});
+  nb.addEventListener('change',()=>{const v=clamp(parseFloat(nb.value)||0,+sl.min,+sl.max); nb.value=v; sl.value=v; apply(v);});
+}
+function setPair(id,v){$('sl-'+id).value=v; $('nb-'+id).value=v;}
+bindPair('U',v=>{UI.U=v;});
+bindPair('f',v=>{UI.f=v;});
+bindPair('C',v=>{UI.C=v;});
+
+$('bKM').addEventListener('click',()=>{ if(S.tripped) return; S.closed=!S.closed; });
+$('bLock').addEventListener('click',()=>{ S.locked=!S.locked; if(S.locked){S.w=0;} });
+$('bRearm').addEventListener('click',()=>{ S.tripped=false; S.tripMsg=''; S.heat=0; });
+$('bReset').addEventListener('click',()=>{
+  resetState(); nSamples=0; acc=0; UI.U=400; UI.f=50; UI.C=0;
+  setPair('U',400); setPair('f',50); setPair('C',0);
+  if(!running) startScope();
+});
+
+/* ======================= AFFICHAGE / ALERTES ======================= */
+let vis=0, lastDisp=0;
+function updateDisplay(){
+  $('net-U').textContent=fx(UI.U,0)+' V';
+  $('net-f').textContent=fx(UI.f,1)+' Hz';
+  $('t-u').textContent=fx(S.closed?UI.U:0,1)+' V';
+  $('lock').style.display=S.locked?'':'none';
+  $('bLock').textContent=S.locked?'🔓 Débloquer le rotor':'🔒 Bloquer le rotor (essai à rotor bloqué)';
+  $('t-i').textContent=fx(S.ief,2)+' A';
+  $('t-p').textContent=fx(S.pf,0)+' W';
+  $('t-cu').textContent=fx(S.cu,2)+' N·m';
+  $('t-n').textContent=fx(S.w*RPM,0)+' tr/min';
+  $('t-load').textContent='C = '+fx(UI.C,1)+' N·m';
+  $('km-closed').style.display=S.closed?'':'none';
+  $('km-open').style.display=S.closed?'none':'';
+  $('km-st').textContent='Contacteur KM1 : '+(S.closed?'fermé':'ouvert');
+  $('th-st').textContent='Relais thermique : '+fx(Math.min(100,S.heat/HTRIP*100),0)+' %';
+  $('bKM').textContent=S.closed?'⏻ Ouvrir KM1 (arrêt)':'⏻ Fermer KM1 (mise sous tension)';
+  $('bKM').className='btn btn-big '+(S.closed?'btn-red':'btn-green');
+  $('bKM').disabled=S.tripped;
+  const out=[], n=S.w*RPM, ns=60*UI.f/P.p;
+  if(S.tripped) out.push(['bad',S.tripMsg==='thermique'?'🛑 Relais thermique déclenché : KM1 ouvert. Laissez refroidir puis « Réarmer ».':'🛑 Protection survitesse : KM1 ouvert et charge désactivée. Corrigez puis « Réarmer ».']);
+  const heatPct=S.heat/HTRIP*100;
+  if(!S.tripped && heatPct>20) out.push(['warn','🌡 Échauffement du moteur : '+fx(Math.min(100,heatPct),0)+' % (déclenchement à 100 %).']);
+  if(S.closed && S.ief>1.15*plaque.In) out.push(['warn','⚠ Courant élevé : I = '+fx(S.ief,1)+' A, supérieur à In ('+fx(plaque.In,1)+' A).']);
+  if(S.closed && !S.locked && S.g>0.35 && Math.abs(S.dw)<20 && UI.C>0) out.push(['bad','⚠ Moteur décroché : le couple de charge dépasse le couple maximal du moteur.']);
+  if(UI.U>1.1*UN) out.push(['warn','⚠ Tension supérieure à la tension nominale (400 V).']);
+  if(S.locked) out.push([S.closed?'warn':'info','🔒 Rotor bloqué'+(S.closed?' sous tension : essai à tension réduite recommandé (le courant est de l\'ordre de 4 à 5 × In à 400 V).':'.')]);
+  if(S.closed && S.pf<-5) out.push(['info','↩ Fonctionnement en génératrice : le moteur renvoie de l\'énergie au réseau.']);
+  if(!out.length) out.push(['ok',S.closed?'✅ Fonctionnement normal':'⏸ Moteur hors tension']);
+  $('alerts').innerHTML=out.map(o=>'<div class="al '+o[0]+'">'+o[1]+'</div>').join('');
+  $('bRearm').style.display=S.tripped?'':'none';
+}
+
+/* ======================= PARAMETRES ======================= */
+const PF=[{k:'p',min:1,conv:1,int:true},{k:'Rs',min:0.1,conv:1},{k:'Rr',min:0.1,conv:1},{k:'Lm',min:20,conv:1000},{k:'Ll',min:2,conv:1000},{k:'Jm',min:0.001,conv:1},{k:'Jc',min:0,conv:1},{k:'Cf',min:0,conv:1}];
+function fillParams(){
+  PF.forEach(f=>{const el=$('p-'+f.k); el.disabled=hiddenParams; el.placeholder='?'; el.value=hiddenParams?'':parseFloat((P[f.k]*f.conv).toPrecision(4));});
+  $('hidMsg').style.display=hiddenParams?'':'none'; $('pRev').style.display=hiddenParams?'':'none';
+}
+PF.forEach(f=>$('p-'+f.k).addEventListener('change',()=>{
+  let v=parseFloat($('p-'+f.k).value);
+  if(f.int) v=Math.round(v);
+  if(!(v>=f.min)){fillParams(); return;}
+  P[f.k]=v/f.conv; derive(); computePlaque(); fillParams();
+}));
+$('pDef').addEventListener('click',()=>{P={...DEFAULTS}; hiddenParams=false; derive(); fillParams(); computePlaque();});
+$('pRnd').addEventListener('click',()=>{
+  const r=(a,b)=>parseFloat((a+Math.random()*(b-a)).toPrecision(2));
+  const Rs=r(2.5,9);
+  P={p:[1,2,2,2,3,4][Math.floor(Math.random()*6)],Rs:Rs,Rr:parseFloat((Rs*(0.6+Math.random()*0.4)).toPrecision(2)),Lm:r(0.25,0.55),Ll:r(0.03,0.07),Jm:r(0.005,0.02),Jc:0.05,Cf:r(0.1,0.6)};
+  hiddenParams=true; derive(); fillParams(); computePlaque(); $('bReset').click();
+});
+$('pRev').addEventListener('click',()=>{hiddenParams=false; fillParams();});
+$('bParam').addEventListener('click',()=>{fillParams(); $('mdParams').classList.add('show');});
+
+/* ======================= OHMMETRE ======================= */
+function doOhm(){
+  const lcd=$('ohmLcd'), pb=[];
+  if(S.closed) pb.push('le moteur est sous tension (ouvrez KM1)');
+  if(Math.abs(S.w*RPM)>=1) pb.push('le moteur tourne encore (attendez l\'arrêt complet)');
+  if(pb.length){ lcd.className='lcd err'; lcd.innerHTML='⚠ Mesure impossible :<br>• '+pb.join('<br>• '); return; }
+  const R=2*P.Rs*(1+(Math.random()-0.5)*0.006);
+  lcd.className='lcd';
+  lcd.innerHTML='R(U1–V1) = '+R.toPrecision(3)+' Ω';
+}
+$('bOhm').addEventListener('click',()=>{$('mdOhm').classList.add('show'); doOhm();});
+$('ohmGo').addEventListener('click',doOhm);
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.hasAttribute('data-close')) m.classList.remove('show'); });
+});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal').classList.remove('show')));
+
+/* ======================= SCOPE CONTROLS ======================= */
+$('bRun').addEventListener('click',()=>{running?stopScope():startScope(); drawScope();});
+$('bAuto').addEventListener('click',autoScale);
+$('tbSel').addEventListener('change',()=>{tbIdx=+$('tbSel').value; drawScope();});
+$('curOn').addEventListener('change',()=>{cur.on=$('curOn').checked; drawScope();});
+$('intOn').addEventListener('change',()=>{CH.forEach(c=>{if(c.internal) $('chan-'+c.id).style.display=$('intOn').checked?'':'none';}); drawScope(); updateReadout();});
+$('curA').addEventListener('input',()=>setCursor('A',+$('curA').value));
+$('curB').addEventListener('input',()=>setCursor('B',+$('curB').value));
+
+/* ======================= BOUCLE PRINCIPALE ======================= */
+let lastT=performance.now(), frameN=0;
+function frame(now){
+  const dt=Math.min(0.1,(now-lastT)/1000); lastT=now;
+  simAdvance(dt);
+  vis+=dt*720*Math.tanh(S.w/100);
+  $('wheel').setAttribute('transform','rotate('+(vis%360).toFixed(1)+' 710 120)');
+  $('shaft').setAttribute('stroke-dashoffset',(-vis/8).toFixed(1));
+  if(++frameN%2===0) drawScope();
+  if(now-lastDisp>100){lastDisp=now; updateDisplay(); if(running||frameN%10===0) updateReadout();}
+  requestAnimationFrame(frame);
+}
+
+/* ======================= INIT ======================= */
+derive(); buildScopeUI(); computePlaque();
+drawScope(); updateReadout(); updateDisplay();
+requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

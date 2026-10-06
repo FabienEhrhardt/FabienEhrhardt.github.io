@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moteur à courant continu virtuel</title>
+<style>
+:root{--blue:#1f3c88;--blue-light:#f0f4ff;--green:#28a745;--green-dark:#1e7e34;--orange:#e07b00;--red:#c0392b;--gray:#888;--gray-light:#f5f5f5;--border:#dde3f0;--radius:10px;}
+*{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0}
+body{background:linear-gradient(135deg,#f4f6f9,#e9eef5);min-height:100vh;padding:16px}
+.container{max-width:1500px;margin:auto;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden}
+.page-header{background:var(--blue);color:#fff;padding:18px 28px}
+.page-header h1{font-size:1.4rem;font-weight:600}
+.page-header p{font-size:.88rem;opacity:.82;margin-top:3px}
+.main{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
+.top{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:18px}
+@media (max-width:1050px){.top{grid-template-columns:1fr}}
+.card{background:var(--blue-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
+.card.white{background:#fff}
+.section-title{font-size:1rem;font-weight:600;color:var(--blue);border-left:4px solid var(--blue);padding-left:10px;margin-bottom:12px}
+.subtitle{font-size:.86rem;font-weight:600;color:var(--blue);margin:12px 0 6px}
+#syn{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#syn .w{stroke:#222;stroke-width:2;fill:none}
+#syn .sc{stroke:#222;stroke-width:2;fill:#fff}
+#syn .ti{font-size:11px;font-weight:700;fill:#1f3c88;letter-spacing:.4px}
+#syn .sm{font-family:Consolas,"Courier New",monospace;font-size:13px;font-weight:700;fill:#1f3c88}
+#syn .big{font-size:16px;font-weight:700;fill:#222;text-anchor:middle;dominant-baseline:central}
+#syn .tx{font-size:11px;fill:#444}
+#syn .pl{font-family:Consolas,"Courier New",monospace;font-size:12px;fill:#333}
+/* commandes */
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg label{flex:1}
+.seg input{display:none}
+.seg span{display:block;text-align:center;padding:8px 6px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:.86rem;font-weight:600;color:#555;transition:.15s}
+.seg input:checked+span{border-color:var(--blue);background:var(--blue);color:#fff}
+.seg.small span{padding:5px 4px;font-size:.8rem}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.srow label{min-width:150px;font-size:.84rem;color:#333}
+.srow input[type=range]{flex:1;accent-color:var(--blue);min-width:80px}
+.srow input[type=number]{width:74px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.85rem}
+.srow .u{width:46px;font-size:.82rem;color:var(--gray)}
+.srow.off{opacity:.45}
+.btn{border:none;padding:8px 14px;border-radius:7px;cursor:pointer;font-size:.84rem;font-weight:600;transition:.2s;color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-green{background:var(--green)}.btn-green:hover{background:var(--green-dark)}
+.btn-blue{background:var(--blue)}.btn-blue:hover{background:#162d6a}
+.btn-orange{background:var(--orange)}.btn-orange:hover{background:#c06a00}
+.btn-red{background:var(--red)}.btn-red:hover{background:#922b21}
+.btn-gray{background:#9aa3b5}.btn-gray:hover{background:#838da3}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.chk{font-size:.84rem;color:#333;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.chk input[type=number]{width:62px;padding:3px 5px;border:1px solid #ccc;border-radius:5px}
+#alerts{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.al{font-size:.82rem;padding:6px 10px;border-radius:6px;font-weight:600}
+.al.ok{background:#e8f8e8;color:var(--green-dark)}
+.al.warn{background:#fff3df;color:#9a5b00}
+.al.bad{background:#fde8e8;color:var(--red)}
+details{margin-top:10px;font-size:.82rem;color:#444;line-height:1.55}
+summary{cursor:pointer;font-weight:600;color:var(--blue)}
+/* oscillo */
+#scope{width:100%;height:auto;display:block;border-radius:8px;border:2px solid #333;background:#000;touch-action:none;cursor:col-resize}
+.scope-ctrl{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.scope-ctrl label{font-size:.84rem;display:flex;align-items:center;gap:6px}
+.scope-ctrl select,.pl-ctrl select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.scope-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:1050px){.scope-grid{grid-template-columns:1fr}}
+.chans{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;align-content:start}
+.chan{display:flex;align-items:center;gap:6px;font-size:.84rem}
+.chan b{min-width:34px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #333}
+.chan select{flex:1;padding:3px 4px;border:1px solid #ccc;border-radius:5px;font-size:.82rem}
+.curr{display:flex;align-items:center;gap:8px;font-size:.84rem;margin-bottom:6px}
+.curr input[type=range]{flex:1}
+.curr .ca{color:#444;font-weight:700}.curr .cb{color:var(--orange);font-weight:700}
+#rdHead{font-size:.84rem;color:var(--blue);font-weight:600;margin:6px 0}
+table.rd,table.rel{width:100%;border-collapse:collapse;font-size:.82rem;background:#fff}
+table.rd th,table.rd td,table.rel th,table.rel td{border:1px solid var(--border);padding:4px 7px;text-align:center}
+table.rd th,table.rel th{background:var(--blue);color:#fff;font-weight:600;position:sticky;top:0}
+table.rd td:first-child{text-align:left;font-weight:700}
+.tbl-wrap{max-height:290px;overflow:auto;border:1px solid var(--border);border-radius:6px}
+.rel-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px}
+@media (max-width:1050px){.rel-grid{grid-template-columns:1fr}}
+#plot{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+.pl-ctrl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:.84rem}
+#steady{font-size:.82rem;font-weight:600;padding:5px 10px;border-radius:14px}
+#steady.ok{background:#e8f8e8;color:var(--green-dark)}
+#steady.tr{background:#fff3df;color:#9a5b00}
+.xrow{border:none;background:none;color:var(--red);cursor:pointer;font-size:.9rem}
+.hint{font-size:.82rem;color:#555;line-height:1.5}
+/* modales */
+.modal{display:none;position:fixed;inset:0;background:rgba(10,20,50,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:12px;padding:20px 24px;max-width:560px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mhead h3{color:var(--blue);font-size:1.1rem}
+.x{border:none;background:none;font-size:1.1rem;cursor:pointer;color:#666}
+.pgrid{display:grid;grid-template-columns:1fr 110px 60px;gap:8px 10px;align-items:center;margin:12px 0}
+.pgrid input{padding:5px 7px;border:1px solid #ccc;border-radius:5px;font-size:.9rem;width:100%}
+.pgrid input:disabled{background:#eee}
+.pgrid span{font-size:.82rem;color:var(--gray)}
+.pgrid label{font-size:.88rem}
+.lcd{background:#cfe0b8;border:3px solid #556b3a;border-radius:8px;padding:14px 18px;font-family:Consolas,"Courier New",monospace;font-size:1.5rem;color:#1d2b12;margin:12px 0;min-height:96px;line-height:1.6}
+.lcd.err{background:#f1d6d0;border-color:#a33;color:#7a1f14;font-size:.95rem}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <h1>⚙️ Moteur à courant continu virtuel</h1>
+    <p>Machine à excitation séparée — alimentez, mesurez et observez comme sur un banc d'essai</p>
+  </div>
+
+  <div class="main">
+
+    <div class="top">
+      <!-- ============ SYNOPTIQUE ============ -->
+      <div class="card white">
+        <div class="section-title">Synoptique du montage</div>
+        <svg id="syn" viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#e07b00"/></marker>
+          </defs>
+          <text class="ti" x="12" y="18">CIRCUIT D'INDUIT</text>
+          <text class="ti" x="12" y="212">CIRCUIT D'INDUCTEUR</text>
+
+          <!-- fils induit -->
+          <path class="w" d="M50 74 V60 H114 M146 60 H160 M185 60 H300 M50 126 V140 H300 M220 60 V84 M220 116 V140"/>
+          <circle cx="220" cy="60" r="3" fill="#222"/><circle cx="220" cy="140" r="3" fill="#222"/>
+          <line id="sw-open" class="w" x1="160" y1="60" x2="182" y2="45" style="display:none"/>
+          <line id="sw-close" class="w" x1="160" y1="60" x2="190" y2="60"/>
+		  <!-- source induit -->
+          <g id="srcA">
+            <circle class="sc" cx="50" cy="100" r="26"/>
+            <line class="w" x1="40" y1="95" x2="60" y2="95"/><line class="w" x1="40" y1="105" x2="60" y2="105"/>
+            <line class="w" x1="34" y1="118" x2="66" y2="82"/><polygon points="66,82 57,85 64,92" fill="#222"/>
+            <text class="tx" x="62" y="72">+</text><text class="tx" x="62" y="134">−</text>
+          </g>
+          <text class="tx" id="lbl-U" x="50" y="160" text-anchor="middle">U = 0 V</text>
+          <!-- ampèremètre / voltmètre induit -->
+          <circle class="sc" cx="130" cy="60" r="16"/><text class="big" x="130" y="60">A</text>
+          <text class="sm" id="t-i" x="130" y="90" text-anchor="middle">0.00 A</text>
+          <circle class="sc" cx="220" cy="100" r="16"/><text class="big" x="220" y="100">V</text>
+          <text class="sm" id="t-u" x="242" y="104">0.0 V</text>
+
+          <!-- fils inducteur -->
+          <path class="w" d="M50 244 V235 H114 M146 235 H300 M50 296 V305 H300 M220 235 V254 M220 286 V305"/>
+          <circle cx="220" cy="235" r="3" fill="#222"/><circle cx="220" cy="305" r="3" fill="#222"/>
+          <g>
+            <circle class="sc" cx="50" cy="270" r="26"/>
+            <line class="w" x1="40" y1="265" x2="60" y2="265"/><line class="w" x1="40" y1="275" x2="60" y2="275"/>
+            <line class="w" x1="34" y1="288" x2="66" y2="252"/><polygon points="66,252 57,255 64,262" fill="#222"/>
+            <text class="tx" x="62" y="242">+</text><text class="tx" x="62" y="304">−</text>
+          </g>
+          <text class="tx" id="lbl-Ue" x="50" y="326" text-anchor="middle">Ue = 0 V</text>
+          <circle class="sc" cx="130" cy="235" r="16"/><text class="big" x="130" y="235">A</text>
+          <text class="sm" id="t-ie" x="130" y="265" text-anchor="middle">0.000 A</text>
+          <circle class="sc" cx="220" cy="270" r="16"/><text class="big" x="220" y="270">V</text>
+          <text class="sm" id="t-ue" x="242" y="274">0.0 V</text>
+
+          <!-- machine -->
+          <rect x="300" y="30" width="150" height="300" rx="10" fill="#f6f8ff" stroke="#1f3c88" stroke-width="2" stroke-dasharray="6 4"/>
+          <text class="ti" x="375" y="47" text-anchor="middle">MCC</text>
+          <path class="w" d="M300 60 H375 V68 M300 140 H375 V132"/>
+          <circle class="sc" cx="375" cy="100" r="32"/><text class="big" x="375" y="100" style="font-size:22px">M</text>
+          <text class="tx" x="375" y="162" text-anchor="middle">Induit (R, La)</text>
+          <path class="w" d="M300 235 H375 V245 M375 293 V305 H300"/>
+          <path class="w" d="M375 245 a6 6 0 0 1 0 12 a6 6 0 0 1 0 12 a6 6 0 0 1 0 12 a6 6 0 0 1 0 12"/>
+          <text class="tx" x="375" y="324" text-anchor="middle">Inducteur (Re, Lf)</text>
+          <path d="M425 262 V120" stroke="#e07b00" stroke-width="2" stroke-dasharray="5 4" fill="none" marker-end="url(#ah)"/>
+          <text x="433" y="200" font-size="15" font-weight="700" fill="#e07b00">Φ</text>
+
+          <!-- arbre et capteurs -->
+          <g id="shaft" stroke="#6a7385" stroke-width="7" fill="none" stroke-dasharray="10 6"><path d="M407 100 H470 M560 100 H608 M652 100 H690"/></g>
+          <text class="ti" x="515" y="70" text-anchor="middle">COUPLEMÈTRE</text>
+          <rect class="sc" x="470" y="80" width="90" height="40" rx="5" fill="#fff0f8"/>
+          <text class="tx" x="515" y="94" text-anchor="middle">Cu</text>
+          <text class="sm" id="t-cu" x="515" y="112" text-anchor="middle">0.00 N·m</text>
+          <text class="ti" x="630" y="64" text-anchor="middle">TACHYMÈTRE</text>
+          <circle class="sc" cx="630" cy="100" r="22" fill="#f1fff0"/>
+          <g id="wheel"><line x1="630" y1="82" x2="630" y2="118" stroke="#c0392b" stroke-width="3"/><line x1="612" y1="100" x2="648" y2="100" stroke="#999" stroke-width="2"/></g>
+          <text class="sm" id="t-n" x="630" y="140" text-anchor="middle">0 tr/min</text>
+          <text class="sm" id="t-w" x="630" y="157" text-anchor="middle" style="fill:#555">0.0 rad/s</text>
+          <rect class="sc" x="690" y="60" width="82" height="80" rx="8" fill="#eef7ee"/>
+          <text class="tx" id="ld1" x="731" y="88" text-anchor="middle" font-weight="700">Charge</text>
+          <text class="tx" id="ld2" x="731" y="104" text-anchor="middle">(frein)</text>
+          <text class="tx" id="ld3" x="731" y="121" text-anchor="middle">Cr = 0 N·m</text>
+
+          <!-- plaque -->
+          <rect x="480" y="180" width="292" height="146" rx="8" fill="#fffbe6" stroke="#b59b00" stroke-width="2"/>
+          <text class="pl" x="496" y="202" font-weight="700">PLAQUE SIGNALÉTIQUE</text>
+          <text class="pl" x="496" y="223">MCC à excitation séparée</text>
+          <text class="pl" id="pl-ind" x="496" y="246">Induit    : 220 V ; 7.5 A</text>
+          <text class="pl" id="pl-exc" x="496" y="268">Inducteur : 220 V ; 1.00 A</text>
+          <text class="pl" id="pl-nn" x="496" y="290">Vitesse   : 1440 tr/min</text>
+          <text class="pl" id="pl-pu" x="496" y="312">Puissance : 1.5 kW</text>
+        </svg>
+      </div>
+
+      <!-- ============ COMMANDES ============ -->
+      <div class="card">
+        <div class="section-title">Commandes</div>
+        <div class="seg" id="modeSeg">
+          <label><input type="radio" name="mode" value="moteur" checked><span>⚡ Moteur alimenté</span></label>
+          <label><input type="radio" name="mode" value="entraine"><span>🔄 Moteur entraîné</span></label>
+        </div>
+
+        <div class="srow" id="row-U">
+          <label>Tension d'induit <b>U</b></label>
+          <input type="range" id="sl-U" min="-260" max="260" step="1" value="0">
+          <input type="number" id="nb-U" min="-260" max="260" step="1" value="0"><span class="u">V</span>
+        </div>
+        <div class="srow" id="row-Ue">
+          <label>Tension d'inducteur <b>Ue</b></label>
+          <input type="range" id="sl-Ue" min="0" max="260" step="1" value="0">
+          <input type="number" id="nb-Ue" min="0" max="260" step="1" value="0"><span class="u">V</span>
+        </div>
+
+        <div class="subtitle" id="loadTitle">Charge sur l'arbre</div>
+        <div class="seg small" id="loadSeg">
+          <label><input type="radio" name="load" value="couple" checked><span>Couple résistant imposé</span></label>
+          <label><input type="radio" name="load" value="vitesse"><span>Vitesse imposée</span></label>
+        </div>
+        <div class="srow" id="row-Cr">
+          <label>Couple résistant <b>Cr</b></label>
+          <input type="range" id="sl-Cr" min="0" max="25" step="0.1" value="0">
+          <input type="number" id="nb-Cr" min="0" max="25" step="0.1" value="0"><span class="u">N·m</span>
+        </div>
+        <div class="srow" id="row-N" style="display:none">
+          <label id="lblN">Vitesse imposée <b>n</b></label>
+          <input type="range" id="sl-N" min="-3000" max="3000" step="10" value="0">
+          <input type="number" id="nb-N" min="-3000" max="3000" step="10" value="0"><span class="u">tr/min</span>
+        </div>
+
+        <div class="chk">
+          <label class="chk"><input type="checkbox" id="limOn" checked> Limitation de courant de l'alimentation d'induit :</label>
+          <input type="number" id="imax" min="1" max="300" step="1" value="20"> A
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-blue" id="bOhm">🔌 Mesure des résistances</button>
+          <button class="btn btn-blue" id="bParam">🛠 Paramètres du moteur</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-red" id="bStop">🛑 Arrêt d'urgence</button>
+          <button class="btn btn-orange" id="bRearm" style="display:none">🔁 Réarmer</button>
+          <button class="btn btn-gray" id="bReset">↺ Réinitialiser le banc</button>
+        </div>
+        <div id="alerts"></div>
+
+        <details>
+          <summary>ℹ️ Aide et conventions</summary>
+          <p>• Le <b>couplemètre</b> mesure le couple <b>utile</b> <b>Cu</b> disponible sur l'arbre (Cu = Cem − Cf en régime établi).<br>
+          • <b>Cu &gt; 0</b> : l'arbre fournit du couple (fonctionnement moteur) ; <b>Cu &lt; 0</b> : l'arbre en reçoit (machine entraînée).<br>
+          • En <b>moteur entraîné</b>, l'induit est en circuit ouvert : le voltmètre mesure la tension à vide.<br>
+          • Pour mesurer une résistance : moteur à l'arrêt et alimentations coupées.<br>
+          • Un oscilloscope affiche les grandeurs : cliquez-glissez sur l'écran pour placer les curseurs A et B.</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- ============ OSCILLOSCOPE ============ -->
+    <div class="card white">
+      <div class="section-title">Oscilloscope</div>
+      <canvas id="scope"></canvas>
+      <div class="scope-ctrl">
+        <button class="btn btn-orange" id="bRun">⏸ Stop</button>
+        <button class="btn btn-blue" id="bAuto">Auto-échelle</button>
+        <label>Base de temps <select id="tbSel"></select></label>
+        <label><input type="checkbox" id="curOn" checked> Curseurs</label>
+        <label><input type="checkbox" id="intOn"> Voies internes (E, Cem)</label>
+      </div>
+      <div class="scope-grid">
+        <div>
+          <div class="subtitle" style="margin-top:0">Calibres des voies</div>
+          <div class="chans" id="chans"></div>
+          <p class="hint" style="margin-top:10px">Astuce : appuyez sur <b>Stop</b> pour figer l'écran avant de lire les curseurs. Cliquer-glisser sur l'écran déplace le curseur le plus proche.</p>
+        </div>
+        <div>
+          <div class="subtitle" style="margin-top:0">Curseurs</div>
+          <div class="curr"><span class="ca">A</span><input type="range" id="curA" min="0" max="1" step="0.001" value="0.3"></div>
+          <div class="curr"><span class="cb">B</span><input type="range" id="curB" min="0" max="1" step="0.001" value="0.7"></div>
+          <div id="rdHead"></div>
+          <div id="rdTab"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ MODALE PARAMETRES ============ -->
+<div class="modal" id="mdParams"><div class="mbox">
+  <div class="mhead"><h3>🛠 Paramètres du moteur</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">Modèle : <b>Cem = K·Ie·I</b> &nbsp;;&nbsp; <b>E = K·Ie·Ω</b> &nbsp;;&nbsp; <b>Cu = Cem − Cf</b></p>
+  <div class="pgrid">
+    <label for="p-J">Moment d'inertie J</label><input type="number" id="p-J" step="0.01"><span>kg·m²</span>
+    <label for="p-K">Constante du moteur K</label><input type="number" id="p-K" step="0.05"><span>N·m/A²</span>
+    <label for="p-Cf">Couple de frottement Cf</label><input type="number" id="p-Cf" step="0.05"><span>N·m</span>
+    <label for="p-R">Résistance d'induit R</label><input type="number" id="p-R" step="0.05"><span>Ω</span>
+    <label for="p-Re">Résistance d'inducteur Re</label><input type="number" id="p-Re" step="1"><span>Ω</span>
+    <label for="p-La">Inductance d'induit La</label><input type="number" id="p-La" step="1"><span>mH</span>
+    <label for="p-Lf">Inductance d'inducteur Lf</label><input type="number" id="p-Lf" step="1"><span>H</span>
+  </div>
+  <p class="hint" id="hidMsg" style="display:none;color:#9a5b00;font-weight:600">🎲 Moteur inconnu : les valeurs sont masquées. Déterminez-les par vos mesures !</p>
+  <div class="btn-row">
+    <button class="btn btn-green" id="pDef">↺ Valeurs par défaut</button>
+    <button class="btn btn-orange" id="pRnd">🎲 Moteur inconnu</button>
+    <button class="btn btn-gray" id="pRev" style="display:none">👁 Révéler</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<!-- ============ MODALE OHMMETRE ============ -->
+<div class="modal" id="mdOhm"><div class="mbox">
+  <div class="mhead"><h3>🔌 Mesure des résistances (ohmmètre)</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">L'ohmmètre est branché successivement sur l'induit puis sur l'inducteur. La mesure n'est possible que si le moteur est <b>à l'arrêt</b> et les <b>alimentations coupées</b>.</p>
+  <div class="lcd" id="ohmLcd"></div>
+  <div class="btn-row">
+    <button class="btn btn-green" id="ohmGo">Mesurer</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const TWO_PI=2*Math.PI, RPM=60/TWO_PI;
+const UN=220, IN=7.5, UEX=220;            // valeurs nominales (plaque)
+const fx=(x,d)=>{const s=x.toFixed(d);return parseFloat(s)===0?(0).toFixed(d):s;};
+
+/* ======================= MODELE ======================= */
+const DEFAULTS={J:0.05,K:1.4,Cf:0.5,R:1.2,Re:220,La:0.015,Lf:30};
+let P={...DEFAULTS}, hiddenParams=false;
+const UI={mode:'moteur',load:'couple',U:0,Ue:0,Cr:0,N:0,limOn:true,Imax:20};
+let S, plaque={nn:1440,Pu:1500,Iex:1};
+function resetState(){S={i:0,ie:0,w:0,u:0,ue:0,e:0,cem:0,cu:0,dw:0,limited:false,tripped:false};}
+resetState();
+
+function computePlaque(){
+  const Iex=UEX/P.Re, phi=P.K*Iex;
+  const w=(UN-P.R*IN)/phi;
+  const cu=phi*IN-P.Cf;
+  plaque={Iex:Iex, nn:Math.max(10,Math.round(w*RPM/10)*10), Pu:Math.max(0,cu*w)};
+  $('pl-ind').textContent='Induit    : '+UN+' V ; '+IN+' A';
+  $('pl-exc').textContent='Inducteur : '+UEX+' V ; '+fx(Iex,2)+' A';
+  $('pl-nn').textContent ='Vitesse   : '+plaque.nn+' tr/min';
+  $('pl-pu').textContent ='Puissance : '+(plaque.Pu>=1000?fx(plaque.Pu/1000,1)+' kW':Math.round(plaque.Pu)+' W');
+}
+
+function step(h){
+  const {J,K,Cf,R,Re,La,Lf}=P, s=S;
+  s.ie+=h*(UI.Ue-Re*s.ie)/Lf;
+  s.ue=UI.Ue;
+  const phi=K*s.ie, E=phi*s.w;
+  let inew,u;
+  s.limited=false;
+  if(UI.mode==='moteur' && !s.tripped){
+    inew=s.i+h*(UI.U-R*s.i-E)/La;
+    u=UI.U;
+    if(UI.limOn && Math.abs(inew)>UI.Imax){
+      inew=Math.sign(inew)*UI.Imax;
+      u=E+R*inew+La*(inew-s.i)/h;
+      s.limited=true;
+    }
+  }else{ inew=0; u=E; }
+  s.i=inew; s.u=u; s.e=E;
+  const cem=phi*inew; s.cem=cem;
+  let wNew,dwc;
+  if(UI.mode==='entraine' || UI.load==='vitesse'){
+    const wc=UI.N/RPM, maxAcc=400;
+    dwc=clamp((wc-s.w)/h,-maxAcc,maxAcc);
+    wNew=s.w+dwc*h;
+    const cfEff=Math.abs(wNew)>1e-6?Cf*Math.sign(wNew):clamp(cem,-Cf,Cf);
+    s.cu=cem-cfEff-J*dwc;
+  }else{
+    const Cc=Cf+UI.Cr, eps=1.5*(Cc/J)*h+1e-4;
+    if(Math.abs(s.w)<eps && Math.abs(cem)<=Cc){
+      wNew=0; dwc=0; s.cu=cem-clamp(cem,-Cf,Cf);
+    }else{
+      const sg=Math.abs(s.w)<eps?Math.sign(cem):Math.sign(s.w);
+      dwc=(cem-Cc*sg)/J;
+      wNew=s.w+dwc*h;
+      if(s.w*wNew<0 && Math.abs(cem)<=Cc) wNew=0;
+      s.cu=UI.Cr*sg;
+    }
+  }
+  s.w=wNew; s.dw=dwc;
+  if(!s.tripped && UI.mode==='moteur' && UI.load==='couple' && Math.abs(s.w*RPM)>2.2*plaque.nn) s.tripped=true;
+}
+
+/* ======================= ENREGISTREMENT ======================= */
+const dtS=0.001, NBUF=60000;
+const CH=[
+ {id:'U',  name:'U',  unit:'V',     color:'#ffd21f',panel:0,get:s=>s.u, scale:100,min:10,  dec:1},
+ {id:'I',  name:'I',  unit:'A',     color:'#27e0ff',panel:0,get:s=>s.i, scale:5,  min:0.5, dec:2},
+ {id:'E',  name:'E',  unit:'V',     color:'#ffffff',panel:0,get:s=>s.e, scale:100,min:10,  dec:1,internal:true,dash:true},
+ {id:'Ue', name:'Ue', unit:'V',     color:'#ffd21f',panel:1,get:s=>s.ue,scale:100,min:10,  dec:1},
+ {id:'Ie', name:'Ie', unit:'A',     color:'#27e0ff',panel:1,get:s=>s.ie,scale:0.5,min:0.05,dec:3},
+ {id:'n',  name:'n',  unit:'tr/min',color:'#7dff4f',panel:2,get:s=>s.w*RPM,scale:500,min:50,dec:0},
+ {id:'Cu', name:'Cu', unit:'N·m',   color:'#ff7ad9',panel:3,get:s=>s.cu,scale:5,  min:0.5, dec:2},
+ {id:'Cem',name:'Cem',unit:'N·m',   color:'#ffffff',panel:3,get:s=>s.cem,scale:5, min:0.5, dec:2,internal:true,dash:true},
+];
+const IDX={}; CH.forEach((c,k)=>IDX[c.id]=k);
+const buf=CH.map(()=>new Float32Array(NBUF));
+let nSamples=0, simT=0;
+function record(){const i=nSamples%NBUF; for(let k=0;k<CH.length;k++) buf[k][i]=CH[k].get(S); nSamples++;}
+function sampleAt(k,t){const j=Math.round(t/dtS); if(j<0||j>=nSamples||j<nSamples-NBUF) return NaN; return buf[k][j%NBUF];}
+function simAdvance(T){
+  if(T<=0) return;
+  const hMax=Math.min(0.0005,0.2*Math.min(P.La/P.R,P.Lf/P.Re));
+  const n=Math.max(1,Math.ceil(T/hMax)), h=T/n;
+  for(let k=0;k<n;k++){ step(h); simT+=h; while(simT>=nSamples*dtS) record(); }
+}
+
+/* ======================= OSCILLOSCOPE ======================= */
+const SCALES=[]; for(let e=-3;e<=3;e++) for(const m of [1,2,5]) SCALES.push(parseFloat((m*Math.pow(10,e)).toPrecision(6)));
+const TB=[0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5];
+let tbIdx=5, running=true, frozenEnd=0, view=null;
+const cur={A:0.3,B:0.7,on:true};
+const cv=$('scope'), g=cv.getContext('2d');
+const SW=1000, SH=634, PL=12, PW=976, PT=10, PH=148, PG=6;
+cv.width=SW; cv.height=SH;
+const PTITLE=['INDUIT','INDUCTEUR','VITESSE','COUPLE'];
+const visible=c=>!c.internal||$('intOn').checked;
+const fmtDiv=v=>v<0.1?(v*1000)+' ms':v<1?(v*1000)+' ms':v+' s';
+
+function buildScopeUI(){
+  const sel=$('tbSel'); sel.innerHTML='';
+  TB.forEach((v,i)=>{const o=document.createElement('option'); o.value=i; o.textContent=(v<1?(v*1000)+' ms':v+' s')+' / div'; sel.appendChild(o);});
+  sel.value=tbIdx;
+  const box=$('chans'); box.innerHTML='';
+  CH.forEach(c=>{
+    const d=document.createElement('div'); d.className='chan'; d.id='chan-'+c.id; if(c.internal) d.style.display='none';
+    d.innerHTML='<span class="dot" style="background:'+c.color+'"></span><b>'+c.name+'</b><select id="sc-'+c.id+'"></select>';
+    box.appendChild(d);
+    const s=d.querySelector('select');
+    SCALES.forEach(v=>{const o=document.createElement('option'); o.value=v; o.textContent=v+' '+c.unit+'/div'; s.appendChild(o);});
+    s.value=c.scale;
+    s.onchange=()=>{c.scale=parseFloat(s.value); drawScope();};
+  });
+}
+
+function drawTrace(c,k,top,tStart,T,jmin,jmax){
+  const mid=top+PH/2, ppu=(PH/6)/c.scale, spp=T/PW, dpp=spp/dtS, b=buf[k];
+  const Y=v=>clamp(mid-v*ppu,top+1,top+PH-1);
+  g.strokeStyle=c.color; g.lineWidth=1.6; g.setLineDash(c.dash?[6,4]:[]);
+  g.beginPath(); let pen=false;
+  for(let x=0;x<=PW;x++){
+    const t0=tStart+x*spp;
+    if(dpp<=1.5){
+      const j=Math.round(t0/dtS);
+      if(j<jmin||j>jmax){pen=false;continue;}
+      const y=Y(b[j%NBUF]);
+      if(pen) g.lineTo(PL+x,y); else {g.moveTo(PL+x,y);pen=true;}
+    }else{
+      let j0=Math.max(Math.ceil(t0/dtS),jmin), j1=Math.min(Math.floor((t0+spp)/dtS),jmax);
+      if(j1<j0){pen=false;continue;}
+      let mn=Infinity,mx=-Infinity;
+      for(let j=j0;j<=j1;j++){const v=b[j%NBUF]; if(v<mn)mn=v; if(v>mx)mx=v;}
+      const y1=Y(mn),y2=Y(mx);
+      if(pen) g.lineTo(PL+x,y1); else {g.moveTo(PL+x,y1);pen=true;}
+      if(y2!==y1) g.lineTo(PL+x,y2);
+    }
+  }
+  g.stroke(); g.setLineDash([]);
+}
+
+function fmtT(t){return Math.abs(t)<1?fx(t*1000,1)+' ms':fx(t,3)+' s';}
+
+function drawScope(){
+  const Tdiv=TB[tbIdx], T=Tdiv*10;
+  const tEnd=running?Math.max(0,(nSamples-1)*dtS):frozenEnd;
+  const tStart=tEnd-T;
+  view={tStart,tEnd,T};
+  const jmin=Math.max(0,nSamples-NBUF), jmax=nSamples-1;
+  g.fillStyle='#050805'; g.fillRect(0,0,SW,SH);
+  for(let p=0;p<4;p++){
+    const top=PT+p*(PH+PG);
+    g.fillStyle='#0a120a'; g.fillRect(PL,top,PW,PH);
+    g.lineWidth=1; g.strokeStyle='#1f3a1f'; g.beginPath();
+    for(let i=0;i<=10;i++){const x=PL+i*PW/10+.5; g.moveTo(x,top); g.lineTo(x,top+PH);}
+    for(let j=0;j<=6;j++){const y=top+j*PH/6+.5; g.moveTo(PL,y); g.lineTo(PL+PW,y);}
+    g.stroke();
+    g.strokeStyle='#4f8a4f'; g.beginPath(); g.moveTo(PL,top+PH/2+.5); g.lineTo(PL+PW,top+PH/2+.5); g.stroke();
+    // graduations fines sur l'axe central
+    g.beginPath();
+    for(let i=0;i<=50;i++){const x=PL+i*PW/50+.5; g.moveTo(x,top+PH/2-3); g.lineTo(x,top+PH/2+3);}
+    g.stroke();
+    g.strokeStyle='#5f9a5f'; g.strokeRect(PL+.5,top+.5,PW-1,PH-1);
+    let li=0;
+    CH.forEach((c,k)=>{
+      if(c.panel!==p||!visible(c)) return;
+      drawTrace(c,k,top,tStart,T,jmin,jmax);
+      g.fillStyle=c.color; g.font='12px Consolas,monospace'; g.textAlign='left';
+      g.fillText(c.name+' : '+c.scale+' '+c.unit+'/div',PL+8,top+15+li*14); li++;
+    });
+    g.fillStyle='#6fa36f'; g.textAlign='right'; g.font='11px Segoe UI,Arial';
+    g.fillText(PTITLE[p],PL+PW-8,top+14);
+  }
+  // état + base de temps
+  g.textAlign='right'; g.font='bold 12px Consolas,monospace';
+  g.fillStyle=running?'#7dff4f':'#ff5a4a'; g.fillText(running?'● RUN':'■ STOP',PL+PW-8,PT+30);
+  g.fillStyle='#cfd8cf'; g.font='11px Consolas,monospace';
+  g.fillText(fmtDiv(Tdiv)+' / div',PL+PW-8,PT+44);
+  // graduation temporelle (dernier panneau)
+  const lastTop=PT+3*(PH+PG);
+  g.fillStyle='#9fc59f'; g.font='10px Consolas,monospace'; g.textAlign='center';
+  for(let i=0;i<=10;i+=2){
+    const t=tStart+i*Tdiv; if(t<0) continue;
+    g.fillText(fx(t,Tdiv<0.05?3:2)+'s',clamp(PL+i*PW/10,PL+14,PL+PW-14),lastTop+PH-4);
+  }
+  // curseurs
+  if(cur.on){
+    [['A',cur.A,'#ffffff'],['B',cur.B,'#ff9a1f']].forEach(([nm,f,col])=>{
+      const x=PL+f*PW, t=tStart+f*T;
+      g.strokeStyle=col; g.lineWidth=1.3; g.setLineDash([6,4]);
+      g.beginPath(); g.moveTo(x+.5,PT); g.lineTo(x+.5,SH-10); g.stroke(); g.setLineDash([]);
+      g.fillStyle=col; g.font='bold 13px Segoe UI,Arial'; g.textAlign='center';
+      g.fillText(nm,x,PT+PH-6);
+      CH.forEach((c,k)=>{
+        if(!visible(c)) return;
+        const v=sampleAt(k,t); if(isNaN(v)) return;
+        const top=PT+c.panel*(PH+PG), y=clamp(top+PH/2-v*(PH/6)/c.scale,top+1,top+PH-1);
+        g.fillStyle=c.color; g.beginPath(); g.arc(x,y,4,0,TWO_PI); g.fill();
+        g.strokeStyle=col; g.lineWidth=1; g.stroke();
+      });
+    });
+  }
+}
+
+function updateReadout(){
+  if(!view) return;
+  const tA=view.tStart+cur.A*view.T, tB=view.tStart+cur.B*view.T, dt=tB-tA;
+  $('rdHead').innerHTML='tA = '+fmtT(tA)+' &nbsp; tB = '+fmtT(tB)+' &nbsp; Δt = '+fmtT(dt)+(Math.abs(dt)>1e-9?' &nbsp; 1/Δt = '+fx(1/Math.abs(dt),2)+' Hz':'');
+  let h='<table class="rd"><tr><th>Voie</th><th>A</th><th>B</th><th>B − A</th></tr>';
+  CH.forEach((c,k)=>{
+    if(!visible(c)) return;
+    const a=sampleAt(k,tA), b=sampleAt(k,tB);
+    const f=v=>isNaN(v)?'—':fx(v,c.dec);
+    h+='<tr><td style="color:'+(c.color==='#ffffff'?'#555':c.color==='#ffd21f'?'#b38a00':c.color==='#27e0ff'?'#0088a3':c.color==='#7dff4f'?'#2a8a00':'#c2188f')+'">'+c.name+' ('+c.unit+')</td><td>'+f(a)+'</td><td>'+f(b)+'</td><td>'+((isNaN(a)||isNaN(b))?'—':fx(b-a,c.dec))+'</td></tr>';
+  });
+  $('rdTab').innerHTML=h+'</table>';
+}
+
+function stopScope(){ if(!running) return; running=false; frozenEnd=Math.max(0,(nSamples-1)*dtS); $('bRun').textContent='▶ Reprendre'; $('bRun').className='btn btn-green'; }
+function startScope(){ running=true; $('bRun').textContent='⏸ Stop'; $('bRun').className='btn btn-orange'; }
+function setCursor(w,f){ cur[w]=clamp(f,0,1); $('cur'+w).value=cur[w]; drawScope(); updateReadout(); }
+
+function autoScale(){
+  if(!view) return;
+  const j0=Math.max(0,nSamples-NBUF,Math.floor(view.tStart/dtS)), j1=Math.min(nSamples-1,Math.floor(view.tEnd/dtS));
+  CH.forEach((c,k)=>{
+    if(!visible(c)) return;
+    let mx=0; const st=Math.max(1,Math.floor((j1-j0)/3000));
+    for(let j=j0;j<=j1;j+=st) mx=Math.max(mx,Math.abs(buf[k][j%NBUF]));
+    let sc=SCALES.find(v=>v*2.7>=mx); if(sc===undefined) sc=SCALES[SCALES.length-1];
+    sc=Math.max(sc,c.min); c.scale=sc; $('sc-'+c.id).value=sc;
+  });
+  drawScope();
+}
+
+let drag=null;
+function pointerF(e){const r=cv.getBoundingClientRect(); return ((e.clientX-r.left)*SW/r.width-PL)/PW;}
+cv.addEventListener('pointerdown',e=>{
+  if(!cur.on){cur.on=true; $('curOn').checked=true;}
+  const f=pointerF(e); drag=Math.abs(f-cur.A)<=Math.abs(f-cur.B)?'A':'B';
+  stopScope(); cv.setPointerCapture(e.pointerId); setCursor(drag,f);
+});
+cv.addEventListener('pointermove',e=>{ if(drag) setCursor(drag,pointerF(e)); });
+cv.addEventListener('pointerup',()=>{drag=null;});
+cv.addEventListener('pointercancel',()=>{drag=null;});
+
+/* ======================= COMMANDES ======================= */
+function bindPair(id,apply){
+  const sl=$('sl-'+id), nb=$('nb-'+id);
+  sl.addEventListener('input',()=>{nb.value=sl.value; apply(+sl.value);});
+  nb.addEventListener('change',()=>{const v=clamp(parseFloat(nb.value)||0,+sl.min,+sl.max); nb.value=v; sl.value=v; apply(v);});
+}
+function setPair(id,v){$('sl-'+id).value=v; $('nb-'+id).value=v;}
+
+bindPair('U', v=>{UI.U=v; updateLabels();});
+bindPair('Ue',v=>{UI.Ue=v; updateLabels();});
+bindPair('Cr',v=>{UI.Cr=v; updateLabels();});
+bindPair('N', v=>{UI.N=v; updateLabels();});
+
+document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>{UI.mode=r.value; if(r.checked){} applyUI();}));
+document.querySelectorAll('input[name=load]').forEach(r=>r.addEventListener('change',()=>{UI.load=r.value; applyUI();}));
+$('modeSeg').addEventListener('change',e=>{UI.mode=document.querySelector('input[name=mode]:checked').value; applyUI();});
+$('loadSeg').addEventListener('change',e=>{UI.load=document.querySelector('input[name=load]:checked').value; applyUI();});
+$('limOn').addEventListener('change',()=>{UI.limOn=$('limOn').checked;});
+$('imax').addEventListener('change',()=>{const v=clamp(parseFloat($('imax').value)||20,1,300); $('imax').value=v; UI.Imax=v;});
+
+function updateLabels(){
+  $('lbl-U').textContent=UI.mode==='entraine'?'(déconnecté)':'U = '+UI.U+' V';
+  $('lbl-Ue').textContent='Ue = '+UI.Ue+' V';
+  $('ld3').textContent=UI.mode==='entraine'?'n = '+UI.N+' tr/min':(UI.load==='couple'?'Cr = '+fx(UI.Cr,1)+' N·m':'n = '+UI.N+' tr/min');
+}
+function applyUI(){
+  const m=UI.mode, ld=UI.load, ent=(m==='entraine');
+  $('row-U').classList.toggle('off',ent);
+  $('sl-U').disabled=ent; $('nb-U').disabled=ent;
+  $('loadSeg').style.display=ent?'none':'flex';
+  $('row-Cr').style.display=(!ent&&ld==='couple')?'flex':'none';
+  $('row-N').style.display=(ent||ld==='vitesse')?'flex':'none';
+  $('lblN').innerHTML=ent?'Vitesse d\'entraînement <b>n</b>':'Vitesse imposée <b>n</b>';
+  $('loadTitle').textContent=ent?'Moteur d\'entraînement':'Charge sur l\'arbre';
+  $('srcA').style.opacity=ent?0.3:1;
+  if(ent){$('ld1').textContent='Moteur'; $('ld2').textContent='d\'entraînement';}
+  else if(ld==='couple'){$('ld1').textContent='Charge'; $('ld2').textContent='(frein)';}
+  else {$('ld1').textContent='Charge'; $('ld2').textContent='à vitesse imposée';}
+  updateLabels();
+}
+
+$('bStop').addEventListener('click',()=>{
+  UI.U=0; UI.Ue=0; UI.N=0; UI.Cr=UI.Cr; setPair('U',0); setPair('Ue',0); setPair('N',0);
+  S.tripped=true; updateLabels();
+});
+$('bRearm').addEventListener('click',()=>{S.tripped=false;});
+$('bReset').addEventListener('click',()=>{
+  resetState(); nSamples=0; simT=0; UI.U=0; UI.Ue=0; UI.Cr=0; UI.N=0;
+  setPair('U',0); setPair('Ue',0); setPair('Cr',0); setPair('N',0);
+  if(!running) startScope(); updateLabels();
+});
+
+/* ======================= AFFICHAGE / ALERTES ======================= */
+let vis=0, lastDisp=0;
+function isSteady(){
+  if(nSamples<5) return true;
+  const j=nSamples-1, jp=Math.max(0,j-400, nSamples-NBUF);
+  const d=(id)=>Math.abs(buf[IDX[id]][j%NBUF]-buf[IDX[id]][jp%NBUF]);
+  const v=(id)=>Math.abs(buf[IDX[id]][j%NBUF]);
+  return d('n')<=Math.max(3,0.004*v('n')) && d('I')<=Math.max(0.05,0.01*v('I')) && d('Ie')<=Math.max(0.003,0.01*v('Ie'));
+}
+function updateDisplay(){
+  $('t-i').textContent=fx(S.i,2)+' A';
+  $('t-u').textContent=fx(S.u,1)+' V';
+  $('t-ie').textContent=fx(S.ie,3)+' A';
+  $('t-ue').textContent=fx(S.ue,1)+' V';
+  $('t-cu').textContent=fx(S.cu,2)+' N·m';
+  $('t-n').textContent=fx(S.w*RPM,0)+' tr/min';
+  $('t-w').textContent=fx(S.w,1)+' rad/s';
+  const open=(UI.mode==='entraine'||S.tripped);
+  $('sw-open').style.display=open?'':'none';
+  $('sw-close').style.display=open?'none':'';
+  const st=isSteady(); 
+  // alertes
+  const out=[], n=S.w*RPM;
+  if(S.tripped) out.push(['bad','🛑 Protection déclenchée : l\'induit est déconnecté. Mettez les consignes à zéro puis « Réarmer ».']);
+  if(S.limited) out.push(['warn','⚡ Limitation de courant active (I = '+fx(UI.Imax,0)+' A).']);
+  if(Math.abs(S.i)>1.1*IN) out.push(['bad','⚠ Surintensité : |I| > In ('+IN+' A).']);
+  if(Math.abs(n)>1.2*plaque.nn) out.push(['bad','⚠ Survitesse : |n| > 1,2 × nn.']);
+  if(UI.mode==='moteur' && !S.tripped && S.ie<0.3*plaque.Iex && Math.abs(UI.U)>20) out.push(['warn','⚠ Excitation très faible : risque d\'emballement du moteur !']);
+  if(S.ie>1.15*plaque.Iex) out.push(['warn','⚠ Surexcitation : Ie > Iex nominal.']);
+  if(!out.length) out.push(['ok','✅ Fonctionnement normal']);
+  $('alerts').innerHTML=out.map(o=>'<div class="al '+o[0]+'">'+o[1]+'</div>').join('');
+  $('bRearm').style.display=S.tripped?'':'none';
+}
+
+/* ======================= PARAMETRES ======================= */
+const PF=[{k:'J',min:0.001,conv:1},{k:'K',min:0.05,conv:1},{k:'Cf',min:0,conv:1},{k:'R',min:0.05,conv:1},{k:'Re',min:10,conv:1},{k:'La',min:1,conv:1000},{k:'Lf',min:0.5,conv:1}];
+function fillParams(){
+  PF.forEach(f=>{const el=$('p-'+f.k); el.disabled=hiddenParams; el.placeholder='?'; el.value=hiddenParams?'':parseFloat((P[f.k]*f.conv).toPrecision(4));});
+  $('hidMsg').style.display=hiddenParams?'':'none'; $('pRev').style.display=hiddenParams?'':'none';
+}
+PF.forEach(f=>$('p-'+f.k).addEventListener('change',()=>{
+  const v=parseFloat($('p-'+f.k).value);
+  if(!(v>=f.min)){fillParams(); return;}
+  P[f.k]=v/f.conv; computePlaque();
+}));
+$('pDef').addEventListener('click',()=>{P={...DEFAULTS}; hiddenParams=false; fillParams(); computePlaque();});
+$('pRnd').addEventListener('click',()=>{
+  const r=(a,b)=>parseFloat((a+Math.random()*(b-a)).toPrecision(2));
+  P={J:r(0.03,0.12),K:r(0.9,1.9),Cf:r(0.2,1.1),R:r(0.7,2.5),Re:r(130,400),La:r(8,30)/1000,Lf:r(15,60)};
+  hiddenParams=true; fillParams(); computePlaque(); $('bReset').click();
+});
+$('pRev').addEventListener('click',()=>{hiddenParams=false; fillParams();});
+$('bParam').addEventListener('click',()=>{fillParams(); $('mdParams').classList.add('show');});
+
+/* ======================= OHMMETRE ======================= */
+function doOhm(){
+  const lcd=$('ohmLcd'), pb=[];
+  if(Math.abs(S.w*RPM)>=1) pb.push('le moteur tourne encore');
+  if(Math.abs(UI.U)>0.5||Math.abs(UI.Ue)>0.5) pb.push('les alimentations ne sont pas coupées (U et Ue doivent valoir 0 V)');
+  if(S.ie>0.005||Math.abs(S.i)>0.01) pb.push('un courant circule encore (attendez quelques secondes)');
+  if(UI.mode==='entraine' && Math.abs(UI.N)>0) pb.push('le moteur est entraîné');
+  if(pb.length){ lcd.className='lcd err'; lcd.innerHTML='⚠ Mesure impossible :<br>• '+pb.join('<br>• '); return; }
+  const noisy=v=>v*(1+(Math.random()-0.5)*0.006);
+  lcd.className='lcd';
+  lcd.innerHTML='R = '+noisy(P.R).toPrecision(3)+' Ω<br>Re = '+noisy(P.Re).toPrecision(3)+' Ω';
+}
+$('bOhm').addEventListener('click',()=>{$('mdOhm').classList.add('show'); doOhm();});
+$('ohmGo').addEventListener('click',doOhm);
+
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.hasAttribute('data-close')) m.classList.remove('show'); });
+});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal').classList.remove('show')));
+
+/* ======================= SCOPE CONTROLS ======================= */
+$('bRun').addEventListener('click',()=>{running?stopScope():startScope(); drawScope();});
+$('bAuto').addEventListener('click',autoScale);
+$('tbSel').addEventListener('change',()=>{tbIdx=+$('tbSel').value; drawScope();});
+$('curOn').addEventListener('change',()=>{cur.on=$('curOn').checked; drawScope();});
+$('intOn').addEventListener('change',()=>{CH.forEach(c=>{if(c.internal) $('chan-'+c.id).style.display=$('intOn').checked?'':'none';}); drawScope(); updateReadout();});
+$('curA').addEventListener('input',()=>setCursor('A',+$('curA').value));
+$('curB').addEventListener('input',()=>setCursor('B',+$('curB').value));
+
+/* ======================= BOUCLE PRINCIPALE ======================= */
+let lastT=performance.now(), frameN=0;
+function frame(now){
+  const dt=Math.min(0.1,(now-lastT)/1000); lastT=now;
+  simAdvance(dt);
+  vis+=dt*720*Math.tanh(S.w/100);
+  $('wheel').setAttribute('transform','rotate('+(vis%360).toFixed(1)+' 630 100)');
+  $('shaft').setAttribute('stroke-dashoffset',(-vis/8).toFixed(1));
+  if(++frameN%2===0) drawScope();
+  if(now-lastDisp>100){lastDisp=now; updateDisplay(); if(running||frameN%10===0) updateReadout();}
+  requestAnimationFrame(frame);
+}
+
+/* ======================= INIT ======================= */
+buildScopeUI(); computePlaque(); applyUI();
+drawScope(); updateReadout();
+requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>
