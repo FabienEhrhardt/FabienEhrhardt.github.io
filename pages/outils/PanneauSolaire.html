@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panneau solaire virtuel</title>
+<style>
+:root{--blue:#1f3c88;--blue-light:#f0f4ff;--green:#28a745;--green-dark:#1e7e34;--orange:#e07b00;--red:#c0392b;--gray:#888;--gray-light:#f5f5f5;--border:#dde3f0;--radius:10px;}
+*{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0}
+body{background:linear-gradient(135deg,#f4f6f9,#e9eef5);min-height:100vh;padding:16px}
+.container{max-width:1500px;margin:auto;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden}
+.page-header{background:var(--blue);color:#fff;padding:18px 28px}
+.page-header h1{font-size:1.4rem;font-weight:600}
+.page-header p{font-size:.88rem;opacity:.82;margin-top:3px}
+.main{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
+.top{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px}
+@media (max-width:1050px){.top{grid-template-columns:1fr}}
+.card{background:var(--blue-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
+.card.white{background:#fff}
+.section-title{font-size:1rem;font-weight:600;color:var(--blue);border-left:4px solid var(--blue);padding-left:10px;margin-bottom:12px}
+.subtitle{font-size:.86rem;font-weight:600;color:var(--blue);margin:12px 0 6px}
+#syn{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#syn .w{stroke:#222;stroke-width:2;fill:none}
+#syn .sc{stroke:#222;stroke-width:2;fill:#fff}
+#syn .ti{font-size:11px;font-weight:700;fill:#1f3c88;letter-spacing:.4px}
+#syn .sm{font-family:Consolas,"Courier New",monospace;font-size:13px;font-weight:700;fill:#1f3c88}
+#syn .big{font-size:16px;font-weight:700;fill:#222;text-anchor:middle;dominant-baseline:central}
+#syn .tx{font-size:11px;fill:#444}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.seg label{display:block}
+.seg input{display:none}
+.seg span{display:block;text-align:center;padding:7px 4px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:.8rem;font-weight:600;color:#555;transition:.15s}
+.seg input:checked+span{border-color:var(--blue);background:var(--blue);color:#fff}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.srow label{min-width:150px;font-size:.84rem;color:#333}
+.srow input[type=range]{flex:1;accent-color:var(--blue);min-width:80px}
+.srow input[type=number]{width:78px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.85rem}
+.srow .u{width:48px;font-size:.82rem;color:var(--gray)}
+.srow.off{opacity:.45}
+.btn{border:none;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600;transition:.2s;color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-green{background:var(--green)}.btn-green:hover{background:var(--green-dark)}
+.btn-blue{background:var(--blue)}.btn-blue:hover{background:#162d6a}
+.btn-orange{background:var(--orange)}.btn-orange:hover{background:#c06a00}
+.btn-gray{background:#9aa3b5}.btn-gray:hover{background:#838da3}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.inl{display:flex;align-items:center;gap:8px;font-size:.84rem;flex-wrap:wrap;margin:6px 0}
+.inl select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.inl label{display:flex;align-items:center;gap:6px}
+#alerts{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.al{font-size:.82rem;padding:6px 10px;border-radius:6px;font-weight:600}
+.al.ok{background:#e8f8e8;color:var(--green-dark)}
+.al.info{background:#e6efff;color:var(--blue)}
+.al.warn{background:#fff3df;color:#9a5b00}
+.al.bad{background:#fde8e8;color:var(--red)}
+details{margin-top:10px;font-size:.82rem;color:#444;line-height:1.55}
+summary{cursor:pointer;font-weight:600;color:var(--blue)}
+.plots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr);gap:16px}
+@media (max-width:1200px){.plots{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.plots{grid-template-columns:1fr}}
+.plots canvas{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:8px}
+table.info{width:100%;border-collapse:collapse;font-size:.82rem;background:#fff;margin-bottom:10px}
+table.info th{background:var(--blue);color:#fff;padding:5px 8px;text-align:left;font-weight:600}
+table.info td{border:1px solid var(--border);padding:4px 8px}
+table.info td:last-child{text-align:right;font-weight:600;font-family:Consolas,monospace}
+#scope{width:100%;height:auto;display:block;border-radius:8px;border:2px solid #333;background:#000;touch-action:none;cursor:col-resize}
+.scope-ctrl{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.scope-ctrl label{font-size:.84rem;display:flex;align-items:center;gap:6px}
+.scope-ctrl select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.scope-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:1050px){.scope-grid{grid-template-columns:1fr}}
+.chans{display:flex;flex-direction:column;gap:6px}
+.chan{display:flex;align-items:center;gap:6px;font-size:.84rem}
+.chan b{min-width:34px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #333}
+.chan select{padding:3px 4px;border:1px solid #ccc;border-radius:5px;font-size:.82rem;flex:1}
+.chan input{width:76px;padding:3px 4px;border:1px solid #ccc;border-radius:5px;font-size:.82rem}
+.chan small{color:var(--gray)}
+.curr{display:flex;align-items:center;gap:8px;font-size:.84rem;margin-bottom:6px}
+.curr input[type=range]{flex:1}
+.curr .ca{color:#444;font-weight:700}.curr .cb{color:var(--orange);font-weight:700}
+#rdHead{font-size:.84rem;color:var(--blue);font-weight:600;margin:6px 0}
+table.rd{width:100%;border-collapse:collapse;font-size:.82rem;background:#fff}
+table.rd th,table.rd td{border:1px solid var(--border);padding:4px 7px;text-align:center}
+table.rd th{background:var(--blue);color:#fff;font-weight:600}
+table.rd td:first-child{text-align:left;font-weight:700}
+.hint{font-size:.82rem;color:#555;line-height:1.5}
+.modal{display:none;position:fixed;inset:0;background:rgba(10,20,50,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:12px;padding:20px 24px;max-width:600px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mhead h3{color:var(--blue);font-size:1.1rem}
+.x{border:none;background:none;font-size:1.1rem;cursor:pointer;color:#666}
+.pgrid{display:grid;grid-template-columns:1fr 120px 50px;gap:8px 10px;align-items:center;margin:12px 0}
+.pgrid input,.pgrid select{padding:5px 7px;border:1px solid #ccc;border-radius:5px;font-size:.9rem;width:100%}
+.pgrid input:disabled,.pgrid select:disabled{background:#eee}
+.pgrid span{font-size:.82rem;color:var(--gray)}
+.pgrid label{font-size:.88rem}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <h1>☀️ Panneau solaire virtuel</h1>
+    <p>Module photovoltaïque : irradiance, température, charge résistive variable et caractéristiques I(U) et P(U)</p>
+  </div>
+
+  <div class="main">
+    <div class="top">
+      <!-- ============ SYNOPTIQUE ============ -->
+      <div class="card white">
+        <div class="section-title">Synoptique du montage</div>
+        <svg id="syn" viewBox="0 0 780 350" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#f2a900"/></marker></defs>
+          <!-- soleil -->
+          <g id="rays"></g>
+          <circle cx="62" cy="62" r="22" fill="#ffd21f" stroke="#f2a900" stroke-width="2"/>
+          <text class="ti" x="62" y="118" text-anchor="middle">PYRANOMÈTRE</text>
+          <text class="sm" id="t-g" x="62" y="134" text-anchor="middle">1000 W/m²</text>
+          <g id="light" style="opacity:1">
+            <line x1="100" y1="86" x2="160" y2="140" stroke="#f2a900" stroke-width="3" marker-end="url(#arr)"/>
+            <line x1="120" y1="64" x2="205" y2="124" stroke="#f2a900" stroke-width="3" marker-end="url(#arr)"/>
+            <line x1="84" y1="102" x2="128" y2="150" stroke="#f2a900" stroke-width="3" marker-end="url(#arr)"/>
+          </g>
+          <!-- panneau -->
+          <rect x="140" y="150" width="170" height="110" fill="#1b3a7a" stroke="#0d1f4a" stroke-width="3"/>
+          <path id="pgrid" stroke="#7d9ce0" stroke-width="1" fill="none"/>
+          <text class="ti" x="225" y="278" text-anchor="middle">PANNEAU PHOTOVOLTAÏQUE</text>
+          <text class="tx" id="t-tech" x="225" y="293" text-anchor="middle">Silicium monocristallin</text>
+          <text class="ti" x="225" y="311" text-anchor="middle">THERMOMÈTRE</text>
+          <text class="sm" id="t-tc" x="225" y="327" text-anchor="middle">25.0 °C</text>
+          <text class="tx" x="316" y="166">+</text><text class="tx" x="316" y="240">−</text>
+          <!-- fils -->
+          <path class="w" d="M310 170 H350 V70 H660 M310 245 H350 V325 H660 M395 70 V154 M395 186 V325 M600 70 V135 M600 205 V325"/>
+          <path class="w" d="M660 70 V120 L650 128 L670 144 L650 160 L670 176 L650 192 L670 208 L660 216 V325"/>
+          <circle cx="395" cy="70" r="3" fill="#222"/><circle cx="395" cy="325" r="3" fill="#222"/>
+          <circle cx="600" cy="70" r="3" fill="#222"/><circle cx="600" cy="325" r="3" fill="#222"/>
+          <!-- instruments -->
+          <circle class="sc" cx="395" cy="170" r="16"/><text class="big" x="395" y="170">V</text>
+          <text class="sm" id="t-u" x="418" y="174">0.0 V</text>
+          <circle class="sc" cx="460" cy="70" r="16"/><text class="big" x="460" y="70">A</text>
+          <text class="sm" id="t-i" x="460" y="40" text-anchor="middle">0.00 A</text>
+          <!-- interrupteur circuit ouvert -->
+          <rect x="520" y="62" width="40" height="16" fill="#fff"/>
+          <circle cx="525" cy="70" r="3" fill="#222"/><circle cx="555" cy="70" r="3" fill="#222"/>
+          <line id="sw-co-c" class="w" x1="525" y1="70" x2="555" y2="70"/>
+          <line id="sw-co-o" class="w" x1="525" y1="70" x2="550" y2="50" style="display:none"/>
+          <text class="tx" x="540" y="38" text-anchor="middle">K co</text>
+          <!-- court-circuit -->
+          <circle cx="600" cy="135" r="3" fill="#222"/><circle cx="600" cy="205" r="3" fill="#222"/>
+          <line id="sw-cc-c" class="w" x1="600" y1="135" x2="600" y2="205" style="display:none"/>
+          <line id="sw-cc-o" class="w" x1="600" y1="135" x2="622" y2="190"/>
+          <text class="tx" x="590" y="172" text-anchor="end">K cc</text>
+          <!-- charge variable -->
+          <line x1="640" y1="228" x2="684" y2="106" stroke="#222" stroke-width="2"/><polygon points="684,106 673,113 685,118" fill="#222"/>
+          <text class="sm" id="t-r" x="684" y="258" text-anchor="middle" style="font-size:12px">Rch = 5 Ω</text>
+          <text class="ti" x="684" y="275" text-anchor="middle">WATTMÈTRE</text>
+          <text class="sm" id="t-p" x="684" y="291" text-anchor="middle">0.0 W</text>
+        </svg>
+      </div>
+
+      <!-- ============ COMMANDES ============ -->
+      <div class="card">
+        <div class="section-title">Commandes</div>
+
+        <div class="inl"><label>Scénario d'éclairement
+          <select id="scen">
+            <option value="manual">Manuel</option>
+            <option value="cloud">Passage nuageux (60 s)</option>
+            <option value="day">Journée ensoleillée (140 s)</option>
+          </select></label></div>
+
+        <div class="srow" id="row-G">
+          <label>Irradiance <b>G</b></label>
+          <input type="range" id="sl-G" min="0" max="1200" step="10" value="1000">
+          <input type="number" id="nb-G" min="0" max="1200" step="10" value="1000"><span class="u">W/m²</span>
+        </div>
+        <div class="srow" id="row-Ta">
+          <label>Température ambiante</label>
+          <input type="range" id="sl-Ta" min="-10" max="45" step="1" value="25">
+          <input type="number" id="nb-Ta" min="-10" max="45" step="1" value="25"><span class="u">°C</span>
+        </div>
+        <div class="inl"><label><input type="checkbox" id="tcFix"> Imposer la température de cellule</label></div>
+        <div class="srow off" id="row-Tc">
+          <label>Température de cellule <b>Tc</b></label>
+          <input type="range" id="sl-Tc" min="0" max="85" step="1" value="25" disabled>
+          <input type="number" id="nb-Tc" min="0" max="85" step="1" value="25" disabled><span class="u">°C</span>
+        </div>
+
+        <div class="subtitle">Charge branchée sur le panneau</div>
+        <div class="seg" id="loadSeg">
+          <label><input type="radio" name="load" value="R" checked><span>Résistance variable</span></label>
+          <label><input type="radio" name="load" value="cc"><span>Court-circuit</span></label>
+          <label><input type="radio" name="load" value="co"><span>Circuit ouvert</span></label>
+        </div>
+        <div class="srow" id="row-R">
+          <label>Résistance <b>Rch</b> (log)</label>
+          <input type="range" id="sl-R" min="0" max="600" step="1" value="70">
+          <input type="number" id="nb-R" min="0.01" max="10000" step="any" value="5"><span class="u">Ω</span>
+        </div>
+		
+		<button class="btn btn-green" id="auto">Traceur IV auto</button>
+
+        <div id="catacBtn" style="display:none">
+			<div class="btn-row">
+			<button class="btn btn-green" id="bSweep">📈 Tracer la caractéristique</button>
+			<button class="btn btn-blue" id="bMemo">📌 Mémoriser la courbe</button>
+			<button class="btn btn-gray" id="bClearC">🗑 Effacer les courbes</button>
+			</div>
+			<div class="inl"><label><input type="checkbox" id="oSTC"> Superposer la courbe aux conditions STC</label></div>
+			<div class="btn-row">
+			<button class="btn btn-orange" id="bSTC">Conditions STC</button>
+			<button class="btn btn-orange" id="bNOCT">Conditions NOCT</button>
+			</div>
+		</div>
+        <div class="btn-row">
+          <button class="btn btn-blue" id="bParam">🛠 Paramètres du panneau</button>
+          <button class="btn btn-gray" id="bCnt">0️⃣ Compteurs à zéro</button>
+          <button class="btn btn-gray" id="bReset">↺ Réinitialiser</button>
+        </div>
+        <div id="alerts"></div>
+
+        <details>
+          <summary>ℹ️ Aide et conventions</summary>
+          <p>• <b>STC</b> : 1000 W/m², cellule à 25 °C. <b>NOCT</b> : 800 W/m², air à 20 °C ; la cellule prend alors la température NOCT de la fiche technique.<br>
+          • La température de cellule suit la température ambiante et l'irradiance avec un retard d'une dizaine de secondes (inertie thermique). Cochez « Imposer » pour la fixer.<br>
+          • Rch varie de 0,01 Ω à 10 kΩ (échelle logarithmique). Court-circuit : on mesure Isc ; circuit ouvert : on mesure Voc.<br>
+          • « Tracer la caractéristique » balaie automatiquement Rch et dessine les points mesurés.<br>
+          • Les énergies sont comptées en temps réel (scénario « journée » : 10 s = 1 h simulée).<br>
+          • Sur l'oscilloscope, cliquez-glissez pour placer les curseurs A et B.</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- ============ COURBES ============ -->
+    <div class="card white" id="carac" style="display:none">
+      <div class="section-title">Caractéristiques du panneau</div>
+      <div class="plots">
+        <canvas id="iv" width="480" height="340"></canvas>
+        <canvas id="pv" width="480" height="340"></canvas>
+        <div id="infos"></div>
+      </div>
+    </div>
+
+    <!-- ============ OSCILLOSCOPE ============ -->
+    <div class="card white">
+      <div class="section-title">Oscilloscope</div>
+      <canvas id="scope"></canvas>
+      <div class="scope-ctrl">
+        <button class="btn btn-orange" id="bRun">⏸ Stop</button>
+        <button class="btn btn-blue" id="bAuto">Auto-échelle</button>
+        <label>Base de temps <select id="tbSel"></select></label>
+        <label><input type="checkbox" id="curOn" checked> Curseurs</label>
+      </div>
+      <div class="scope-grid">
+        <div>
+          <div class="subtitle" style="margin-top:0">Calibres et centres des voies</div>
+          <div class="chans" id="chans"></div>
+        </div>
+        <div>
+          <div class="subtitle" style="margin-top:0">Curseurs</div>
+          <div class="curr"><span class="ca">A</span><input type="range" id="curA" min="0" max="1" step="0.001" value="0.3"></div>
+          <div class="curr"><span class="cb">B</span><input type="range" id="curB" min="0" max="1" step="0.001" value="0.7"></div>
+          <div id="rdHead"></div>
+          <div id="rdTab"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALE PARAMETRES ============ -->
+<div class="modal" id="mdParams"><div class="mbox">
+  <div class="mhead"><h3>🛠 Paramètres du panneau</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">Modèle à une diode : <b>I = Iph − I0·(e<sup>(U+Rs·I)/(n·Ns·Vt)</sup> − 1) − (U+Rs·I)/Rsh</b>. Isc et Voc sont les valeurs de la fiche technique (STC) : modifier Rs, Rsh ou n déforme la courbe sans changer ces deux points.</p>
+  <div class="pgrid">
+    <label for="p-tech">Technologie</label>
+    <select id="p-tech"><option value="mono">Silicium monocristallin</option><option value="poly">Silicium polycristallin</option><option value="cdte">Couche mince CdTe</option><option value="asi">Silicium amorphe</option><option value="unk" hidden>?</option></select><span></span>
+    <label for="p-Ns">Cellules en série Ns</label><input type="number" id="p-Ns" step="1"><span></span>
+    <label for="p-Isc">Courant de court-circuit Isc (STC)</label><input type="number" id="p-Isc" step="0.1"><span>A</span>
+    <label for="p-Voc">Tension à vide Voc (STC)</label><input type="number" id="p-Voc" step="0.5"><span>V</span>
+    <label for="p-Rs">Résistance série Rs</label><input type="number" id="p-Rs" step="0.05"><span>Ω</span>
+    <label for="p-Rsh">Résistance parallèle Rsh</label><input type="number" id="p-Rsh" step="10"><span>Ω</span>
+    <label for="p-n">Facteur d'idéalité n</label><input type="number" id="p-n" step="0.05"><span></span>
+    <label for="p-alpha">Coefficient de température de Isc</label><input type="number" id="p-alpha" step="0.01"><span>%/K</span>
+    <label for="p-NOCT">Température NOCT</label><input type="number" id="p-NOCT" step="1"><span>°C</span>
+    <label for="p-A">Surface du module</label><input type="number" id="p-A" step="0.05"><span>m²</span>
+  </div>
+  <p class="hint" id="hidMsg" style="display:none;color:#9a5b00;font-weight:600">🎲 Panneau inconnu : les valeurs et la fiche technique sont masquées. Déterminez Voc, Isc, Pmax, le facteur de forme et la sensibilité à la température par vos mesures !</p>
+  <div class="btn-row">
+    <button class="btn btn-green" id="pDef">↺ Valeurs par défaut de la technologie</button>
+    <button class="btn btn-orange" id="pRnd">🎲 Panneau inconnu</button>
+    <button class="btn btn-gray" id="pRev" style="display:none">👁 Révéler</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const fx=(x,d)=>{const s=x.toFixed(d);return parseFloat(s)===0?(0).toFixed(d):s;};
+const KB=8.617333e-5, TR=298.15;
+
+/* ======================= TECHNOLOGIES ======================= */
+const TECH={
+ mono:{name:'Silicium monocristallin',Ns:60,Isc:9.6,Voc:38.2,Rs:0.30,Rsh:350,n:1.05,alpha:0.05,Eg:1.20,NOCT:45,A:1.65},
+ poly:{name:'Silicium polycristallin',Ns:60,Isc:9.0,Voc:37.0,Rs:0.35,Rsh:250,n:1.10,alpha:0.05,Eg:1.20,NOCT:46,A:1.65},
+ cdte:{name:'Couche mince CdTe',Ns:116,Isc:1.9,Voc:88,Rs:3.5,Rsh:1200,n:1.50,alpha:0.04,Eg:1.55,NOCT:45,A:0.72},
+ asi: {name:'Silicium amorphe',Ns:72,Isc:1.7,Voc:60,Rs:5,Rsh:800,n:1.90,alpha:0.08,Eg:1.80,NOCT:44,A:1.00}
+};
+let P={}, hidden=false, M0=null, plaque={};
+function loadTech(k){P={tech:k,...TECH[k]};}
+
+/* ======================= MODELE A UNE DIODE ======================= */
+function setup(){
+  const a=P.n*P.Ns*KB*TR;
+  const num=P.Isc*(1+P.Rs/P.Rsh)-P.Voc/P.Rsh;
+  const den=Math.exp(P.Voc/a)-Math.exp(P.Isc*P.Rs/a);
+  const I0=num/den;
+  if(!(I0>0)||!isFinite(I0)||!(P.Voc>P.Isc*P.Rs)) return false;
+  M0={I0r:I0,IphR:I0*(Math.exp(P.Voc/a)-1)+P.Voc/P.Rsh};
+  return true;
+}
+const EXP=x=>Math.exp(Math.min(x,600));
+function model(G,Tc){
+  const T=Tc+273.15, a=P.n*P.Ns*KB*T;
+  const I0=M0.I0r*Math.pow(T/TR,3)*Math.exp(P.Eg/(P.n*KB)*(1/TR-1/T));
+  const Iph=Math.max(0,(G/1000)*(M0.IphR+P.alpha/100*P.Isc*(Tc-25)));
+  return {a:a,I0:I0,Iph:Iph};
+}
+function gI(I,U,m){const x=U+P.Rs*I; return m.Iph-m.I0*(EXP(x/m.a)-1)-x/P.Rsh-I;}
+function solveI(U,m){let lo=-m.Iph-2,hi=m.Iph+1e-6; for(let i=0;i<60;i++){const mid=(lo+hi)/2; if(gI(mid,U,m)>0) lo=mid; else hi=mid;} return (lo+hi)/2;}
+function solveVoc(m){
+  if(m.Iph<=0) return 0;
+  let lo=0,hi=m.a*Math.log(m.Iph/m.I0+1)+1;
+  for(let i=0;i<60;i++){const mid=(lo+hi)/2, h=m.Iph-m.I0*(EXP(mid/m.a)-1)-mid/P.Rsh; if(h>0) lo=mid; else hi=mid;}
+  return (lo+hi)/2;
+}
+function solveR(R,m){
+  if(m.Iph<=0) return 0;
+  const Rt=R+P.Rs; let lo=0,hi=m.Iph;
+  for(let i=0;i<60;i++){const mid=(lo+hi)/2, f=m.Iph-m.I0*(EXP(Rt*mid/m.a)-1)-Rt*mid/P.Rsh-mid; if(f>0) lo=mid; else hi=mid;}
+  return (lo+hi)/2;
+}
+function solveMPP(m){
+  const Voc=solveVoc(m);
+  if(Voc<=0) return {U:0,I:0,P:0,Voc:0,Isc:0};
+  const N=60; let bp=-1,bu=0;
+  for(let i=0;i<=N;i++){const U=Voc*i/N, p=U*solveI(U,m); if(p>bp){bp=p;bu=U;}}
+  let lo=Math.max(0,bu-Voc/N), hi=Math.min(Voc,bu+Voc/N);
+  for(let i=0;i<30;i++){
+    const m1=lo+(hi-lo)/3, m2=hi-(hi-lo)/3;
+    if(m1*solveI(m1,m)<m2*solveI(m2,m)) lo=m1; else hi=m2;
+  }
+  const U=(lo+hi)/2, I=solveI(U,m);
+  return {U:U,I:I,P:U*I,Voc:Voc,Isc:solveI(0,m)};
+}
+const mppCache=new Map();
+function mppOf(G,Tc){
+  const key=Math.round(G/2)+'|'+Math.round(Tc*10);
+  let r=mppCache.get(key);
+  if(!r){r=solveMPP(model(G,Tc)); if(mppCache.size>400) mppCache.clear(); mppCache.set(key,r);}
+  return r;
+}
+function computePlaque(){
+  const m=model(1000,25), r=solveMPP(m), m2=model(1000,35), voc2=solveVoc(m2);
+  plaque={Pmax:r.P,Vmpp:r.U,Impp:r.I,Voc:r.Voc,Isc:r.Isc,FF:r.P/(r.Voc*r.Isc),beta:(voc2-r.Voc)/r.Voc/10*100,
+          alpha:P.alpha,NOCT:P.NOCT,eta:r.P/(1000*P.A)*100,Pnoct:mppOf(800,P.NOCT).P};
+}
+
+/* ======================= ETAT ======================= */
+const UI={scen:'manual',G:1000,Ta:25,tcFix:false,Tc:25,load:'R',R:5};
+const TAU=8;
+let S;
+function resetState(){
+  S={t:0,ts:0,G:UI.G,Ta:UI.Ta,Tc:UI.tcFix?UI.Tc:UI.Ta+(P.NOCT-20)/800*UI.G,
+     U:0,I:0,P:0,Pm:0,Vm:0,Im:0,Voc:0,Isc:0,Ep:0,Em:0,sweep:null,memo:[],sweeps:[],hour:null};
+}
+function scenG(sc,t){
+  if(sc==='cloud'){
+    const pts=[[0,1000],[10,1000],[14,250],[22,250],[26,1000],[38,1000],[40,600],[46,600],[48,1000],[60,1000]], u=t%60;
+    for(let i=1;i<pts.length;i++){ if(u<=pts[i][0]){const a=pts[i-1],b=pts[i]; return a[1]+(b[1]-a[1])*(u-a[0])/(b[0]-a[0]);} }
+    return 1000;
+  }
+  const u=(t%140)/140, h=6+14*u;
+  return {G:Math.max(0,1050*Math.pow(Math.max(0,Math.sin(Math.PI*(h-6)/14)),1.3)),Ta:14+10*Math.sin(Math.PI*(h-8)/14),h:h};
+}
+function step(dt){
+  const s=S;
+  if(UI.scen==='cloud'){s.ts+=dt; s.G=scenG('cloud',s.ts); s.Ta=UI.Ta; s.hour=null;}
+  else if(UI.scen==='day'){s.ts+=dt; const d=scenG('day',s.ts); s.G=d.G; s.Ta=d.Ta; s.hour=d.h;}
+  else {s.G=UI.G; s.Ta=UI.Ta; s.hour=null;}
+  if(UI.tcFix) s.Tc=UI.Tc;
+  else {const tg=s.Ta+(P.NOCT-20)/800*s.G; s.Tc+=(tg-s.Tc)*(1-Math.exp(-dt/TAU));}
+  if(s.sweep){
+    const w=s.sweep; w.t+=dt; const f=Math.min(1,w.t/w.T);
+    UI.R=0.01*Math.pow(10,6*f); UI.load='R';
+  }
+  const m=model(s.G,s.Tc), mpp=mppOf(s.G,s.Tc);
+  s.Voc=mpp.Voc; s.Isc=mpp.Isc; s.Pm=mpp.P; s.Vm=mpp.U; s.Im=mpp.I;
+  if(UI.load==='cc'){s.U=0; s.I=mpp.Isc;}
+  else if(UI.load==='co'){s.U=mpp.Voc; s.I=0;}
+  else {s.I=solveR(UI.R,m); s.U=UI.R*s.I;}
+  s.P=s.U*s.I;
+  const k=UI.scen==='day'?0.1:1/3600;
+  s.Ep+=s.P*dt*k; s.Em+=s.Pm*dt*k; s.t+=dt;
+  if(s.sweep){
+    const w=s.sweep;
+    w.pts.push([s.U,s.I]);
+    if(w.t>=w.T){
+      w.pts.unshift([0,mpp.Isc]); w.pts.push([mpp.Voc,0]);
+      s.sweeps.push({pts:w.pts,label:w.label,color:SWCOL[s.sweeps.length%SWCOL.length]});
+      if(s.sweeps.length>5) s.sweeps.shift();
+      UI.load=w.prevLoad; UI.R=w.prevR; s.sweep=null;
+      syncLoadUI();
+    }
+  }
+}
+
+/* ======================= ENREGISTREMENT ======================= */
+const dtS=0.05, NBUF=20000;
+const CH=[
+ {id:'U',  name:'U',   unit:'V',  color:'#ffd21f',tc:'#b38a00',panel:0,get:s=>s.U, scale:10,ctr:20,dec:2},
+ {id:'I',  name:'I',   unit:'A',  color:'#27e0ff',tc:'#0088a3',panel:0,get:s=>s.I, scale:2, ctr:5, dec:3},
+ {id:'P',  name:'P',   unit:'W',  color:'#ffa43a',tc:'#c06a00',panel:1,get:s=>s.P, scale:50,ctr:150,dec:1},
+ {id:'Pm', name:'Pmpp',unit:'W',  color:'#ffffff',tc:'#555',   panel:1,get:s=>s.Pm,same:'P',dash:true,secret:true,dec:1,noUI:true},
+ {id:'G',  name:'G',   unit:'W/m²',color:'#9be7a0',tc:'#2a8a40',panel:2,get:s=>s.G, scale:200,ctr:600,dec:0},
+ {id:'Tc', name:'Tc',  unit:'°C', color:'#ff8a65',tc:'#c0502a',panel:3,get:s=>s.Tc,scale:10,ctr:35,dec:1},
+];
+const BYID={}; CH.forEach(c=>BYID[c.id]=c);
+const cfg=c=>c.same?BYID[c.same]:c;
+const chVisible=c=>!(c.secret&&hidden);
+const buf=CH.map(()=>new Float32Array(NBUF));
+let nSamples=0, acc=0;
+function record(){const i=nSamples%NBUF; for(let k=0;k<CH.length;k++) buf[k][i]=CH[k].get(S); nSamples++;}
+function sampleAt(k,t){
+  const jf=t/dtS, j=Math.floor(jf);
+  if(j<0||j+1>=nSamples||j<nSamples-NBUF) return NaN;
+  const fr=jf-j; return buf[k][j%NBUF]*(1-fr)+buf[k][(j+1)%NBUF]*fr;
+}
+function simAdvance(T){
+  acc+=T;
+  while(acc>=dtS){ step(dtS); record(); acc-=dtS; }
+}
+
+/* ======================= OSCILLOSCOPE ======================= */
+const SCALES=[]; for(let e=-3;e<=4;e++) for(const m of [1,2,5]) SCALES.push(parseFloat((m*Math.pow(10,e)).toPrecision(6)));
+const TB=[0.5,1,2,5,10,20];
+let tbIdx=4, running=true, frozenEnd=0, view=null;
+const cur={A:0.3,B:0.7,on:true};
+const cv=$('scope'), g=cv.getContext('2d');
+const SW=1000, SH=634, PL=12, PW=976, PT=10, PH=148, PG=6;
+cv.width=SW; cv.height=SH;
+const PTITLE=['TENSION ET COURANT','PUISSANCE','IRRADIANCE','TEMPÉRATURE DE CELLULE'];
+const fmtDiv=v=>v+' s';
+function fmtT(t){return fx(t,2)+' s';}
+
+function buildScopeUI(){
+  const sel=$('tbSel'); sel.innerHTML='';
+  TB.forEach((v,i)=>{const o=document.createElement('option'); o.value=i; o.textContent=fmtDiv(v)+' / div'; sel.appendChild(o);});
+  sel.value=tbIdx;
+  const box=$('chans'); box.innerHTML='';
+  CH.forEach(c=>{
+    if(c.noUI) return;
+    const d=document.createElement('div'); d.className='chan';
+    d.innerHTML='<span class="dot" style="background:'+c.color+'"></span><b>'+c.name+'</b><select id="sc-'+c.id+'"></select><small>centre</small><input type="number" id="ct-'+c.id+'" step="any"><small>'+c.unit+'</small>';
+    box.appendChild(d);
+    const s=d.querySelector('select');
+    SCALES.forEach(v=>{const o=document.createElement('option'); o.value=v; o.textContent=v+' '+c.unit+'/div'; s.appendChild(o);});
+    s.onchange=()=>{c.scale=parseFloat(s.value); drawScope();};
+    const i=d.querySelector('input'); i.onchange=()=>{c.ctr=parseFloat(i.value)||0; drawScope();};
+  });
+  syncChanUI();
+}
+function syncChanUI(){CH.forEach(c=>{if(c.noUI) return; $('sc-'+c.id).value=c.scale; $('ct-'+c.id).value=parseFloat(c.ctr.toPrecision(6));});}
+const niceScale=x=>SCALES.find(v=>v>=x)||SCALES[SCALES.length-1];
+function defaultScales(){
+  if(hidden){
+    BYID.U.scale=20;BYID.U.ctr=40;BYID.I.scale=2;BYID.I.ctr=5;BYID.P.scale=100;BYID.P.ctr=300;
+  }else{
+    BYID.U.scale=niceScale(plaque.Voc/5.2); BYID.U.ctr=Math.round(plaque.Voc/2);
+    BYID.I.scale=niceScale(plaque.Isc*1.3/5.2); BYID.I.ctr=parseFloat((plaque.Isc*0.65).toPrecision(2));
+    BYID.P.scale=niceScale(plaque.Pmax*1.3/5.2); BYID.P.ctr=Math.round(plaque.Pmax*0.65);
+  }
+  BYID.G.scale=200; BYID.G.ctr=600; BYID.Tc.scale=10; BYID.Tc.ctr=35;
+  syncChanUI();
+}
+
+function drawTrace(c,k,top,tStart,T,jmin,jmax){
+  const f=cfg(c), mid=top+PH/2, ppu=(PH/6)/f.scale, spp=T/PW, dpp=spp/dtS, b=buf[k];
+  const Y=v=>clamp(mid-(v-f.ctr)*ppu,top+1,top+PH-1);
+  g.strokeStyle=c.color; g.lineWidth=1.8; g.setLineDash(c.dash?[6,4]:[]);
+  g.beginPath(); let pen=false;
+  for(let x=0;x<=PW;x++){
+    const t0=tStart+x*spp;
+    if(dpp<=1.5){
+      const jf=t0/dtS, j=Math.floor(jf);
+      if(j<jmin||j+1>jmax){pen=false;continue;}
+      const fr=jf-j, v=b[j%NBUF]*(1-fr)+b[(j+1)%NBUF]*fr, y=Y(v);
+      if(pen) g.lineTo(PL+x,y); else {g.moveTo(PL+x,y);pen=true;}
+    }else{
+      let j0=Math.max(Math.ceil(t0/dtS),jmin), j1=Math.min(Math.floor((t0+spp)/dtS),jmax);
+      if(j1<j0){pen=false;continue;}
+      let mn=Infinity,mx=-Infinity;
+      for(let j=j0;j<=j1;j++){const v=b[j%NBUF]; if(v<mn)mn=v; if(v>mx)mx=v;}
+      const y1=Y(mn),y2=Y(mx);
+      if(pen) g.lineTo(PL+x,y1); else {g.moveTo(PL+x,y1);pen=true;}
+      if(y2!==y1) g.lineTo(PL+x,y2);
+    }
+  }
+  g.stroke(); g.setLineDash([]);
+}
+
+function drawScope(){
+  const Tdiv=TB[tbIdx], T=Tdiv*10;
+  const tEnd=running?Math.max(0,(nSamples-1)*dtS):frozenEnd;
+  const tStart=tEnd-T;
+  view={tStart,tEnd,T};
+  const jmin=Math.max(0,nSamples-NBUF), jmax=nSamples-1;
+  g.fillStyle='#050805'; g.fillRect(0,0,SW,SH);
+  for(let p=0;p<4;p++){
+    const top=PT+p*(PH+PG);
+    g.fillStyle='#0a120a'; g.fillRect(PL,top,PW,PH);
+    g.lineWidth=1; g.strokeStyle='#1f3a1f'; g.beginPath();
+    for(let i=0;i<=10;i++){const x=PL+i*PW/10+.5; g.moveTo(x,top); g.lineTo(x,top+PH);}
+    for(let j=0;j<=6;j++){const y=top+j*PH/6+.5; g.moveTo(PL,y); g.lineTo(PL+PW,y);}
+    g.stroke();
+    g.strokeStyle='#4f8a4f'; g.beginPath(); g.moveTo(PL,top+PH/2+.5); g.lineTo(PL+PW,top+PH/2+.5); g.stroke();
+    g.strokeStyle='#5f9a5f'; g.strokeRect(PL+.5,top+.5,PW-1,PH-1);
+    let li=0;
+    CH.forEach((c,k)=>{
+      if(c.panel!==p||!chVisible(c)) return;
+      drawTrace(c,k,top,tStart,T,jmin,jmax);
+      if(c.noUI) return;
+      g.fillStyle=c.color; g.font='12px Consolas,monospace'; g.textAlign='left';
+      g.fillText(c.name+' : '+c.scale+' '+c.unit+'/div ; centre '+parseFloat(c.ctr.toPrecision(6)),PL+8,top+15+li*14); li++;
+      const y0=top+PH/2-(0-c.ctr)*(PH/6)/c.scale;
+      if(c.ctr!==0 && y0>top+4 && y0<top+PH-4){g.fillStyle=c.color; g.beginPath(); g.moveTo(PL+1,y0-5); g.lineTo(PL+9,y0); g.lineTo(PL+1,y0+5); g.fill(); g.font='9px Consolas,monospace'; g.fillText('0',PL+11,y0+3);}
+    });
+    g.fillStyle='#6fa36f'; g.textAlign='right'; g.font='11px Segoe UI,Arial';
+    g.fillText(PTITLE[p],PL+PW-8,top+14);
+  }
+  g.textAlign='right'; g.font='bold 12px Consolas,monospace';
+  g.fillStyle=running?'#7dff4f':'#ff5a4a'; g.fillText(running?'● RUN':'■ STOP',PL+PW-8,PT+30);
+  g.fillStyle='#cfd8cf'; g.font='11px Consolas,monospace';
+  g.fillText(fmtDiv(Tdiv)+' / div',PL+PW-8,PT+44);
+  const lastTop=PT+3*(PH+PG);
+  g.fillStyle='#9fc59f'; g.font='10px Consolas,monospace'; g.textAlign='center';
+  for(let i=0;i<=10;i+=2){
+    const t=tStart+i*Tdiv; if(t<0) continue;
+    g.fillText(fx(t,Tdiv<1?1:0)+' s',clamp(PL+i*PW/10,PL+22,PL+PW-22),lastTop+PH-4);
+  }
+  if(cur.on){
+    [['A',cur.A,'#ffffff'],['B',cur.B,'#ff9a1f']].forEach(([nm,f,col])=>{
+      const x=PL+f*PW, t=tStart+f*T;
+      g.strokeStyle=col; g.lineWidth=1.3; g.setLineDash([6,4]);
+      g.beginPath(); g.moveTo(x+.5,PT); g.lineTo(x+.5,SH-10); g.stroke(); g.setLineDash([]);
+      g.fillStyle=col; g.font='bold 13px Segoe UI,Arial'; g.textAlign='center';
+      g.fillText(nm,x,PT+PH-6);
+      CH.forEach((c,k)=>{
+        if(!chVisible(c)) return;
+        const v=sampleAt(k,t); if(isNaN(v)) return;
+        const ff=cfg(c), top=PT+c.panel*(PH+PG), y=clamp(top+PH/2-(v-ff.ctr)*(PH/6)/ff.scale,top+1,top+PH-1);
+        g.fillStyle=c.color; g.beginPath(); g.arc(x,y,4,0,2*Math.PI); g.fill();
+        g.strokeStyle=col; g.lineWidth=1; g.stroke();
+      });
+    });
+  }
+}
+
+function updateReadout(){
+  if(!view) return;
+  const tA=view.tStart+cur.A*view.T, tB=view.tStart+cur.B*view.T, dt=tB-tA;
+  $('rdHead').innerHTML='tA = '+fmtT(tA)+' &nbsp; tB = '+fmtT(tB)+' &nbsp; Δt = '+fmtT(dt);
+  let h='<table class="rd"><tr><th>Voie</th><th>A</th><th>B</th><th>B − A</th></tr>';
+  CH.forEach((c,k)=>{
+    if(!chVisible(c)) return;
+    const a=sampleAt(k,tA), b=sampleAt(k,tB);
+    const f=v=>isNaN(v)?'—':fx(v,c.dec);
+    h+='<tr><td style="color:'+c.tc+'">'+c.name+' ('+c.unit+')</td><td>'+f(a)+'</td><td>'+f(b)+'</td><td>'+((isNaN(a)||isNaN(b))?'—':fx(b-a,c.dec))+'</td></tr>';
+  });
+  $('rdTab').innerHTML=h+'</table>';
+}
+
+function stopScope(){ if(!running) return; running=false; frozenEnd=Math.max(0,(nSamples-1)*dtS); $('bRun').textContent='▶ Reprendre'; $('bRun').className='btn btn-green'; }
+function startScope(){ running=true; $('bRun').textContent='⏸ Stop'; $('bRun').className='btn btn-orange'; }
+function setCursor(w,f){ cur[w]=clamp(f,0,1); $('cur'+w).value=cur[w]; drawScope(); updateReadout(); }
+
+function autoScale(){
+  if(!view) return;
+  const j0=Math.max(0,nSamples-NBUF,Math.floor(view.tStart/dtS)), j1=Math.min(nSamples-1,Math.floor(view.tEnd/dtS));
+  if(j1<j0) return;
+  const rng={};
+  CH.forEach((c,k)=>{
+    if(!chVisible(c)) return;
+    const id=cfg(c).id; let mn=Infinity,mx=-Infinity; const st=Math.max(1,Math.floor((j1-j0)/4000));
+    for(let j=j0;j<=j1;j+=st){const v=buf[k][j%NBUF]; if(v<mn)mn=v; if(v>mx)mx=v;}
+    if(!rng[id]) rng[id]=[mn,mx]; else {rng[id][0]=Math.min(rng[id][0],mn); rng[id][1]=Math.max(rng[id][1],mx);}
+  });
+  CH.forEach(c=>{
+    if(c.noUI||!rng[c.id]) return;
+    const [mn,mx]=rng[c.id], span=Math.max(mx-mn,1e-6);
+    const sc=niceScale(span/4.6), q=sc/2;
+    c.scale=sc; c.ctr=Math.round(((mn+mx)/2)/q)*q;
+  });
+  syncChanUI(); drawScope();
+}
+
+let drag=null;
+function pointerF(e){const r=cv.getBoundingClientRect(); return ((e.clientX-r.left)*SW/r.width-PL)/PW;}
+cv.addEventListener('pointerdown',e=>{
+  if(!cur.on){cur.on=true; $('curOn').checked=true;}
+  const f=pointerF(e); drag=Math.abs(f-cur.A)<=Math.abs(f-cur.B)?'A':'B';
+  stopScope(); cv.setPointerCapture(e.pointerId); setCursor(drag,f);
+});
+cv.addEventListener('pointermove',e=>{ if(drag) setCursor(drag,pointerF(e)); });
+cv.addEventListener('pointerup',()=>{drag=null;});
+cv.addEventListener('pointercancel',()=>{drag=null;});
+
+/* ======================= COURBES I(U) ET P(U) ======================= */
+const SWCOL=['#e07b00','#8e44ad','#16a085','#c0392b','#2c3e50'];
+const MECOL=['#7f8c8d','#2980b9','#27ae60','#d35400','#8e44ad'];
+function niceCeil(x){const e=Math.pow(10,Math.floor(Math.log10(x))), f=x/e; return ([1,1.5,2,2.5,3,4,5,6,8,10].find(v=>v>=f-1e-9)||10)*e;}
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/e; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*e;}
+function curvePts(G,Tc,N){
+  const m=model(G,Tc), voc=solveVoc(m), pts=[];
+  for(let i=0;i<=N;i++){const U=voc*i/N; pts.push([U,solveI(U,m)]);}
+  return pts;
+}
+function axesLimits(){
+  if(!hidden) return {V:niceCeil(P.Voc*1.2),I:niceCeil(P.Isc*1.4),W:niceCeil(plaque.Pmax*1.5)};
+  let mu=0,mi=0,mp=0;
+  const add=(u,i)=>{mu=Math.max(mu,u);mi=Math.max(mi,i);mp=Math.max(mp,u*i);};
+  add(S.U,S.I); S.sweeps.forEach(w=>w.pts.forEach(p=>add(p[0],p[1])));
+  return {V:niceCeil(Math.max(mu*1.15,10)),I:niceCeil(Math.max(mi*1.3,1)),W:niceCeil(Math.max(mp*1.3,10))};
+}
+function drawXY(id,kind){
+  const c=$(id), q=c.getContext('2d'), W=c.width, H=c.height;
+  q.clearRect(0,0,W,H); q.fillStyle='#fff'; q.fillRect(0,0,W,H);
+  const L=axesLimits(), xmax=L.V, ymax=kind==='iv'?L.I:L.W;
+  const m={l:56,r:14,t:16,b:44}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const X=u=>m.l+u/xmax*pw, Y=v=>m.t+ph-v/ymax*ph;
+  const fy=(u,i)=>kind==='iv'?i:u*i;
+  q.font='11px Segoe UI,Arial'; q.lineWidth=1; q.strokeStyle='#e3e8f3'; q.fillStyle='#666';
+  const sx=niceStep(xmax/6), sy=niceStep(ymax/6);
+  q.textAlign='center'; for(let v=0;v<=xmax+1e-9;v+=sx){q.beginPath(); q.moveTo(X(v),m.t); q.lineTo(X(v),m.t+ph); q.stroke(); q.fillText(parseFloat(v.toPrecision(4)),X(v),m.t+ph+14);}
+  q.textAlign='right'; for(let v=0;v<=ymax+1e-9;v+=sy){q.beginPath(); q.moveTo(m.l,Y(v)); q.lineTo(m.l+pw,Y(v)); q.stroke(); q.fillText(parseFloat(v.toPrecision(4)),m.l-5,Y(v)+4);}
+  q.strokeStyle='#888'; q.lineWidth=1.5; q.strokeRect(m.l,m.t,pw,ph);
+  q.fillStyle='#444'; q.font='12px Segoe UI,Arial'; q.textAlign='center'; q.fillText('Tension U (V)',m.l+pw/2,H-6);
+  q.save(); q.translate(13,m.t+ph/2); q.rotate(-Math.PI/2); q.fillText(kind==='iv'?'Courant I (A)':'Puissance P (W)',0,0); q.restore();
+  q.save(); q.beginPath(); q.rect(m.l,m.t,pw,ph); q.clip();
+  const line=(pts,col,lw,dash)=>{q.strokeStyle=col; q.lineWidth=lw; q.setLineDash(dash||[]); q.beginPath(); pts.forEach((p,i)=>i?q.lineTo(X(p[0]),Y(fy(p[0],p[1]))):q.moveTo(X(p[0]),Y(fy(p[0],p[1])))); q.stroke(); q.setLineDash([]);};
+  if(!hidden){
+    if($('oSTC').checked) line(curvePts(1000,25,100),'#777',1.8,[6,4]);
+    S.memo.forEach(mc=>line(mc.pts,mc.color,1.8));
+    line(curvePts(S.G,S.Tc,140),'#1f3c88',3);
+  }
+  S.sweeps.forEach(w=>{q.fillStyle=w.color; w.pts.forEach(p=>{q.beginPath(); q.arc(X(p[0]),Y(fy(p[0],p[1])),2.6,0,2*Math.PI); q.fill();});});
+  if(S.sweep){q.fillStyle='#e07b00'; S.sweep.pts.forEach(p=>{q.beginPath(); q.arc(X(p[0]),Y(fy(p[0],p[1])),2.6,0,2*Math.PI); q.fill();});}
+  if(kind==='iv' && UI.load==='R' && UI.R>0){
+    const ue=Math.min(xmax,UI.R*ymax);
+    q.strokeStyle='#999'; q.lineWidth=1.3; q.setLineDash([5,4]); q.beginPath(); q.moveTo(X(0),Y(0)); q.lineTo(X(ue),Y(ue/UI.R)); q.stroke(); q.setLineDash([]);
+  }
+  if(!hidden && S.Pm>0){
+    const mu=S.Vm, my=fy(S.Vm,S.Im);
+    q.strokeStyle='#2d9d57'; q.lineWidth=1; q.setLineDash([3,3]); q.beginPath(); q.moveTo(X(mu),Y(0)); q.lineTo(X(mu),Y(my)); q.lineTo(X(0),Y(my)); q.stroke(); q.setLineDash([]);
+    q.fillStyle='#2d9d57'; q.beginPath(); q.moveTo(X(mu),Y(my)-8); q.lineTo(X(mu)+7,Y(my)); q.lineTo(X(mu),Y(my)+8); q.lineTo(X(mu)-7,Y(my)); q.closePath(); q.fill();
+  }
+  q.fillStyle='#c0392b'; q.beginPath(); q.arc(X(S.U),Y(fy(S.U,S.I)),6,0,2*Math.PI); q.fill(); q.strokeStyle='#fff'; q.lineWidth=2; q.stroke();
+  q.restore();
+  // légende
+  q.font='11px Segoe UI,Arial'; q.textAlign='right';
+  let ly=m.t+14; const lx=m.l+pw-6;
+  const leg=(t,col)=>{q.fillStyle=col; q.fillText('● '+t,lx,ly); ly+=14;};
+  if(!hidden){leg('courbe actuelle','#1f3c88'); if($('oSTC').checked) leg('STC','#777'); S.memo.forEach(mc=>leg(mc.label,mc.color)); leg('◆ point de puissance max.','#2d9d57');}
+  S.sweeps.forEach(w=>leg('relevé '+w.label,w.color));
+  leg('point de fonctionnement','#c0392b');
+  if(hidden && !S.sweeps.length && !S.sweep && kind==='iv'){
+    q.fillStyle='#999'; q.font='13px Segoe UI,Arial'; q.textAlign='center'; q.fillText('Lancez le traceur de caractéristique',m.l+pw/2,m.t+ph/2);
+  }
+}
+function drawInfos(){
+  let h='';
+  if(!hidden){
+    h+='<table class="info"><tr><th colspan="2">Fiche technique (STC : 1000 W/m², 25 °C)</th></tr>'+
+      '<tr><td>Puissance max. Pmax</td><td>'+fx(plaque.Pmax,1)+' W</td></tr>'+
+      '<tr><td>Tension Vmpp / courant Impp</td><td>'+fx(plaque.Vmpp,1)+' V / '+fx(plaque.Impp,2)+' A</td></tr>'+
+      '<tr><td>Tension à vide Voc</td><td>'+fx(plaque.Voc,1)+' V</td></tr>'+
+      '<tr><td>Courant de court-circuit Isc</td><td>'+fx(plaque.Isc,2)+' A</td></tr>'+
+      '<tr><td>Facteur de forme FF</td><td>'+fx(plaque.FF,3)+'</td></tr>'+
+      '<tr><td>Rendement STC</td><td>'+fx(plaque.eta,1)+' %</td></tr>'+
+      '<tr><td>Coefficient de température de Voc</td><td>'+fx(plaque.beta,2)+' %/K</td></tr>'+
+      '<tr><td>Coefficient de température de Isc</td><td>+'+fx(plaque.alpha,2)+' %/K</td></tr>'+
+      '<tr><td>NOCT</td><td>'+fx(plaque.NOCT,0)+' °C</td></tr></table>';
+    h+='<table class="info"><tr><th colspan="2">Conditions actuelles</th></tr>'+
+      '<tr><td>Pmax disponible</td><td>'+fx(S.Pm,1)+' W</td></tr>'+
+      '<tr><td>Vmpp / Impp</td><td>'+fx(S.Vm,1)+' V / '+fx(S.Im,2)+' A</td></tr>'+
+      '<tr><td>P / Pmax</td><td>'+(S.Pm>0.01?fx(S.P/S.Pm*100,1)+' %':'—')+'</td></tr></table>';
+  }else{
+    h+='<table class="info"><tr><th colspan="2">Fiche technique</th></tr><tr><td colspan="2" style="text-align:left;font-family:inherit;font-weight:400">Plaque illisible : à déterminer par les mesures.</td></tr></table>';
+  }
+  const eff=S.G>5?S.P/(S.G*P.A)*100:0;
+  h+='<table class="info"><tr><th colspan="2">Bilan</th></tr>'+
+    '<tr><td>Rendement instantané</td><td>'+(S.G>5?fx(eff,1)+' %':'—')+'</td></tr>'+
+    '<tr><td>Énergie produite</td><td>'+fx(S.Ep,UI.scen==='day'?1:3)+' Wh</td></tr>'+
+    (hidden?'':'<tr><td>Énergie maximale possible</td><td>'+fx(S.Em,UI.scen==='day'?1:3)+' Wh</td></tr><tr><td>Énergie récupérée</td><td>'+(S.Em>1e-6?fx(S.Ep/S.Em*100,1)+' %':'—')+'</td></tr>')+
+    '</table>';
+  $('infos').innerHTML=h;
+}
+
+/* ======================= COMMANDES ======================= */
+function bindPair(id,apply){
+  const sl=$('sl-'+id), nb=$('nb-'+id);
+  sl.addEventListener('input',()=>{nb.value=sl.value; apply(+sl.value);});
+  nb.addEventListener('change',()=>{const v=clamp(parseFloat(nb.value)||0,+sl.min,+sl.max); nb.value=v; sl.value=v; apply(v);});
+}
+function setPair(id,v){$('sl-'+id).value=v; $('nb-'+id).value=v;}
+bindPair('G',v=>{UI.G=v;});
+bindPair('Ta',v=>{UI.Ta=v;});
+bindPair('Tc',v=>{UI.Tc=v;});
+const fmtR=r=>r<10?fx(r,2):r<1000?fx(r,1):fx(r,0);
+$('sl-R').addEventListener('input',()=>{UI.R=0.01*Math.pow(10,(+$('sl-R').value)/100); UI.load='R'; syncLoadUI();});
+$('nb-R').addEventListener('change',()=>{const v=clamp(parseFloat($('nb-R').value)||0.01,0.01,10000); UI.R=v; UI.load='R'; syncLoadUI();});
+function syncLoadUI(){
+  document.querySelectorAll('input[name=load]').forEach(r=>r.checked=(r.value===UI.load));
+  $('sl-R').value=Math.round(100*Math.log10(UI.R/0.01));
+  if(document.activeElement!==$('nb-R')) $('nb-R').value=parseFloat(UI.R.toPrecision(4));
+  $('row-R').classList.toggle('off',UI.load!=='R');
+  $('sw-co-c').style.display=UI.load==='co'?'none':''; $('sw-co-o').style.display=UI.load==='co'?'':'none';
+  $('sw-cc-c').style.display=UI.load==='cc'?'':'none'; $('sw-cc-o').style.display=UI.load==='cc'?'none':'';
+}
+document.querySelectorAll('input[name=load]').forEach(r=>r.addEventListener('change',()=>{
+  if(S.sweep) {syncLoadUI(); return;}
+  UI.load=document.querySelector('input[name=load]:checked').value; syncLoadUI();
+}));
+function syncEnv(){
+  const man=UI.scen==='manual';
+  $('row-G').classList.toggle('off',!man); $('sl-G').disabled=$('nb-G').disabled=!man;
+  $('row-Ta').classList.toggle('off',UI.scen==='day'); $('sl-Ta').disabled=$('nb-Ta').disabled=UI.scen==='day';
+  const f=UI.tcFix; $('row-Tc').classList.toggle('off',!f); $('sl-Tc').disabled=$('nb-Tc').disabled=!f;
+}
+$('scen').addEventListener('change',()=>{UI.scen=$('scen').value; S.ts=0; syncEnv();});
+$('tcFix').addEventListener('change',()=>{UI.tcFix=$('tcFix').checked; syncEnv(); if(UI.tcFix){UI.Tc=Math.round(S.Tc); setPair('Tc',UI.Tc);}});
+$('bSTC').addEventListener('click',()=>{
+  UI.scen='manual'; $('scen').value='manual'; UI.G=1000; setPair('G',1000);
+  UI.tcFix=true; $('tcFix').checked=true; UI.Tc=25; setPair('Tc',25); syncEnv();
+});
+$('bNOCT').addEventListener('click',()=>{
+  UI.scen='manual'; $('scen').value='manual'; UI.G=800; setPair('G',800); UI.Ta=20; setPair('Ta',20);
+  UI.tcFix=false; $('tcFix').checked=false; syncEnv();
+});
+$('bSweep').addEventListener('click',()=>{
+  if(S.sweep) return;
+  if(UI.scen!=='manual'){alert('Le traceur de caractéristique nécessite des conditions stables : choisissez le scénario « Manuel ».'); return;}
+  S.sweep={t:0,T:6,pts:[],prevLoad:UI.load,prevR:UI.R,label:fx(S.G,0)+' W/m², '+fx(S.Tc,0)+' °C'};
+});
+$('bMemo').addEventListener('click',()=>{
+  if(hidden){alert('Panneau inconnu : utilisez le traceur de caractéristique pour relever les courbes.'); return;}
+  S.memo.push({pts:curvePts(S.G,S.Tc,100),label:fx(S.G,0)+' W/m², '+fx(S.Tc,0)+' °C',color:MECOL[S.memo.length%MECOL.length]});
+  if(S.memo.length>5) S.memo.shift();
+});
+$('bClearC').addEventListener('click',()=>{S.memo=[]; S.sweeps=[];});
+$('oSTC').addEventListener('change',()=>{});
+$('bCnt').addEventListener('click',()=>{S.Ep=0; S.Em=0;});
+
+$('auto').addEventListener('click',()=>{
+	const div1 = document.getElementById("catacBtn");
+    div1.style.display = div1.style.display === "none" ? "block" : "none";
+	const div2 = document.getElementById("carac");
+    div2.style.display = div2.style.display === "none" ? "block" : "none";
+});
+
+function resetAll(){
+  UI.scen='manual'; UI.G=1000; UI.Ta=25; UI.tcFix=false; UI.Tc=25; UI.load='R'; UI.R=5;
+  $('scen').value='manual'; $('tcFix').checked=false; setPair('G',1000); setPair('Ta',25); setPair('Tc',25);
+  resetState(); nSamples=0; acc=0; if(!running) startScope(); syncEnv(); syncLoadUI();
+}
+$('bReset').addEventListener('click',resetAll);
+
+/* ======================= AFFICHAGE ======================= */
+function buildRays(){
+  let h=''; for(let i=0;i<12;i++){const a=i*Math.PI/6; h+='<line x1="'+(62+27*Math.cos(a)).toFixed(1)+'" y1="'+(62+27*Math.sin(a)).toFixed(1)+'" x2="'+(62+40*Math.cos(a)).toFixed(1)+'" y2="'+(62+40*Math.sin(a)).toFixed(1)+'" stroke="#f2a900" stroke-width="3"/>';}
+  $('rays').innerHTML=h;
+}
+function buildGrid(){
+  let d=''; for(let i=1;i<10;i++){const x=140+i*17; d+='M'+x+' 150 V260 ';} for(let j=1;j<6;j++){const y=150+j*110/6; d+='M140 '+y.toFixed(1)+' H310 ';}
+  $('pgrid').setAttribute('d',d);
+}
+function updateDisplay(){
+  const o=clamp(S.G/1000,0.05,1);
+  $('rays').style.opacity=o; $('light').style.opacity=o;
+  $('t-g').textContent=fx(S.G,0)+' W/m²';
+  $('t-tc').textContent=fx(S.Tc,1)+' °C';
+  $('t-tech').textContent=hidden?'Technologie inconnue':TECH[P.tech].name;
+  $('t-u').textContent=fx(S.U,2)+' V';
+  $('t-i').textContent=fx(S.I,3)+' A';
+  $('t-p').textContent=fx(S.P,1)+' W';
+  $('t-r').textContent=UI.load==='cc'?'court-circuit':UI.load==='co'?'circuit ouvert':'Rch = '+fmtR(UI.R)+' Ω';
+  syncLoadUI();
+  if(UI.scen!=='manual') setPair('G',Math.round(S.G));
+  if(UI.scen==='day') setPair('Ta',Math.round(S.Ta));
+  if(!UI.tcFix) setPair('Tc',Math.round(S.Tc));
+  const out=[];
+  if(S.sweep) out.push(['info','📈 Relevé de la caractéristique en cours…']);
+  if(UI.scen==='day'&&S.hour!==null){const hh=Math.floor(S.hour), mm=Math.floor((S.hour-hh)*60); out.push(['info','🕒 Heure simulée : '+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')]);}
+  if(UI.scen==='cloud') out.push(['info','☁️ Passage nuageux : observez G, Tc et la puissance sur l\'oscilloscope.']);
+  if(UI.load==='cc') out.push(['info','Court-circuit : U = 0 V, le courant vaut Isc, la puissance est nulle.']);
+  if(UI.load==='co') out.push(['info','Circuit ouvert : I = 0 A, la tension vaut Voc, la puissance est nulle.']);
+  if(S.G<100) out.push(['warn','🌑 Éclairement très faible : le panneau produit peu.']);
+  if(S.Tc>65) out.push(['warn','🌡 Température de cellule élevée : la puissance chute (Voc diminue avec la température).']);
+  if(!hidden && S.Pm>1 && UI.load==='R' && S.P/S.Pm>0.98) out.push(['ok','✅ Vous êtes au voisinage du point de puissance maximale.']);
+  if(hidden) out.push(['info','🎲 Panneau inconnu : plaque, courbes théoriques et point de puissance max. masqués.']);
+  if(!out.length) out.push(['ok','☀️ Panneau en fonctionnement']);
+  $('alerts').innerHTML=out.map(o=>'<div class="al '+o[0]+'">'+o[1]+'</div>').join('');
+}
+
+/* ======================= PARAMETRES ======================= */
+const PF=[{k:'Ns',min:1,int:true},{k:'Isc',min:0.05},{k:'Voc',min:1},{k:'Rs',min:0.001},{k:'Rsh',min:5},{k:'n',min:0.8},{k:'alpha',min:-1},{k:'NOCT',min:20},{k:'A',min:0.05}];
+function fillParams(){
+  $('p-tech').value=hidden?'unk':P.tech; $('p-tech').disabled=hidden;
+  PF.forEach(f=>{const el=$('p-'+f.k); el.disabled=hidden; el.placeholder='?'; el.value=hidden?'':parseFloat(P[f.k].toPrecision(4));});
+  $('hidMsg').style.display=hidden?'':'none'; $('pRev').style.display=hidden?'':'none';
+}
+function applyParams(){
+  if(!setup()) return false;
+  mppCache.clear(); computePlaque(); defaultScales(); return true;
+}
+PF.forEach(f=>$('p-'+f.k).addEventListener('change',()=>{
+  let v=parseFloat($('p-'+f.k).value); if(f.int) v=Math.round(v);
+  if(!(v>=f.min)){fillParams(); return;}
+  const old=P[f.k]; P[f.k]=v;
+  if(!applyParams()){P[f.k]=old; applyParams(); alert('Valeurs incohérentes (Isc, Voc, Rs, Rsh, n, Ns) : la modification est annulée.');}
+  fillParams();
+}));
+$('p-tech').addEventListener('change',()=>{
+  if($('p-tech').value==='unk') return;
+  loadTech($('p-tech').value); hidden=false; applyParams(); fillParams(); resetAll();
+});
+$('pDef').addEventListener('click',()=>{const k=hidden?'mono':P.tech; hidden=false; loadTech(k); applyParams(); fillParams();});
+$('pRnd').addEventListener('click',()=>{
+  const keys=Object.keys(TECH);
+  for(let tries=0;tries<50;tries++){
+    const k=keys[Math.floor(Math.random()*keys.length)], t=TECH[k], r=(a,b)=>a+Math.random()*(b-a);
+    const f=r(0.8,1.25), ns=Math.max(10,Math.round(t.Ns*f)), p2=x=>parseFloat(x.toPrecision(3));
+    P={tech:k,Eg:t.Eg,Ns:ns,Isc:p2(t.Isc*r(0.6,1.5)),Voc:p2(t.Voc*ns/t.Ns*r(0.95,1.05)),Rs:p2(t.Rs*r(0.5,2.2)),Rsh:p2(t.Rsh*r(0.4,2)),
+       n:p2(t.n*r(0.95,1.1)),alpha:t.alpha,NOCT:Math.round(r(43,48)),A:p2(t.A*r(0.6,1.4))};
+    if(setup()){
+      mppCache.clear(); computePlaque();
+      if(plaque.FF>0.55&&plaque.FF<0.85){hidden=true; break;}
+    }
+  }
+  fillParams(); defaultScales(); resetAll();
+});
+$('pRev').addEventListener('click',()=>{hidden=false; fillParams(); defaultScales();});
+$('bParam').addEventListener('click',()=>{fillParams(); $('mdParams').classList.add('show');});
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.hasAttribute('data-close')) m.classList.remove('show'); });
+});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal').classList.remove('show')));
+
+/* ======================= SCOPE CONTROLS ======================= */
+$('bRun').addEventListener('click',()=>{running?stopScope():startScope(); drawScope();});
+$('bAuto').addEventListener('click',autoScale);
+$('tbSel').addEventListener('change',()=>{tbIdx=+$('tbSel').value; drawScope();});
+$('curOn').addEventListener('change',()=>{cur.on=$('curOn').checked; drawScope();});
+$('curA').addEventListener('input',()=>setCursor('A',+$('curA').value));
+$('curB').addEventListener('input',()=>setCursor('B',+$('curB').value));
+
+/* ======================= BOUCLE PRINCIPALE ======================= */
+let lastT=performance.now(), frameN=0, lastDisp=0;
+function frame(now){
+  const dt=Math.min(0.1,(now-lastT)/1000); lastT=now;
+  simAdvance(dt);
+  if(++frameN%2===0) drawScope();
+  if(now-lastDisp>100){lastDisp=now; updateDisplay(); drawXY('iv','iv'); drawXY('pv','pv'); drawInfos(); if(running||frameN%10===0) updateReadout();}
+  requestAnimationFrame(frame);
+}
+
+/* ======================= INIT ======================= */
+loadTech('mono'); setup(); computePlaque();
+resetState(); buildRays(); buildGrid(); buildScopeUI(); defaultScales(); syncEnv(); syncLoadUI();
+for(let i=0;i<200;i++){ step(dtS); record(); }
+drawScope(); updateReadout(); updateDisplay(); drawXY('iv','iv'); drawXY('pv','pv'); drawInfos();
+requestAnimationFrame(frame);
+window.__pv={S:()=>S,UI:UI,P:()=>P,plaque:()=>plaque,sim:simAdvance,model:model,solveVoc:solveVoc,mpp:mppOf,loadTech:loadTech,setup:setup,cp:computePlaque};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformateur triphasé : couplages</title>
+<style>
+:root{--blue:#1f3c88;--blue-light:#f0f4ff;--green:#28a745;--green-dark:#1e7e34;--orange:#e07b00;--red:#c0392b;--gray:#888;--gray-light:#f5f5f5;--border:#dde3f0;--radius:10px;}
+*{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0}
+body{background:linear-gradient(135deg,#f4f6f9,#e9eef5);min-height:100vh;padding:16px}
+.container{max-width:1500px;margin:auto;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden}
+.page-header{background:var(--blue);color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.page-header h1{font-size:1.4rem;font-weight:600}
+.page-header p{font-size:.88rem;opacity:.82;margin-top:3px}
+.teacher{font-size:.8rem;background:rgba(255,255,255,.14);padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:7px;cursor:pointer}
+.main{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--blue-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
+.card.white{background:#fff}
+.section-title{font-size:1rem;font-weight:600;color:var(--blue);border-left:4px solid var(--blue);padding-left:10px;margin-bottom:12px}
+.subtitle{font-size:.86rem;font-weight:600;color:var(--blue);margin:12px 0 6px}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:.84rem}
+.toolbar label{display:flex;align-items:center;gap:6px}
+.toolbar select{padding:5px 7px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.srow{display:flex;align-items:center;gap:8px}
+.srow input[type=range]{accent-color:var(--blue);width:150px}
+.srow input[type=number]{width:70px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.85rem}
+.btn{border:none;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600;transition:.2s;color:#fff}
+.btn-green{background:var(--green)}.btn-green:hover{background:var(--green-dark)}
+.btn-blue{background:var(--blue)}.btn-blue:hover{background:#162d6a}
+.btn-orange{background:var(--orange)}.btn-orange:hover{background:#c06a00}
+.btn-gray{background:#9aa3b5}.btn-gray:hover{background:#838da3}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+#status{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.al{font-size:.82rem;padding:6px 10px;border-radius:6px;font-weight:600}
+.al.ok{background:#e8f8e8;color:var(--green-dark)}
+.al.info{background:#e6efff;color:var(--blue)}
+.al.warn{background:#fff3df;color:#9a5b00}
+.al.bad{background:#fde8e8;color:var(--red)}
+#wiring{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:8px;touch-action:none;user-select:none}
+#wiring .term{cursor:crosshair}
+#wiring .term:hover .tc{fill:#ffe9a8;stroke:#e07b00}
+#wiring .wire{cursor:pointer}
+#wiring .lbl{font-size:12px;font-weight:700;fill:#1f3c88;pointer-events:none}
+#wiring .small{font-size:11px;fill:#555;pointer-events:none}
+.hint{font-size:.82rem;color:#555;line-height:1.5}
+.meas{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px}
+@media (max-width:1100px){.meas{grid-template-columns:1fr}}
+#scope{width:100%;height:auto;display:block;border-radius:8px;border:2px solid #333;background:#000;touch-action:none;cursor:col-resize}
+.scope-ctrl{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0;font-size:.84rem}
+.scope-ctrl select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.curr{display:flex;align-items:center;gap:8px;font-size:.84rem;margin-bottom:6px}
+.curr input[type=range]{flex:1}
+.curr .ca{color:#444;font-weight:700}.curr .cb{color:var(--orange);font-weight:700}
+#rdHead{font-size:.84rem;color:var(--blue);font-weight:600;margin:6px 0}
+table.t{width:100%;border-collapse:collapse;font-size:.82rem;background:#fff}
+table.t th,table.t td{border:1px solid var(--border);padding:4px 8px;text-align:center}
+table.t th{background:var(--blue);color:#fff;font-weight:600}
+table.t td:first-child{text-align:left;font-weight:600}
+.chsel{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 10px;align-items:center;font-size:.82rem;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px}
+.chsel .h{font-weight:700;color:var(--blue)}
+.chsel label{display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
+.sw{width:14px;height:4px;display:inline-block;border-radius:2px}
+.corr{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}
+@media (max-width:900px){.corr{grid-template-columns:1fr}}
+#dial{width:100%;max-width:380px;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px}
+.big{font-size:1.6rem;font-weight:700;color:var(--blue);margin:4px 0 10px}
+.modal{display:none;position:fixed;inset:0;background:rgba(10,20,50,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:12px;padding:20px 24px;max-width:520px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mhead h3{color:var(--blue);font-size:1.1rem}
+.x{border:none;background:none;font-size:1.1rem;cursor:pointer;color:#666}
+.pgrid{display:grid;grid-template-columns:1fr 110px 50px;gap:8px 10px;align-items:center;margin:12px 0}
+.pgrid input{padding:5px 7px;border:1px solid #ccc;border-radius:5px;font-size:.9rem;width:100%}
+.pgrid input:disabled{background:#eee}
+.pgrid span{font-size:.82rem;color:var(--gray)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>🔁 Transformateur triphasé : couplages</h1>
+      <p>Câblez les enroulements, puis mesurez tensions, déphasages, indice horaire et rapports de transformation</p>
+    </div>
+    <label class="teacher"><input type="checkbox" id="showCorr"> 🔓 Afficher la correction</label>
+  </div>
+
+  <div class="main">
+    <!-- ================= CABLAGE ================= -->
+    <div class="card white">
+      <div class="section-title">Câblage : reliez les bornes en glissant d'une borne à l'autre</div>
+      <div class="toolbar">
+        <label><input type="checkbox" id="splitP"> Enroulements primaires en deux demi-bobines</label>
+        <label><input type="checkbox" id="splitS"> Enroulements secondaires en deux demi-bobines (zig-zag)</label>
+        <span class="srow">Tension composée du réseau
+          <input type="range" id="sl-U" min="0" max="480" step="1" value="400"><input type="number" id="nb-U" min="0" max="480" step="1" value="400"> V</span>
+      </div>
+      <div class="toolbar">
+        <label>Exercice : réaliser le couplage
+          <select id="target"><option value="">(câblage libre)</option></select></label>
+        <button class="btn btn-green" id="bCheck">✔ Vérifier mon câblage</button>
+        <button class="btn btn-orange" id="bSol">💡 Montrer la solution</button>
+        <button class="btn btn-gray" id="bClear">🗑 Effacer le câblage</button>
+        <button class="btn btn-blue" id="bParam">🛠 Paramètres</button>
+      </div>
+      <div id="status"></div>
+      <svg id="wiring" viewBox="0 0 1000 490" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="hint" style="margin-top:6px">Glissez d'une borne à une autre pour poser un fil ; cliquez sur un fil pour le supprimer. Les bornes marquées « 1 » sont les débuts d'enroulement (points de polarité). Les enroulements sont dessinés sur trois colonnes : primaire en bas, secondaire en haut.</p>
+    </div>
+
+    <!-- ================= MESURES ================= -->
+    <div class="meas">
+      <div class="card white">
+        <div class="section-title">Oscilloscope : tensions à afficher</div>
+        <canvas id="scope"></canvas>
+        <div class="scope-ctrl">
+          <label>Base de temps <select id="tbSel"></select></label>
+          <label>Échelle <select id="scSel"></select></label>
+          <button class="btn btn-blue" id="bAuto">Auto-échelle</button>
+          <label><input type="checkbox" id="curOn" checked> Curseurs</label>
+        </div>
+        <div class="curr"><span class="ca">A</span><input type="range" id="curA" min="0" max="1" step="0.001" value="0.1"></div>
+        <div class="curr"><span class="cb">B</span><input type="range" id="curB" min="0" max="1" step="0.001" value="0.3"></div>
+        <div id="rdHead"></div><div id="rdTab"></div>
+      </div>
+      <div>
+        <div class="card white" style="margin-bottom:18px">
+          <div class="section-title">Voies affichées</div>
+          <div class="chsel" id="chsel"></div>
+        </div>
+        <div class="card white">
+          <div class="section-title">Valeurs efficaces mesurées</div>
+          <table class="t" id="rmsTab"></table>
+          <p class="hint" style="margin-top:6px">Les rapports de transformation et les déphasages se déduisent de ces valeurs et de l'oscilloscope (φ = 360 × f × Δt).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CORRECTION ================= -->
+    <div class="card white" id="corrCard" style="display:none">
+      <div class="section-title">Correction : couplage détecté</div>
+      <div class="corr">
+        <div>
+          <div class="big" id="cName">—</div>
+          <table class="t" id="corrTab"></table>
+        </div>
+        <canvas id="dial" width="380" height="380"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="mdParams"><div class="mbox">
+  <div class="mhead"><h3>🛠 Paramètres</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">Rapport de transformation des colonnes (N2/N1) : il reste le même quel que soit le couplage.</p>
+  <div class="pgrid">
+    <label for="p-m">Rapport de spires N2/N1</label><input type="number" id="p-m" step="0.05"><span></span>
+    <label for="p-f">Fréquence f</label><input type="number" id="p-f" step="1"><span>Hz</span>
+  </div>
+  <p class="hint" id="hidMsg" style="display:none;color:#9a5b00;font-weight:600">🎲 Rapport de spires inconnu : déterminez-le à partir de vos mesures.</p>
+  <div class="btn-row">
+    <button class="btn btn-green" id="pDef">↺ Valeurs par défaut</button>
+    <button class="btn btn-orange" id="pRnd">🎲 Rapport inconnu</button>
+    <button class="btn btn-gray" id="pRev" style="display:none">👁 Révéler</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const fx=(x,d)=>{const s=x.toFixed(d);return parseFloat(s)===0?(0).toFixed(d):s;};
+const TWO_PI=2*Math.PI, S3=Math.sqrt(3), DEG=180/Math.PI;
+const cabs=a=>Math.hypot(a[0],a[1]), carg=a=>Math.atan2(a[1],a[0]);
+const csub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
+const polar=(r,deg)=>[r*Math.cos(deg/DEG),r*Math.sin(deg/DEG)];
+
+/* ======================= ETAT ======================= */
+const DEF={m:0.5,f:50};
+let P={...DEF}, hidden=false;
+const UI={U:400,sp:false,ss:false,target:''};
+let wires=[], res=null;
+const COLS=['U','V','W'], cols=['u','v','w'];
+
+/* ======================= BORNES ======================= */
+const XC=[330,500,670];
+function termList(sp,ss){
+  const T=[];
+  [['L1',330],['L2',370],['L3',410],['N',450]].forEach(([id,y])=>T.push({id:id,x:60,y:y,dir:1,kind:'src'}));
+  XC.forEach((x,k)=>{
+    const L=COLS[k], l=cols[k];
+    if(!sp){T.push({id:L+'1',x:x-45,y:322,dir:-1,kind:'pri',col:k},{id:L+'2',x:x-45,y:412,dir:-1,kind:'pri',col:k});}
+    else{T.push({id:L+'1',x:x-45,y:318,dir:-1,kind:'pri',col:k},{id:L+'2',x:x-45,y:352,dir:-1,kind:'pri',col:k},{id:L+'3',x:x-45,y:378,dir:-1,kind:'pri',col:k},{id:L+'4',x:x-45,y:412,dir:-1,kind:'pri',col:k});}
+    if(!ss){T.push({id:l+'1',x:x+45,y:152,dir:1,kind:'sec',col:k},{id:l+'2',x:x+45,y:252,dir:1,kind:'sec',col:k});}
+    else{T.push({id:l+'1',x:x+45,y:148,dir:1,kind:'sec',col:k},{id:l+'2',x:x+45,y:187,dir:1,kind:'sec',col:k},{id:l+'3',x:x+45,y:213,dir:1,kind:'sec',col:k},{id:l+'4',x:x+45,y:252,dir:1,kind:'sec',col:k});}
+  });
+  [['a',160],['b',210],['c',260],['n',310]].forEach(([id,y])=>T.push({id:id,x:940,y:y,dir:-1,kind:'out'}));
+  return T;
+}
+const termIds=(sp,ss)=>termList(sp,ss).map(t=>t.id);
+
+/* ======================= ANALYSE ELECTRIQUE ======================= */
+function lsq(rows,n){
+  const A=Array.from({length:n},()=>new Float64Array(n+2));
+  rows.forEach(r=>r.c.forEach(([i,v])=>{A[i][n]+=v*r.re; A[i][n+1]+=v*r.im; r.c.forEach(([j,w])=>{A[i][j]+=v*w;});}));
+  for(let i=0;i<n;i++) A[i][i]+=1e-9;
+  for(let i=0;i<n;i++){
+    let p=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+    [A[i],A[p]]=[A[p],A[i]];
+    const d=A[i][i]; if(Math.abs(d)<1e-14) continue;
+    for(let r=0;r<n;r++){ if(r===i) continue; const f=A[r][i]/d; if(f===0) continue; for(let c=i;c<n+2;c++) A[r][c]-=f*A[i][c]; }
+  }
+  const xr=new Float64Array(n), xi=new Float64Array(n);
+  for(let i=0;i<n;i++){const d=A[i][i]||1; xr[i]=A[i][n]/d; xi[i]=A[i][n+1]/d;}
+  return [xr,xi];
+}
+function analyze(wl,sp,ss,m,U){
+  const ids=termIds(sp,ss), idx={}; ids.forEach((id,i)=>idx[id]=i);
+  const par=ids.map((_,i)=>i), find=x=>{while(par[x]!==x){par[x]=par[par[x]];x=par[x];}return x;};
+  wl.forEach(w=>{if(idx[w.a]===undefined||idx[w.b]===undefined) return; const ra=find(idx[w.a]), rb=find(idx[w.b]); if(ra!==rb) par[ra]=rb;});
+  const netOf={}; let nn=0; ids.forEach(id=>{const r=find(idx[id]); if(netOf[r]===undefined) netOf[r]=nn++;});
+  const net=id=>netOf[find(idx[id])];
+  const Vp=U/S3, Vs={L1:polar(Vp,0),L2:polar(Vp,-120),L3:polar(Vp,120),N:[0,0]};
+  const M={U12:csub(Vs.L1,Vs.L2),U23:csub(Vs.L2,Vs.L3),U31:csub(Vs.L3,Vs.L1),V1:Vs.L1,V2:Vs.L2,V3:Vs.L3};
+  const out={ok:false,problems:[],M:M,e:null,Nwired:false,nWired:false};
+  // enroulements
+  const W=[];
+  for(let k=0;k<3;k++){
+    if(!sp) W.push({s:COLS[k]+'1',e:COLS[k]+'2',k:k,c:1,side:'p'}); else W.push({s:COLS[k]+'1',e:COLS[k]+'2',k:k,c:0.5,side:'p'},{s:COLS[k]+'3',e:COLS[k]+'4',k:k,c:0.5,side:'p'});
+    if(!ss) W.push({s:cols[k]+'1',e:cols[k]+'2',k:k,c:m,side:'s'}); else W.push({s:cols[k]+'1',e:cols[k]+'2',k:k,c:m/2,side:'s'},{s:cols[k]+'3',e:cols[k]+'4',k:k,c:m/2,side:'s'});
+  }
+  const n=3+nn, rows=[];
+  W.forEach(w=>rows.push({c:[[3+net(w.s),1],[3+net(w.e),-1],[w.k,-w.c]],re:0,im:0}));
+  rows.push({c:[[0,1],[1,1],[2,1]],re:0,im:0});
+  // composantes et nets fixés
+  const cp=Array.from({length:nn},(_,i)=>i), cf=x=>{while(cp[x]!==x){cp[x]=cp[cp[x]];x=cp[x];}return x;};
+  const touched=new Array(nn).fill(false);
+  W.forEach(w=>{const a=net(w.s), b=net(w.e); touched[a]=touched[b]=true; const ra=cf(a), rb=cf(b); if(ra!==rb) cp[ra]=rb;});
+  const fixedC={}; 
+  ['L1','L2','L3','N'].forEach(id=>{const q=net(id); rows.push({c:[[3+q,1]],re:Vs[id][0],im:Vs[id][1]}); fixedC[cf(q)]=true;});
+  const gauged={};
+  for(let q=0;q<nn;q++){const r=cf(q); if(!fixedC[r]&&!gauged[r]){gauged[r]=true; rows.push({c:[[3+q,1]],re:0,im:0});}}
+  const [xr,xi]=lsq(rows,n);
+  let rmax=0; rows.forEach(r=>{let sr=-r.re, si=-r.im; r.c.forEach(([i,v])=>{sr+=v*xr[i]; si+=v*xi[i];}); rmax=Math.max(rmax,Math.hypot(sr,si));});
+  const V=id=>{const q=3+net(id); return [xr[q],xi[q]];};
+  out.Nwired=touched[net('N')]; out.nWired=touched[net('n')];
+  // primaire alimenté ?
+  const priOK=W.filter(w=>w.side==='p').every(w=>fixedC[cf(net(w.s))]&&fixedC[cf(net(w.e))]);
+  if(!priOK) out.problems.push(['warn','Primaire incomplet : toutes les colonnes ne sont pas alimentées (reliez L1, L2, L3 et fermez les couplages).']);
+  if(rmax>1e-4*(Vp+1)){out.problems.push(['bad','Câblage incohérent : un enroulement ou une source est court-circuité (tensions incompatibles).']); return out;}
+  if(!priOK) return out;
+  const e=[[xr[0],xi[0]],[xr[1],xi[1]],[xr[2],xi[2]]];
+  out.e=e; out.m=m;
+  M.Ep1=e[0]; M.Ep2=e[1]; M.Ep3=e[2];
+  M.Es1=[m*e[0][0],m*e[0][1]]; M.Es2=[m*e[1][0],m*e[1][1]]; M.Es3=[m*e[2][0],m*e[2][1]];
+  // sorties
+  const okOut=['a','b','c'].every(id=>touched[net(id)]) && cf(net('a'))===cf(net('b')) && cf(net('b'))===cf(net('c')) && !fixedC[cf(net('a'))];
+  if(!okOut){out.problems.push(['warn','Sorties a, b, c non reliées aux enroulements secondaires (ou non reliées entre elles).']); return out;}
+  const Va=V('a'), Vb=V('b'), Vc=V('c');
+  const Vn=out.nWired?V('n'):[(Va[0]+Vb[0]+Vc[0])/3,(Va[1]+Vb[1]+Vc[1])/3];
+  out.virtualN=!out.nWired;
+  M.uab=csub(Va,Vb); M.ubc=csub(Vb,Vc); M.uca=csub(Vc,Va);
+  M.va=csub(Va,Vn); M.vb=csub(Vb,Vn); M.vc=csub(Vc,Vn);
+  out.ok=true; return out;
+}
+function classify(r){return Math.abs(r-S3)<0.05?'Y':Math.abs(r-1)<0.05?'D':Math.abs(r-1.5)<0.05?'Z':'?';}
+function detect(r,m){
+  if(!r||!r.ok) return null;
+  const Ep=cabs(r.e[0]); if(Ep<1e-6) return null;
+  const pt=classify(cabs(r.M.U12)/Ep), st=classify(cabs(r.M.uab)/(m*Ep)).toLowerCase();
+  let lag=((carg(r.M.U12)-carg(r.M.uab))*DEG)%360; if(lag<0) lag+=360;
+  const hour=Math.round(lag/30)%12, dev=Math.abs(lag-Math.round(lag/30)*30);
+  const name=pt+(r.Nwired?'N':'')+st+(r.nWired?'n':'')+hour;
+  return {pt:pt,st:st,N:r.Nwired,n:r.nWired,hour:hour,lag:lag,dev:dev,name:name,
+    kc:cabs(r.M.uab)/cabs(r.M.U12),ks:cabs(r.M.va)/cabs(r.M.V1),kcol:cabs(r.M.Es1)/cabs(r.M.Ep1)};
+}
+
+/* ======================= SOLUTIONS (gabarits de câblage) ======================= */
+const L3s=['L1','L2','L3'];
+function priTemplate(t){
+  const w=[['L1','U1'],['L2','V1'],['L3','W1']];
+  if(t==='Y') w.push(['U2','V2'],['V2','W2']);
+  if(t==='Yr'){return [['L1','U2'],['L2','V2'],['L3','W2'],['U1','V1'],['V1','W1']];}
+  if(t==='D+') w.push(['U2','V1'],['V2','W1'],['W2','U1']);
+  if(t==='D-') w.push(['U1','V2'],['V1','W2'],['W1','U2']);
+  return w;
+}
+function secTemplate(type,r,withN){
+  const c=i=>cols[(i+r)%3], O=['a','b','c'], w=[]; let ss=false;
+  if(type==='y'){[0,1,2].forEach(i=>w.push([O[i],c(i)+'1'])); w.push([c(0)+'2',c(1)+'2'],[c(1)+'2',c(2)+'2']); if(withN) w.push(['n',c(0)+'2']);}
+  if(type==='yr'){[0,1,2].forEach(i=>w.push([O[i],c(i)+'2'])); w.push([c(0)+'1',c(1)+'1'],[c(1)+'1',c(2)+'1']); if(withN) w.push(['n',c(0)+'1']);}
+  if(type==='d+'){[0,1,2].forEach(i=>w.push([O[i],c(i)+'1'])); w.push([c(0)+'2',c(1)+'1'],[c(1)+'2',c(2)+'1'],[c(2)+'2',c(0)+'1']);}
+  if(type==='d-'){[0,1,2].forEach(i=>w.push([O[i],c(i)+'1'])); w.push([c(0)+'1',c(1)+'2'],[c(1)+'1',c(2)+'2'],[c(2)+'1',c(0)+'2']);}
+  if(type==='z'||type==='zr'){
+    ss=true;
+    [0,1,2].forEach(i=>w.push([c(i)+'2',c((i+1)%3)+'4']));
+    if(type==='z'){[0,1,2].forEach(i=>w.push([O[i],c(i)+'1'])); w.push([c(0)+'3',c(1)+'3'],[c(1)+'3',c(2)+'3']); if(withN) w.push(['n',c(0)+'3']);}
+    else{[0,1,2].forEach(i=>w.push([O[i],c((i+1)%3)+'3'])); w.push([c(0)+'1',c(1)+'1'],[c(1)+'1',c(2)+'1']); if(withN) w.push(['n',c(0)+'1']);}
+  }
+  return {w:w,ss:ss};
+}
+const TARGETS=[];
+(function buildTargets(){
+  const seen={}, ok=new Set([0,1,5,6,11]);
+  ['Y','D+','D-','Yr'].forEach(pt=>{
+    ['y','yr','d+','d-','z','zr'].forEach(st=>{
+      for(let r=0;r<3;r++) [false,true].forEach(wn=>{
+        if(wn&&(st==='d+'||st==='d-')) return;
+        const S=secTemplate(st,r,wn), wl=priTemplate(pt).concat(S.w).map(p=>({a:p[0],b:p[1]}));
+        const d=detect(analyze(wl,false,S.ss,0.5,400),0.5);
+        if(!d||d.dev>1||d.pt==='?'||d.st==='?'||!ok.has(d.hour)) return;
+        if(seen[d.name]) return; seen[d.name]=1;
+        TARGETS.push({name:d.name,d:d,wires:wl,ss:S.ss});
+      });
+    });
+  });
+  const order=n=>n.replace(/\d+$/,'')+('0'+n.match(/\d+$/)[0]).slice(-2);
+  TARGETS.sort((a,b)=>order(a.name)<order(b.name)?-1:1);
+})();
+
+/* ======================= DESSIN DU CABLAGE ======================= */
+const svg=$('wiring'), NS='http://www.w3.org/2000/svg';
+const WCOL=['#e74c3c','#2980b9','#27ae60','#8e44ad','#d35400','#16a085','#c0392b','#2c3e50','#f39c12','#7f8c8d'];
+let T=[], TM={}, drag=null, tmp=null;
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n); for(const k in a) e.setAttribute(k,a[k]); if(p) p.appendChild(e); return e;};
+function drawAll(){
+  svg.innerHTML='';
+  T=termList(UI.sp,UI.ss); TM={}; T.forEach(t=>TM[t.id]=t);
+  // fond : cadres
+  el('rect',{x:10,y:290,width:90,height:190,rx:8,fill:'#eef2ff',stroke:'#99a7d6'},svg);
+  el('text',{x:55,y:306,'text-anchor':'middle',class:'lbl'},svg).textContent='RÉSEAU 3~';
+  el('rect',{x:905,y:120,width:90,height:220,rx:8,fill:'#eef7ee',stroke:'#99c9a0'},svg);
+  el('text',{x:950,y:136,'text-anchor':'middle',class:'lbl'},svg).textContent='SORTIES';
+  // noyau
+  el('path',{d:'M'+XC[0]+' 440 V118 H'+XC[2]+' V440 M'+XC[1]+' 118 V440 M'+XC[0]+' 440 H'+XC[2],stroke:'#aab2c5','stroke-width':16,fill:'none','stroke-linejoin':'round'},svg);
+  XC.forEach((x,k)=>{
+    el('text',{x:x,y:106,'text-anchor':'middle',class:'lbl'},svg).textContent='Colonne '+(k+1);
+    // bobines
+    const coil=(y0,y1,fill,stroke,lab,xx)=>{el('rect',{x:x-20,y:y0,width:40,height:y1-y0,rx:6,fill:fill,stroke:stroke,'stroke-width':2},svg);};
+    if(!UI.ss){coil(145,258,'#d9f2dc','#2e8b57'); } else {coil(142,193,'#d9f2dc','#2e8b57'); coil(207,258,'#cfeacd','#2e8b57');}
+    if(!UI.sp){coil(315,418,'#dbe6ff','#3a5bb8'); } else {coil(312,358,'#dbe6ff','#3a5bb8'); coil(372,418,'#cfdcff','#3a5bb8');}
+    el('text',{x:x,y:205,'text-anchor':'middle',class:'small'},svg).textContent=UI.ss?'':'secondaire';
+    el('text',{x:x,y:370,'text-anchor':'middle',class:'small'},svg).textContent=UI.sp?'':'primaire';
+  });
+  // fils
+  const gw=el('g',{},svg);
+  wires.forEach((w,i)=>{
+    const a=TM[w.a], b=TM[w.b]; if(!a||!b) return;
+    const d=wirePath(a,b), col=WCOL[i%WCOL.length];
+    const hit=el('path',{d:d,fill:'none',stroke:'transparent','stroke-width':14,class:'wire'},gw);
+    const vis=el('path',{d:d,fill:'none',stroke:col,'stroke-width':4,'stroke-linecap':'round',opacity:.9,'pointer-events':'none'},gw);
+    hit.addEventListener('click',()=>{wires.splice(i,1); onWiring();});
+    hit.addEventListener('mouseenter',()=>vis.setAttribute('stroke-width',7)); hit.addEventListener('mouseleave',()=>vis.setAttribute('stroke-width',4));
+    el('title',{},hit).textContent='Cliquer pour supprimer ce fil';
+  });
+  tmp=el('path',{d:'',fill:'none',stroke:'#e07b00','stroke-width':3,'stroke-dasharray':'6 4','pointer-events':'none'},svg);
+  // bornes
+  T.forEach(t=>{
+    const g=el('g',{class:'term','data-id':t.id},svg);
+    el('circle',{cx:t.x,cy:t.y,r:14,fill:'transparent'},g);
+    el('circle',{cx:t.x,cy:t.y,r:7,fill:'#fff',stroke:'#222','stroke-width':2.5,class:'tc'},g);
+    const lbl=el('text',{x:t.x+(t.dir>0?(t.kind==='src'?-18:16):(t.kind==='out'?16:-14)),y:t.y+4,'text-anchor':(t.kind==='out'?'start':t.dir>0?(t.kind==='src'?'end':'start'):'end'),class:'lbl'},g);
+    lbl.textContent=t.id;
+    if(/1$/.test(t.id)&&(t.kind==='pri'||t.kind==='sec')) el('circle',{cx:t.x+(t.kind==='sec'?-18:18),cy:t.y,r:3,fill:'#c0392b','pointer-events':'none'},g);
+    // lien borne -> bobine
+    if(t.kind==='pri') el('line',{x1:t.x+7,y1:t.y,x2:XC[t.col]-20,y2:t.y,stroke:'#3a5bb8','stroke-width':2,'pointer-events':'none'},svg);
+    if(t.kind==='sec') el('line',{x1:XC[t.col]+20,y1:t.y,x2:t.x-7,y2:t.y,stroke:'#2e8b57','stroke-width':2,'pointer-events':'none'},svg);
+  });
+}
+function wirePath(a,b){
+  const dist=Math.hypot(a.x-b.x,a.y-b.y), d=clamp(40+dist/3,50,150);
+  return 'M'+a.x+' '+a.y+' C'+(a.x+a.dir*d)+' '+a.y+' '+(b.x+b.dir*d)+' '+b.y+' '+b.x+' '+b.y;
+}
+function pt(e){const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse());}
+function hit(p){let best=null,bd=18; T.forEach(t=>{const d=Math.hypot(t.x-p.x,t.y-p.y); if(d<bd){bd=d; best=t;}}); return best;}
+svg.addEventListener('pointerdown',e=>{
+  const p=pt(e), t=hit(p); if(!t) return;
+  drag={from:t}; svg.setPointerCapture(e.pointerId); e.preventDefault();
+});
+svg.addEventListener('pointermove',e=>{
+  if(!drag||!tmp) return; const p=pt(e);
+  tmp.setAttribute('d','M'+drag.from.x+' '+drag.from.y+' L'+p.x+' '+p.y);
+});
+svg.addEventListener('pointerup',e=>{
+  if(!drag) return; const t=hit(pt(e)), f=drag.from; drag=null; if(tmp) tmp.setAttribute('d','');
+  if(t && t.id!==f.id && !wires.some(w=>(w.a===f.id&&w.b===t.id)||(w.a===t.id&&w.b===f.id))){wires.push({a:f.id,b:t.id}); onWiring();}
+});
+svg.addEventListener('pointercancel',()=>{drag=null; if(tmp) tmp.setAttribute('d','');});
+
+/* ======================= OSCILLOSCOPE ======================= */
+const CHN=[
+ {id:'U12',g:0,k:0,color:'#ffd21f'},{id:'U23',g:0,k:0,color:'#ff9f1c'},{id:'U31',g:0,k:0,color:'#ff6b6b'},
+ {id:'V1',g:0,k:1,color:'#fff176'},{id:'V2',g:0,k:1,color:'#ffcc80'},{id:'V3',g:0,k:1,color:'#ffab91'},
+ {id:'Ep1',g:0,k:2,color:'#e6c200',dash:true},{id:'Ep2',g:0,k:2,color:'#e08600',dash:true},{id:'Ep3',g:0,k:2,color:'#e05555',dash:true},
+ {id:'uab',g:1,k:0,color:'#27e0ff'},{id:'ubc',g:1,k:0,color:'#7dff4f'},{id:'uca',g:1,k:0,color:'#7aa2ff'},
+ {id:'va',g:1,k:1,color:'#a0f0ff'},{id:'vb',g:1,k:1,color:'#b6ff9e'},{id:'vc',g:1,k:1,color:'#b9ccff'},
+ {id:'Es1',g:1,k:2,color:'#00b8d9',dash:true},{id:'Es2',g:1,k:2,color:'#3bd16f',dash:true},{id:'Es3',g:1,k:2,color:'#5a7cff',dash:true},
+];
+const LABEL={U12:'U12',U23:'U23',U31:'U31',V1:'V1',V2:'V2',V3:'V3',Ep1:'Ep1',Ep2:'Ep2',Ep3:'Ep3',uab:'uab',ubc:'ubc',uca:'uca',va:'va',vb:'vb',vc:'vc',Es1:'Es1',Es2:'Es2',Es3:'Es3'};
+const sel=new Set(['U12','uab']);
+function buildChSel(){
+  const box=$('chsel'); box.innerHTML='<span></span><span class="h">Primaire</span><span class="h">Secondaire</span>';
+  ['Composées','Simples','Colonnes'].forEach((nm,k)=>{
+    const s=document.createElement('span'); s.className='h'; s.textContent=nm; box.appendChild(s);
+    [0,1].forEach(g=>{
+      const d=document.createElement('div'); d.style.display='flex'; d.style.gap='8px';
+      CHN.filter(c=>c.g===g&&c.k===k).forEach(c=>{
+        const l=document.createElement('label'); l.innerHTML='<input type="checkbox" data-ch="'+c.id+'"'+(sel.has(c.id)?' checked':'')+'><span class="sw" style="background:'+c.color+'"></span>'+LABEL[c.id];
+        l.querySelector('input').addEventListener('change',e=>{if(e.target.checked) sel.add(c.id); else sel.delete(c.id); drawScope(); updateReadout();});
+        d.appendChild(l);
+      });
+      box.appendChild(d);
+    });
+  });
+}
+const cv=$('scope'), g=cv.getContext('2d');
+const SW=1000, SH=430, PL=12, PW=976, PT=10, PH=392;
+cv.width=SW; cv.height=SH;
+const SCALES=[10,20,50,100,200,500,1000]; let scale=200;
+const TB=[1,2,5,10]; let tbIdx=1; const cur={A:0.1,B:0.3,on:true};
+const omega=()=>TWO_PI*P.f;
+const phasor=id=>res?res.M[id]:null;
+const wave=(id,t)=>{const X=phasor(id); return X?Math.SQRT2*cabs(X)*Math.sin(omega()*t+carg(X)):0;};
+function buildScopeUI(){
+  TB.forEach((v,i)=>{const o=document.createElement('option'); o.value=i; o.textContent=v+' ms / div'; $('tbSel').appendChild(o);}); $('tbSel').value=tbIdx;
+  SCALES.forEach(v=>{const o=document.createElement('option'); o.value=v; o.textContent=v+' V / div'; $('scSel').appendChild(o);}); $('scSel').value=scale;
+}
+function drawScope(){
+  const Tdiv=TB[tbIdx]*1e-3, T=Tdiv*10;
+  g.fillStyle='#050805'; g.fillRect(0,0,SW,SH);
+  g.fillStyle='#0a120a'; g.fillRect(PL,PT,PW,PH);
+  g.lineWidth=1; g.strokeStyle='#1f3a1f'; g.beginPath();
+  for(let i=0;i<=10;i++){const x=PL+i*PW/10+.5; g.moveTo(x,PT); g.lineTo(x,PT+PH);}
+  for(let j=0;j<=8;j++){const y=PT+j*PH/8+.5; g.moveTo(PL,y); g.lineTo(PL+PW,y);}
+  g.stroke();
+  g.strokeStyle='#4f8a4f'; g.beginPath(); g.moveTo(PL,PT+PH/2+.5); g.lineTo(PL+PW,PT+PH/2+.5); g.stroke();
+  g.strokeStyle='#5f9a5f'; g.strokeRect(PL+.5,PT+.5,PW-1,PH-1);
+  const ppu=(PH/8)/scale; let li=0;
+  CHN.forEach(c=>{
+    if(!sel.has(c.id)) return;
+    const ok=!!phasor(c.id);
+    g.strokeStyle=c.color; g.lineWidth=c.dash?1.8:2.2; g.setLineDash(c.dash?[7,4]:[]); g.beginPath();
+    for(let x=0;x<=PW;x++){const y=clamp(PT+PH/2-wave(c.id,x/PW*T)*ppu,PT+1,PT+PH-1); if(x) g.lineTo(PL+x,y); else g.moveTo(PL+x,y);}
+    g.stroke(); g.setLineDash([]);
+    g.fillStyle=c.color; g.font='12px Consolas,monospace'; g.textAlign='left';
+    g.fillText(LABEL[c.id]+(ok?'':' (indisponible)'),PL+8,PT+15+li*14); li++;
+  });
+  g.fillStyle='#cfd8cf'; g.font='11px Consolas,monospace'; g.textAlign='right'; g.fillText(scale+' V/div ; '+TB[tbIdx]+' ms/div',PL+PW-8,PT+14);
+  g.fillStyle='#9fc59f'; g.font='10px Consolas,monospace'; g.textAlign='center';
+  for(let i=0;i<=10;i+=2) g.fillText(fx(i*Tdiv*1000,1)+' ms',clamp(PL+i*PW/10,PL+22,PL+PW-22),PT+PH-4);
+  if(cur.on){
+    [['A',cur.A,'#ffffff'],['B',cur.B,'#ff9a1f']].forEach(([nm,f,col])=>{
+      const x=PL+f*PW, t=f*T;
+      g.strokeStyle=col; g.lineWidth=1.3; g.setLineDash([6,4]); g.beginPath(); g.moveTo(x+.5,PT); g.lineTo(x+.5,PT+PH); g.stroke(); g.setLineDash([]);
+      g.fillStyle=col; g.font='bold 13px Segoe UI,Arial'; g.textAlign='center'; g.fillText(nm,x,PT+PH-18);
+      CHN.forEach(c=>{
+        if(!sel.has(c.id)||!phasor(c.id)) return;
+        const y=clamp(PT+PH/2-wave(c.id,t)*ppu,PT+1,PT+PH-1);
+        g.fillStyle=c.color; g.beginPath(); g.arc(x,y,4,0,TWO_PI); g.fill(); g.strokeStyle=col; g.lineWidth=1; g.stroke();
+      });
+    });
+  }
+}
+function updateReadout(){
+  const T=TB[tbIdx]*1e-2, tA=cur.A*T, tB=cur.B*T, dt=tB-tA;
+  $('rdHead').innerHTML='tA = '+fx(tA*1000,2)+' ms &nbsp; tB = '+fx(tB*1000,2)+' ms &nbsp; Δt = '+fx(dt*1000,2)+' ms &nbsp; 360·f·Δt = '+fx(360*P.f*dt,1)+' °';
+  let h='<table class="t"><tr><th>Voie</th><th>A (V)</th><th>B (V)</th></tr>';
+  CHN.forEach(c=>{if(!sel.has(c.id)) return; const ok=!!phasor(c.id); h+='<tr><td style="color:#444"><span class="sw" style="background:'+c.color+'"></span> '+LABEL[c.id]+'</td><td>'+(ok?fx(wave(c.id,tA),1):'—')+'</td><td>'+(ok?fx(wave(c.id,tB),1):'—')+'</td></tr>';});
+  $('rdTab').innerHTML=h+'</table>';
+}
+let dragC=null;
+function pf(e){const r=cv.getBoundingClientRect(); return ((e.clientX-r.left)*SW/r.width-PL)/PW;}
+function setCur(w,f){cur[w]=clamp(f,0,1); $('cur'+w).value=cur[w]; drawScope(); updateReadout();}
+cv.addEventListener('pointerdown',e=>{if(!cur.on){cur.on=true; $('curOn').checked=true;} const f=pf(e); dragC=Math.abs(f-cur.A)<=Math.abs(f-cur.B)?'A':'B'; cv.setPointerCapture(e.pointerId); setCur(dragC,f);});
+cv.addEventListener('pointermove',e=>{if(dragC) setCur(dragC,pf(e));});
+cv.addEventListener('pointerup',()=>{dragC=null;}); cv.addEventListener('pointercancel',()=>{dragC=null;});
+$('curA').addEventListener('input',()=>setCur('A',+$('curA').value)); $('curB').addEventListener('input',()=>setCur('B',+$('curB').value));
+$('curOn').addEventListener('change',()=>{cur.on=$('curOn').checked; drawScope();});
+$('tbSel').addEventListener('change',()=>{tbIdx=+$('tbSel').value; drawScope(); updateReadout();});
+$('scSel').addEventListener('change',()=>{scale=+$('scSel').value; drawScope();});
+$('bAuto').addEventListener('click',()=>{
+  let mx=1; CHN.forEach(c=>{if(sel.has(c.id)&&phasor(c.id)) mx=Math.max(mx,Math.SQRT2*cabs(phasor(c.id)));});
+  scale=SCALES.find(v=>v*3.6>=mx)||1000; $('scSel').value=scale; drawScope();
+});
+
+/* ======================= TABLEAU DES VALEURS EFFICACES ======================= */
+function updateRms(){
+  const v=id=>{const X=phasor(id); return X?fx(cabs(X),1):'—';};
+  $('rmsTab').innerHTML='<tr><th></th><th>Primaire (V)</th><th>Secondaire (V)</th></tr>'+
+   '<tr><td>Composées</td><td>U12 '+v('U12')+'<br>U23 '+v('U23')+'<br>U31 '+v('U31')+'</td><td>uab '+v('uab')+'<br>ubc '+v('ubc')+'<br>uca '+v('uca')+'</td></tr>'+
+   '<tr><td>Simples</td><td>V1 '+v('V1')+'<br>V2 '+v('V2')+'<br>V3 '+v('V3')+'</td><td>va '+v('va')+'<br>vb '+v('vb')+'<br>vc '+v('vc')+(res&&res.ok&&res.virtualN?'<br><i style="font-weight:400;color:#888">(neutre fictif)</i>':'')+'</td></tr>'+
+   '<tr><td>Colonnes</td><td>Ep1 '+v('Ep1')+'<br>Ep2 '+v('Ep2')+'<br>Ep3 '+v('Ep3')+'</td><td>Es1 '+v('Es1')+'<br>Es2 '+v('Es2')+'<br>Es3 '+v('Es3')+'</td></tr>';
+}
+
+/* ======================= STATUT / CORRECTION ======================= */
+function onWiring(){drawAll(); recompute();}
+function recompute(){
+  res=analyze(wires,UI.sp,UI.ss,P.m,UI.U);
+  const st=[];
+  if(!wires.length) st.push(['info','Câblez l\'appareil : reliez les lignes L1, L2, L3 aux enroulements primaires, réalisez le couplage, puis reliez les sorties a, b, c.']);
+  res.problems.forEach(p=>st.push(p));
+  if(res.ok) st.push(['ok','✅ Transformateur alimenté : mesurez les tensions et les déphasages.']);
+  $('status').innerHTML=st.map(s=>'<div class="al '+s[0]+'">'+s[1]+'</div>').join('');
+  drawScope(); updateReadout(); updateRms(); updateCorr();
+}
+function updateCorr(){
+  if($('corrCard').style.display==='none') return;
+  const d=detect(res,P.m);
+  const row=(a,b,c,d2)=>'<tr><td>'+a+'</td><td>'+b+'</td><td>'+c+'</td><td>'+d2+'</td></tr>';
+  if(!d){ $('cName').textContent='—'; $('corrTab').innerHTML='<tr><td>Câblage incomplet ou incohérent</td></tr>'; drawDial(null); return; }
+  $('cName').textContent=d.name+(d.dev>2?' (indice non standard)':'');
+  $('corrTab').innerHTML='<tr><th>Grandeur</th><th>Valeur</th><th>Grandeur</th><th>Valeur</th></tr>'+
+   row('Couplage primaire',{Y:'étoile (Y)',D:'triangle (D)',Z:'zig-zag (Z)','?':'?'}[d.pt],'Couplage secondaire',{y:'étoile (y)',d:'triangle (d)',z:'zig-zag (z)','?':'?'}[d.st])+
+   row('Retard de uab sur U12',fx(d.lag,1)+' °','Indice horaire',d.hour)+
+   row('Rapport des tensions composées',fx(d.kc,3),'Rapport des tensions simples',fx(d.ks,3))+
+   row('Rapport des colonnes (N2/N1)',fx(d.kcol,3),'Neutre secondaire',res.nWired?'relié (n)':'non relié (neutre fictif)');
+  drawDial(d);
+}
+function drawDial(d){
+  const c=$('dial'), q=c.getContext('2d'), W=c.width, cx=W/2, cy=W/2, R=165; q.clearRect(0,0,W,W);
+  q.strokeStyle='#bbb'; q.lineWidth=2; q.beginPath(); q.arc(cx,cy,R,0,TWO_PI); q.stroke();
+  q.fillStyle='#444'; q.font='bold 14px Segoe UI,Arial'; q.textAlign='center'; q.textBaseline='middle';
+  for(let h=0;h<12;h++){const a=h*30/DEG; q.strokeStyle='#bbb'; q.beginPath(); q.moveTo(cx+(R-8)*Math.sin(a),cy-(R-8)*Math.cos(a)); q.lineTo(cx+R*Math.sin(a),cy-R*Math.cos(a)); q.stroke(); q.fillText(h===0?12:h,cx+(R+14)*Math.sin(a)*0.93,cy-(R+14)*Math.cos(a)*0.93);}
+  q.textBaseline='alphabetic';
+  if(!d||!res.ok) return;
+  const ref=carg(res.M.U12);
+  const arr=(id,L,col,lab)=>{
+    const X=res.M[id]; const lag=ref-carg(X), ex=cx+L*Math.sin(lag), ey=cy-L*Math.cos(lag);
+    q.strokeStyle=col; q.fillStyle=col; q.lineWidth=2.6; q.beginPath(); q.moveTo(cx,cy); q.lineTo(ex,ey); q.stroke();
+    const a=Math.atan2(ey-cy,ex-cx); q.beginPath(); q.moveTo(ex,ey); q.lineTo(ex-10*Math.cos(a-0.4),ey-10*Math.sin(a-0.4)); q.lineTo(ex-10*Math.cos(a+0.4),ey-10*Math.sin(a+0.4)); q.closePath(); q.fill();
+    q.font='bold 12px Segoe UI,Arial'; q.textAlign='center'; q.fillText(lab,cx+(L+12)*Math.sin(lag),cy-(L+12)*Math.cos(lag));
+  };
+  arr('U12',135,'#e08600','U12'); arr('U23',135,'#e08600','U23'); arr('U31',135,'#e08600','U31');
+  arr('uab',100,'#1f9ad6','uab'); arr('ubc',100,'#1f9ad6','ubc'); arr('uca',100,'#1f9ad6','uca');
+  q.fillStyle='#555'; q.font='11px Segoe UI,Arial'; q.textAlign='center'; q.fillText('U12 pris pour référence à 12 h',cx,W-8);
+}
+$('showCorr').addEventListener('change',()=>{$('corrCard').style.display=$('showCorr').checked?'':'none'; updateCorr();});
+
+/* ======================= EXERCICE ======================= */
+TARGETS.forEach(t=>{const o=document.createElement('option'); o.value=t.name; o.textContent=t.name; $('target').appendChild(o);});
+$('target').addEventListener('change',()=>{UI.target=$('target').value;});
+$('bCheck').addEventListener('click',()=>{
+  const tg=TARGETS.find(t=>t.name===UI.target), st=[];
+  const d=detect(res,P.m);
+  if(!tg){st.push(['info','Choisissez d\'abord un couplage à réaliser dans la liste « Exercice ».']);}
+  else if(!d){st.push(['bad','Le câblage est incomplet ou incohérent : le couplage ne peut pas être évalué.']);
+    res.problems.forEach(p=>st.push(p));}
+  else{
+    const ok=d.pt===tg.d.pt&&d.st===tg.d.st&&d.hour===tg.d.hour&&(!tg.d.n||d.n);
+    if(ok) st.push(['ok','🎉 Bravo : vous avez réalisé le couplage '+tg.name+'.']);
+    else{
+      st.push(['bad','Couplage obtenu : '+d.name+' — couplage demandé : '+tg.name+'.']);
+      if(d.pt!==tg.d.pt) st.push(['warn','Primaire : vous avez réalisé un couplage '+({Y:'étoile',D:'triangle',Z:'zig-zag','?':'inconnu'}[d.pt])+', un couplage '+({Y:'étoile',D:'triangle',Z:'zig-zag'}[tg.d.pt])+' est demandé.']);
+      if(d.st!==tg.d.st) st.push(['warn','Secondaire : vous avez réalisé un couplage '+({y:'étoile',d:'triangle',z:'zig-zag','?':'inconnu'}[d.st])+', un couplage '+({y:'étoile',d:'triangle',z:'zig-zag'}[tg.d.st])+' est demandé.']);
+      if(d.pt===tg.d.pt&&d.st===tg.d.st&&d.hour!==tg.d.hour) st.push(['warn','Les couplages sont corrects mais l\'indice horaire est '+d.hour+' au lieu de '+tg.d.hour+' : vérifiez le sens de câblage (début/fin des enroulements) ou les phases reliées.']);
+      if(tg.d.n&&!d.n) st.push(['warn','Le neutre secondaire (borne n) n\'est pas relié au point neutre.']);
+    }
+  }
+  $('status').innerHTML=st.map(s=>'<div class="al '+s[0]+'">'+s[1]+'</div>').join('');
+});
+$('bSol').addEventListener('click',()=>{
+  const tg=TARGETS.find(t=>t.name===UI.target); if(!tg){alert('Choisissez d\'abord un couplage dans la liste « Exercice ».'); return;}
+  if(wires.length && !confirm('Le câblage actuel sera remplacé par la solution. Continuer ?')) return;
+  UI.ss=tg.ss; UI.sp=false; $('splitS').checked=tg.ss; $('splitP').checked=false;
+  wires=tg.wires.map(w=>({a:w.a,b:w.b})); onWiring();
+});
+$('bClear').addEventListener('click',()=>{wires=[]; onWiring();});
+$('splitP').addEventListener('change',()=>{const old=UI.sp; UI.sp=$('splitP').checked; const t=new Set(termIds(UI.sp,UI.ss)); if(wires.some(w=>!t.has(w.a)||!t.has(w.b)) && !confirm('Des fils reliés aux bornes supprimées seront retirés. Continuer ?')){UI.sp=old; $('splitP').checked=old; return;} wires=wires.filter(w=>t.has(w.a)&&t.has(w.b)); onWiring();});
+$('splitS').addEventListener('change',()=>{const old=UI.ss; UI.ss=$('splitS').checked; const t=new Set(termIds(UI.sp,UI.ss)); if(wires.some(w=>!t.has(w.a)||!t.has(w.b)) && !confirm('Des fils reliés aux bornes supprimées seront retirés. Continuer ?')){UI.ss=old; $('splitS').checked=old; return;} wires=wires.filter(w=>t.has(w.a)&&t.has(w.b)); onWiring();});
+
+/* ======================= REGLAGES ======================= */
+$('sl-U').addEventListener('input',()=>{$('nb-U').value=$('sl-U').value; UI.U=+$('sl-U').value; recompute();});
+$('nb-U').addEventListener('change',()=>{const v=clamp(parseFloat($('nb-U').value)||0,0,480); $('nb-U').value=v; $('sl-U').value=v; UI.U=v; recompute();});
+function fillParams(){
+  ['m','f'].forEach(k=>{const e=$('p-'+k); e.disabled=hidden&&k==='m'; e.placeholder='?'; e.value=(hidden&&k==='m')?'':P[k];});
+  $('hidMsg').style.display=hidden?'':'none'; $('pRev').style.display=hidden?'':'none';
+}
+$('p-m').addEventListener('change',()=>{const v=parseFloat($('p-m').value); if(v>=0.05&&v<=10){P.m=v; recompute();} fillParams();});
+$('p-f').addEventListener('change',()=>{const v=parseFloat($('p-f').value); if(v>=10&&v<=100){P.f=v; recompute();} fillParams();});
+$('pDef').addEventListener('click',()=>{P={...DEF}; hidden=false; fillParams(); recompute();});
+$('pRnd').addEventListener('click',()=>{P.m=[0.2,0.25,0.4,0.6,0.75,1,1.5,2,3][Math.floor(Math.random()*9)]; hidden=true; fillParams(); recompute();});
+$('pRev').addEventListener('click',()=>{hidden=false; fillParams();});
+$('bParam').addEventListener('click',()=>{fillParams(); $('mdParams').classList.add('show');});
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close')) m.classList.remove('show');}));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal').classList.remove('show')));
+
+/* ======================= INIT ======================= */
+buildChSel(); buildScopeUI(); drawAll(); recompute();
+})();
+</script>
+</body>
+</html>

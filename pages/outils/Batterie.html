@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batterie virtuelle</title>
+<style>
+:root{--blue:#1f3c88;--blue-light:#f0f4ff;--green:#28a745;--green-dark:#1e7e34;--orange:#e07b00;--red:#c0392b;--gray:#888;--gray-light:#f5f5f5;--border:#dde3f0;--radius:10px;}
+*{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0}
+body{background:linear-gradient(135deg,#f4f6f9,#e9eef5);min-height:100vh;padding:16px}
+.container{max-width:1500px;margin:auto;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden}
+.page-header{background:var(--blue);color:#fff;padding:18px 28px}
+.page-header h1{font-size:1.4rem;font-weight:600}
+.page-header p{font-size:.88rem;opacity:.82;margin-top:3px}
+.main{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
+.top{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px}
+@media (max-width:1050px){.top{grid-template-columns:1fr}}
+.card{background:var(--blue-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
+.card.white{background:#fff}
+.section-title{font-size:1rem;font-weight:600;color:var(--blue);border-left:4px solid var(--blue);padding-left:10px;margin-bottom:12px}
+.subtitle{font-size:.86rem;font-weight:600;color:var(--blue);margin:12px 0 6px}
+#syn{width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:8px;display:block}
+#syn .w{stroke:#222;stroke-width:2;fill:none}
+#syn .sc{stroke:#222;stroke-width:2;fill:#fff}
+#syn .ti{font-size:11px;font-weight:700;fill:#1f3c88;letter-spacing:.4px}
+#syn .sm{font-family:Consolas,"Courier New",monospace;font-size:13px;font-weight:700;fill:#1f3c88}
+#syn .big{font-size:16px;font-weight:700;fill:#222;text-anchor:middle;dominant-baseline:central}
+#syn .tx{font-size:11px;fill:#444}
+#syn .bl{font-family:Consolas,"Courier New",monospace;font-size:12px;fill:#333}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.seg label{display:block}
+.seg input{display:none}
+.seg span{display:block;text-align:center;padding:8px 6px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:.82rem;font-weight:600;color:#555;transition:.15s}
+.seg input:checked+span{border-color:var(--blue);background:var(--blue);color:#fff}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.srow label{min-width:150px;font-size:.84rem;color:#333}
+.srow input[type=range]{flex:1;accent-color:var(--blue);min-width:80px}
+.srow input[type=number]{width:74px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.85rem}
+.srow .u{width:40px;font-size:.82rem;color:var(--gray)}
+.btn{border:none;padding:8px 14px;border-radius:7px;cursor:pointer;font-size:.84rem;font-weight:600;transition:.2s;color:#fff}
+.btn-green{background:var(--green)}.btn-green:hover{background:var(--green-dark)}
+.btn-blue{background:var(--blue)}.btn-blue:hover{background:#162d6a}
+.btn-orange{background:var(--orange)}.btn-orange:hover{background:#c06a00}
+.btn-gray{background:#9aa3b5}.btn-gray:hover{background:#838da3}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.opts{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:8px 0}
+.opts label{display:flex;align-items:center;gap:7px;font-size:.84rem;margin:4px 0;color:#333}
+.opts .t{font-weight:600;color:var(--blue);font-size:.84rem}
+.inl{display:flex;align-items:center;gap:8px;font-size:.84rem;flex-wrap:wrap;margin:6px 0}
+.inl select,.inl input[type=number]{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.inl input[type=number]{width:70px}
+#alerts{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.al{font-size:.82rem;padding:6px 10px;border-radius:6px;font-weight:600}
+.al.ok{background:#e8f8e8;color:var(--green-dark)}
+.al.info{background:#e6efff;color:var(--blue)}
+.al.warn{background:#fff3df;color:#9a5b00}
+.al.bad{background:#fde8e8;color:var(--red)}
+details{margin-top:10px;font-size:.82rem;color:#444;line-height:1.55}
+summary{cursor:pointer;font-weight:600;color:var(--blue)}
+#scope{width:100%;height:auto;display:block;border-radius:8px;border:2px solid #333;background:#000;touch-action:none;cursor:col-resize}
+.scope-ctrl{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.scope-ctrl label{font-size:.84rem;display:flex;align-items:center;gap:6px}
+.scope-ctrl select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:.84rem}
+.scope-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:1050px){.scope-grid{grid-template-columns:1fr}}
+.chans{display:flex;flex-direction:column;gap:6px}
+.chan{display:flex;align-items:center;gap:6px;font-size:.84rem}
+.chan b{min-width:34px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #333}
+.chan select{padding:3px 4px;border:1px solid #ccc;border-radius:5px;font-size:.82rem;flex:1}
+.chan input{width:76px;padding:3px 4px;border:1px solid #ccc;border-radius:5px;font-size:.82rem}
+.chan small{color:var(--gray)}
+.curr{display:flex;align-items:center;gap:8px;font-size:.84rem;margin-bottom:6px}
+.curr input[type=range]{flex:1}
+.curr .ca{color:#444;font-weight:700}.curr .cb{color:var(--orange);font-weight:700}
+#rdHead{font-size:.84rem;color:var(--blue);font-weight:600;margin:6px 0}
+table.rd{width:100%;border-collapse:collapse;font-size:.82rem;background:#fff}
+table.rd th,table.rd td{border:1px solid var(--border);padding:4px 7px;text-align:center}
+table.rd th{background:var(--blue);color:#fff;font-weight:600}
+table.rd td:first-child{text-align:left;font-weight:700}
+.hint{font-size:.82rem;color:#555;line-height:1.5}
+#ocv{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:8px}
+.modal{display:none;position:fixed;inset:0;background:rgba(10,20,50,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:12px;padding:20px 24px;max-width:580px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mhead h3{color:var(--blue);font-size:1.1rem}
+.x{border:none;background:none;font-size:1.1rem;cursor:pointer;color:#666}
+.pgrid{display:grid;grid-template-columns:1fr 110px 50px;gap:8px 10px;align-items:center;margin:12px 0}
+.pgrid input,.pgrid select{padding:5px 7px;border:1px solid #ccc;border-radius:5px;font-size:.9rem;width:100%}
+.pgrid input:disabled{background:#eee}
+.pgrid span{font-size:.82rem;color:var(--gray)}
+.pgrid label{font-size:.88rem}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <h1>🔋 Batterie virtuelle</h1>
+    <p>Charge, décharge, état de charge et tension : étudiez le comportement d'une batterie à courant constant ou sur résistance</p>
+  </div>
+
+  <div class="main">
+    <div class="top">
+      <!-- ============ SYNOPTIQUE ============ -->
+      <div class="card white">
+        <div class="section-title">Synoptique du montage</div>
+        <svg id="syn" viewBox="0 0 780 350" xmlns="http://www.w3.org/2000/svg">
+          <!-- fils -->
+          <path class="w" d="M105 58 V40 H314 M346 40 H520 V92 M105 262 V300 H520 V238 M210 40 V149 M210 181 V300"/>
+          <circle cx="210" cy="40" r="3" fill="#222"/><circle cx="210" cy="300" r="3" fill="#222"/>
+          <!-- batterie -->
+          <rect x="85" y="58" width="40" height="14" rx="3" fill="#444"/>
+          <rect id="bat-body" x="40" y="72" width="130" height="190" rx="10" fill="#fff" stroke="#222" stroke-width="3"/>
+          <rect id="bat-fill" x="48" y="254" width="114" height="0" rx="4" fill="#2d9d57"/>
+          <text class="ti" x="105" y="53" text-anchor="middle" style="font-size:16px">+</text>
+          <text class="ti" x="105" y="283" text-anchor="middle" style="font-size:18px">−</text>
+          <text class="sm" id="b-soc" x="105" y="160" text-anchor="middle" style="font-size:22px;fill:#111;paint-order:stroke;stroke:#fff;stroke-width:4px">50.0 %</text>
+          <text class="tx" x="105" y="180" text-anchor="middle" style="paint-order:stroke;stroke:#fff;stroke-width:3px">état de charge</text>
+          <text class="tx" id="pk-lbl" x="105" y="322" text-anchor="middle">Pack</text>
+          <text class="tx" id="pk-bms" x="105" y="340" text-anchor="middle">BMS : désactivé</text>
+          <!-- instruments -->
+          <circle class="sc" cx="330" cy="40" r="16"/><text class="big" x="330" y="40">A</text>
+          <text class="sm" id="t-i" x="330" y="78" text-anchor="middle">0.00 A</text>
+          <circle class="sc" cx="210" cy="165" r="16"/><text class="big" x="210" y="165">V</text>
+          <text class="sm" id="t-u" x="234" y="169">0.00 V</text>
+          <!-- éléments de droite -->
+          <g id="g-open">
+            <path class="w" d="M520 92 V150 M520 238 V190"/>
+            <line class="w" x1="520" y1="150" x2="545" y2="135"/>
+            <circle cx="520" cy="150" r="3" fill="#222"/><circle cx="520" cy="190" r="3" fill="#222"/>
+            <text class="tx" x="560" y="170">circuit ouvert</text>
+          </g>
+          <g id="g-cs" style="display:none">
+            <path class="w" d="M520 92 V135 M520 195 V238"/>
+            <circle class="sc" cx="520" cy="165" r="30"/>
+            <line class="w" x1="520" y1="180" x2="520" y2="150"/><polygon points="520,146 513,158 527,158" fill="#222"/>
+            <text class="tx" id="cs-lbl" x="560" y="162">Charge à courant constant</text>
+            <text class="sm" id="cs-val" x="560" y="180">I = 0 A</text>
+          </g>
+          <g id="g-r" style="display:none">
+            <path class="w" d="M520 92 V120 L510 128 L530 144 L510 160 L530 176 L510 192 L530 208 L520 214 V238"/>
+            <text class="tx" x="545" y="150">Résistance de charge</text>
+            <text class="sm" id="r-val" x="545" y="168">Rch = 0 Ω</text>
+          </g>
+          <!-- bilan -->
+          <rect x="610" y="60" width="164" height="230" rx="8" fill="#fffbe6" stroke="#b59b00" stroke-width="2"/>
+          <text class="bl" x="622" y="82" font-weight="700">BILAN</text>
+          <text class="bl" x="622" y="106">E (vide) :</text><text class="bl" id="bl-e" x="622" y="122">0.00 V</text>
+          <text class="bl" x="622" y="146">Q déchargée :</text><text class="bl" id="bl-qd" x="622" y="162">0.00 Ah</text>
+          <text class="bl" x="622" y="186">Q chargée :</text><text class="bl" id="bl-qc" x="622" y="202">0.00 Ah</text>
+          <text class="bl" x="622" y="226">Énergie fournie :</text><text class="bl" id="bl-ed" x="622" y="242">0.0 Wh</text>
+          <text class="bl" x="622" y="266">Pertes Joule :</text><text class="bl" id="bl-ej" x="622" y="282">0.0 Wh</text>
+          <text class="tx" id="bl-t" x="692" y="320" text-anchor="middle">t = 0 s</text>
+        </svg>
+      </div>
+
+      <!-- ============ COMMANDES ============ -->
+      <div class="card">
+        <div class="section-title">Commandes</div>
+        <div class="seg" id="modeSeg">
+          <label><input type="radio" name="mode" value="repos" checked><span>⏸ Repos (circuit ouvert)</span></label>
+          <label><input type="radio" name="mode" value="chg"><span>🔌 Charge à courant constant</span></label>
+          <label><input type="radio" name="mode" value="dcc"><span>⚡ Décharge à courant constant</span></label>
+          <label><input type="radio" name="mode" value="dres"><span>💡 Décharge sur résistance</span></label>
+        </div>
+
+        <div class="srow" id="row-Ic" style="display:none">
+          <label>Courant de charge <b>Ic</b></label>
+          <input type="range" id="sl-Ic" min="0" max="40" step="0.1" value="5">
+          <input type="number" id="nb-Ic" min="0" max="40" step="0.1" value="5"><span class="u">A</span>
+        </div>
+        <div class="srow" id="row-Id" style="display:none">
+          <label>Courant de décharge <b>Id</b></label>
+          <input type="range" id="sl-Id" min="0" max="40" step="0.1" value="5">
+          <input type="number" id="nb-Id" min="0" max="40" step="0.1" value="5"><span class="u">A</span>
+        </div>
+        <div class="srow" id="row-R" style="display:none">
+          <label>Résistance de charge <b>Rch</b></label>
+          <input type="range" id="sl-R" min="0.2" max="100" step="0.1" value="5">
+          <input type="number" id="nb-R" min="0.2" max="100" step="0.1" value="5"><span class="u">Ω</span>
+        </div>
+
+        <div class="opts">
+          <div class="t">Modèle avancé (options)</div>
+          <label><input type="checkbox" id="oCV"> Charge CC/CV (régulation de la tension en fin de charge)</label>
+          <label><input type="checkbox" id="oRC"> Relaxation (cellule RC : la tension se rétablit lentement)</label>
+          <label><input type="checkbox" id="oPeu"> Effet Peukert (capacité utile réduite à fort courant)</label>
+          <label><input type="checkbox" id="oBMS"> Protections BMS (coupures en tension mini / maxi)</label>
+        </div>
+
+        <div class="inl">
+          <label>Vitesse de simulation</label>
+          <select id="spd"></select>
+          <button class="btn btn-orange" id="bPause">⏸ Pause</button>
+        </div>
+        <div class="inl">
+          <label>État de charge initial</label>
+          <input type="number" id="soc0" min="0" max="100" step="1" value="50"> %
+          <button class="btn btn-blue" id="bSoc">Appliquer</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-blue" id="bParam">🛠 Paramètres de la batterie</button>
+          <button class="btn btn-gray" id="bCnt">0️⃣ Remettre les compteurs à zéro</button>
+          <button class="btn btn-gray" id="bReset">↺ Réinitialiser le banc</button>
+        </div>
+        <div id="alerts"></div>
+
+        <details>
+          <summary>ℹ️ Aide et conventions</summary>
+          <p>• Convention : <b>I &gt; 0</b> en décharge (la batterie fournit du courant), <b>I &lt; 0</b> en charge.<br>
+          • Le temps de la simulation est accéléré (choisissez la vitesse) ; l'oscilloscope est gradué en temps simulé.<br>
+          • <b>Tension à vide E</b> : tension de la batterie lorsque aucun courant ne circule et que la relaxation est terminée. <b>Tension aux bornes U</b> : tension mesurée par le voltmètre.<br>
+          • Sans option, la batterie est le modèle de Thévenin le plus simple : U = E(SOC) − R·I.<br>
+          • Pour mesurer la résistance interne, observez l'écart de tension à un changement brusque de courant.<br>
+          • Sur l'oscilloscope, cliquez-glissez pour placer les curseurs A et B ; réglez calibre et centre de chaque voie, ou utilisez « Auto-échelle ».</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- ============ COURBE E(SOC) ============ -->
+    <div class="card white">
+      <div class="section-title">Tension à vide E en fonction de l'état de charge</div>
+      <canvas id="ocv" width="1000" height="360"></canvas>
+      <div class="btn-row" style="margin-bottom:0">
+        <button class="btn btn-gray" id="bTrace">Effacer la trace de U</button>
+        <span class="hint">Courbe bleue : E(SOC) du modèle. Points orange : tension U mesurée aux bornes au cours des essais. Pointillés : seuils de tension mini et maxi.</span>
+      </div>
+    </div>
+
+    <!-- ============ OSCILLOSCOPE ============ -->
+    <div class="card white">
+      <div class="section-title">Oscilloscope</div>
+      <canvas id="scope"></canvas>
+      <div class="scope-ctrl">
+        <button class="btn btn-orange" id="bRun">⏸ Stop</button>
+        <button class="btn btn-blue" id="bAuto">Auto-échelle</button>
+        <label>Base de temps <select id="tbSel"></select></label>
+        <label><input type="checkbox" id="curOn" checked> Curseurs</label>
+      </div>
+      <div class="scope-grid">
+        <div>
+          <div class="subtitle" style="margin-top:0">Calibres et centres des voies</div>
+          <div class="chans" id="chans"></div>
+        </div>
+        <div>
+          <div class="subtitle" style="margin-top:0">Curseurs</div>
+          <div class="curr"><span class="ca">A</span><input type="range" id="curA" min="0" max="1" step="0.001" value="0.3"></div>
+          <div class="curr"><span class="cb">B</span><input type="range" id="curB" min="0" max="1" step="0.001" value="0.7"></div>
+          <div id="rdHead"></div>
+          <div id="rdTab"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALE PARAMETRES ============ -->
+<div class="modal" id="mdParams"><div class="mbox">
+  <div class="mhead"><h3>🛠 Paramètres de la batterie</h3><button class="x" data-close>✖</button></div>
+  <p class="hint">Choisir une chimie recharge ses valeurs par défaut. La <b>batterie théorique</b> a une tension à vide qui varie <b>linéairement</b> avec l'état de charge, entre E(0 %) et E(100 %).</p>
+  <div class="pgrid">
+    <label for="p-chem">Chimie</label>
+    <select id="p-chem"><option value="plomb">Plomb</option><option value="nimh">NiMH</option><option value="li">Li-ion</option><option value="theo">Théorique (E linéaire)</option></select><span></span>
+    <label for="p-Qn">Charge nominale Qn</label><input type="number" id="p-Qn" step="1"><span>Ah</span>
+    <label for="p-R">Résistance interne R</label><input type="number" id="p-R" step="5"><span>mΩ</span>
+    <label for="p-nS">Éléments en série</label><input type="number" id="p-nS" step="1"><span></span>
+    <label for="p-Ev">E à 0 % (théorique)</label><input type="number" id="p-Ev" step="0.5"><span>V</span>
+    <label for="p-Ep">E à 100 % (théorique)</label><input type="number" id="p-Ep" step="0.5"><span>V</span>
+    <label for="p-k">Exposant de Peukert k</label><input type="number" id="p-k" step="0.01"><span></span>
+    <label for="p-R1">Résistance de relaxation R1</label><input type="number" id="p-R1" step="5"><span>mΩ</span>
+    <label for="p-tau">Constante de temps de relaxation τ</label><input type="number" id="p-tau" step="10"><span>s</span>
+  </div>
+  <p class="hint">Qn est la capacité sur un régime de décharge de 10 h (C/10). R1 et τ ne servent qu'avec l'option « Relaxation », k qu'avec l'option « Effet Peukert ».</p>
+  <div class="btn-row">
+    <button class="btn btn-green" id="pDef">↺ Valeurs par défaut de la chimie</button>
+    <button class="btn btn-blue" data-close>Fermer</button>
+  </div>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const fx=(x,d)=>{const s=x.toFixed(d);return parseFloat(s)===0?(0).toFixed(d):s;};
+
+/* ======================= CHIMIES ======================= */
+const CHEM={
+ plomb:{name:'Plomb',nS:6,Qn:60,R:15,k:1.25,R1:10,tau:180,vmin:1.75,vmax:2.40,vnom:2.0,
+   tab:[[0,1.95],[0.1,1.98],[0.2,2.00],[0.3,2.03],[0.4,2.05],[0.5,2.07],[0.6,2.09],[0.7,2.11],[0.8,2.13],[0.9,2.15],[1,2.17]]},
+ nimh:{name:'NiMH',nS:10,Qn:10,R:60,k:1.1,R1:30,tau:120,vmin:1.0,vmax:1.5,vnom:1.2,
+   tab:[[0,1.00],[0.05,1.15],[0.1,1.19],[0.2,1.22],[0.4,1.25],[0.6,1.27],[0.8,1.30],[0.9,1.33],[1,1.40]]},
+ li:{name:'Li-ion',nS:4,Qn:20,R:80,k:1.05,R1:40,tau:60,vmin:3.0,vmax:4.2,vnom:3.7,
+   tab:[[0,3.00],[0.05,3.40],[0.1,3.55],[0.2,3.63],[0.3,3.68],[0.4,3.72],[0.5,3.77],[0.6,3.84],[0.7,3.92],[0.8,4.00],[0.9,4.09],[1,4.20]]},
+ theo:{name:'Théorique',nS:1,Qn:10,R:100,k:1.0,R1:50,tau:60,Ev:10,Ep:13}
+};
+let P={};
+function loadChem(key){
+  const c=CHEM[key];
+  P={chem:key,nS:c.nS,Qn:c.Qn,R:c.R/1000,k:c.k,R1:c.R1/1000,tau:c.tau,Ev:c.Ev||10,Ep:c.Ep||13};
+}
+function ocv(soc){
+  if(P.chem==='theo') return P.Ev+(P.Ep-P.Ev)*soc;
+  const t=CHEM[P.chem].tab; soc=clamp(soc,0,1);
+  for(let i=1;i<t.length;i++){
+    if(soc<=t[i][0]){const a=t[i-1],b=t[i]; return P.nS*(a[1]+(b[1]-a[1])*(soc-a[0])/(b[0]-a[0]));}
+  }
+  return P.nS*t[t.length-1][1];
+}
+const vmin=()=>P.chem==='theo'?P.Ev:P.nS*CHEM[P.chem].vmin;
+const vmax=()=>P.chem==='theo'?P.Ep:P.nS*CHEM[P.chem].vmax;
+const vnom=()=>P.chem==='theo'?(P.Ev+P.Ep)/2:P.nS*CHEM[P.chem].vnom;
+
+/* ======================= MODELE ======================= */
+const UI={mode:'repos',Ic:5,Id:5,R:5,cv:false,rc:false,peu:false,bms:false,speed:60,pause:false,soc0:50};
+let S;
+function resetState(soc){
+  S={soc:soc,urc:0,U:0,E:0,I:0,P:0,Pj:0,cut:'',cv:false,
+     Qd:0,Qc:0,Ed:0,Ec:0,Ej:0,t:0,trace:[],trT:0};
+  S.E=ocv(S.soc); S.U=S.E;
+}
+function step(h){
+  const s=S, E=ocv(s.soc), R=P.R;
+  let I=0;
+  if(UI.mode==='dcc') I=UI.Id;
+  else if(UI.mode==='dres') I=(E-s.urc)/(R+UI.R);
+  else if(UI.mode==='chg') I=-UI.Ic;
+  s.cv=false;
+  if(s.cut) I=0;
+  if(!s.cut){
+    if(I>0 && s.soc<=0){I=0; s.cut='empty';}
+    if(I<0 && s.soc>=1){I=0; s.cut='full';}
+  }
+  if(!s.cut && I>0 && UI.bms){
+    const Up=E-R*I-s.urc; if(Up<=vmin()){I=0; s.cut='vmin';}
+  }
+  if(!s.cut && I<0){
+    const Up=E-R*I-s.urc, Iterm=Math.min(0.05*P.Qn,0.2*UI.Ic);
+    if(UI.cv && Up>vmax()){
+      I=(E-s.urc-vmax())/R;
+      if(I>-Iterm){I=0; s.cut='full';} else s.cv=true;
+    }else if(!UI.cv && UI.bms && Up>=vmax()){I=0; s.cut='vmax';}
+  }
+  let Ieff=I;
+  if(I>0 && UI.peu) Ieff=I*Math.pow(I/(P.Qn/10),P.k-1);
+  s.soc=clamp(s.soc-Ieff*h/(3600*P.Qn),0,1);
+  if(UI.rc){const a=Math.exp(-h/P.tau), tg=P.R1*I; s.urc=tg+(s.urc-tg)*a;} else s.urc=0;
+  s.E=ocv(s.soc); s.U=s.E-R*I-s.urc; s.I=I;
+  s.P=s.U*I; s.Pj=R*I*I+(UI.rc?s.urc*s.urc/P.R1:0);
+  if(I>0){s.Qd+=I*h/3600; s.Ed+=s.P*h/3600;}
+  else if(I<0){s.Qc+=-I*h/3600; s.Ec+=-s.P*h/3600;}
+  s.Ej+=s.Pj*h/3600; s.t+=h;
+  s.trT+=h; if(s.trT>=3){s.trT=0; if(I!==0||s.urc!==0){s.trace.push([s.soc*100,s.U]); if(s.trace.length>5000) s.trace.shift();}}
+}
+
+/* ======================= ENREGISTREMENT ======================= */
+const dtS=1, NBUF=120000;
+const CH=[
+ {id:'U',  name:'U',  unit:'V',color:'#ffd21f',tc:'#b38a00',panel:0,get:s=>s.U,     scale:1, ctr:14, dec:2},
+ {id:'E',  name:'E',  unit:'V',color:'#ffffff',tc:'#555',   panel:0,get:s=>s.E,     same:'U',dash:true,dec:3,noUI:true},
+ {id:'I',  name:'I',  unit:'A',color:'#27e0ff',tc:'#0088a3',panel:1,get:s=>s.I,     scale:5, ctr:0,  dec:2},
+ {id:'SOC',name:'SOC',unit:'%',color:'#7dff4f',tc:'#2a8a00',panel:2,get:s=>s.soc*100,scale:20,ctr:50, dec:2},
+ {id:'P',  name:'P',  unit:'W',color:'#ffa43a',tc:'#c06a00',panel:3,get:s=>s.P,     scale:50,ctr:0,  dec:1},
+ {id:'Pj', name:'Pj', unit:'W',color:'#b388ff',tc:'#6a3fb5',panel:3,get:s=>s.Pj,    scale:50,ctr:0,  dec:2},
+];
+const BYID={}; CH.forEach(c=>BYID[c.id]=c);
+const cfg=c=>c.same?BYID[c.same]:c;
+const buf=CH.map(()=>new Float32Array(NBUF));
+let nSamples=0, simT=0;
+function record(){const i=nSamples%NBUF; for(let k=0;k<CH.length;k++) buf[k][i]=CH[k].get(S); nSamples++;}
+function sampleAt(k,t){
+  const jf=t/dtS, j=Math.floor(jf);
+  if(j<0||j+1>=nSamples||j<nSamples-NBUF) return NaN;
+  const fr=jf-j; return buf[k][j%NBUF]*(1-fr)+buf[k][(j+1)%NBUF]*fr;
+}
+function simAdvance(T){
+  while(T>1e-9){
+    const h=Math.min(T,1.0); step(h); T-=h; simT+=h;
+    while(simT>=nSamples*dtS) record();
+  }
+}
+
+/* ======================= OSCILLOSCOPE ======================= */
+const SCALES=[]; for(let e=-3;e<=4;e++) for(const m of [1,2,5]) SCALES.push(parseFloat((m*Math.pow(10,e)).toPrecision(6)));
+const TB=[5,10,30,60,120,300,600,1800,3600];
+let tbIdx=4, running=true, frozenEnd=0, view=null;
+const cur={A:0.3,B:0.7,on:true};
+const cv=$('scope'), g=cv.getContext('2d');
+const SW=1000, SH=634, PL=12, PW=976, PT=10, PH=148, PG=6;
+cv.width=SW; cv.height=SH;
+const PTITLE=['TENSION','COURANT (+ : décharge)','ÉTAT DE CHARGE','PUISSANCE ET PERTES'];
+const fmtDiv=v=>v<60?v+' s':v<3600?(v/60)+' min':(v/3600)+' h';
+function fmtAx(t){return t<120?fx(t,0)+' s':t<7200?fx(t/60,1)+' min':fx(t/3600,2)+' h';}
+function fmtT(t){const a=Math.abs(t);return a<120?fx(t,1)+' s':a<7200?fx(t/60,2)+' min':fx(t/3600,3)+' h';}
+
+function buildScopeUI(){
+  const sel=$('tbSel'); sel.innerHTML='';
+  TB.forEach((v,i)=>{const o=document.createElement('option'); o.value=i; o.textContent=fmtDiv(v)+' / div'; sel.appendChild(o);});
+  sel.value=tbIdx;
+  const box=$('chans'); box.innerHTML='';
+  CH.forEach(c=>{
+    if(c.noUI) return;
+    const d=document.createElement('div'); d.className='chan';
+    d.innerHTML='<span class="dot" style="background:'+c.color+'"></span><b>'+c.name+'</b><select id="sc-'+c.id+'"></select><small>centre</small><input type="number" id="ct-'+c.id+'" step="any"><small>'+c.unit+'</small>';
+    box.appendChild(d);
+    const s=d.querySelector('select');
+    SCALES.forEach(v=>{const o=document.createElement('option'); o.value=v; o.textContent=v+' '+c.unit+'/div'; s.appendChild(o);});
+    s.onchange=()=>{c.scale=parseFloat(s.value); drawScope();};
+    const i=d.querySelector('input'); i.onchange=()=>{c.ctr=parseFloat(i.value)||0; drawScope();};
+  });
+  syncChanUI();
+}
+function syncChanUI(){CH.forEach(c=>{if(c.noUI) return; $('sc-'+c.id).value=c.scale; $('ct-'+c.id).value=parseFloat(c.ctr.toPrecision(6));});}
+function defaultScales(){
+  const lo=Math.min(ocv(0),vmin()), hi=Math.max(ocv(1),vmax()), span=hi-lo;
+  const u=BYID.U; u.scale=span>5.5?(span>11?5:2):1; u.ctr=Math.round((lo+hi)/2);
+  if(u.scale<1) u.scale=1;
+  BYID.I.scale=SCALES.find(v=>v>=P.Qn/4)||5; BYID.I.ctr=0;
+  syncChanUI();
+}
+
+function drawTrace(c,k,top,tStart,T,jmin,jmax){
+  const f=cfg(c), mid=top+PH/2, ppu=(PH/6)/f.scale, spp=T/PW, dpp=spp/dtS, b=buf[k];
+  const Y=v=>clamp(mid-(v-f.ctr)*ppu,top+1,top+PH-1);
+  g.strokeStyle=c.color; g.lineWidth=1.8; g.setLineDash(c.dash?[6,4]:[]);
+  g.beginPath(); let pen=false;
+  for(let x=0;x<=PW;x++){
+    const t0=tStart+x*spp;
+    if(dpp<=1.5){
+      const jf=t0/dtS, j=Math.floor(jf);
+      if(j<jmin||j+1>jmax){pen=false;continue;}
+      const fr=jf-j, v=b[j%NBUF]*(1-fr)+b[(j+1)%NBUF]*fr, y=Y(v);
+      if(pen) g.lineTo(PL+x,y); else {g.moveTo(PL+x,y);pen=true;}
+    }else{
+      let j0=Math.max(Math.ceil(t0/dtS),jmin), j1=Math.min(Math.floor((t0+spp)/dtS),jmax);
+      if(j1<j0){pen=false;continue;}
+      let mn=Infinity,mx=-Infinity;
+      for(let j=j0;j<=j1;j++){const v=b[j%NBUF]; if(v<mn)mn=v; if(v>mx)mx=v;}
+      const y1=Y(mn),y2=Y(mx);
+      if(pen) g.lineTo(PL+x,y1); else {g.moveTo(PL+x,y1);pen=true;}
+      if(y2!==y1) g.lineTo(PL+x,y2);
+    }
+  }
+  g.stroke(); g.setLineDash([]);
+}
+
+function drawScope(){
+  const Tdiv=TB[tbIdx], T=Tdiv*10;
+  const tEnd=running?Math.max(0,(nSamples-1)*dtS):frozenEnd;
+  const tStart=tEnd-T;
+  view={tStart,tEnd,T};
+  const jmin=Math.max(0,nSamples-NBUF), jmax=nSamples-1;
+  g.fillStyle='#050805'; g.fillRect(0,0,SW,SH);
+  for(let p=0;p<4;p++){
+    const top=PT+p*(PH+PG);
+    g.fillStyle='#0a120a'; g.fillRect(PL,top,PW,PH);
+    g.lineWidth=1; g.strokeStyle='#1f3a1f'; g.beginPath();
+    for(let i=0;i<=10;i++){const x=PL+i*PW/10+.5; g.moveTo(x,top); g.lineTo(x,top+PH);}
+    for(let j=0;j<=6;j++){const y=top+j*PH/6+.5; g.moveTo(PL,y); g.lineTo(PL+PW,y);}
+    g.stroke();
+    g.strokeStyle='#4f8a4f'; g.beginPath(); g.moveTo(PL,top+PH/2+.5); g.lineTo(PL+PW,top+PH/2+.5); g.stroke();
+    g.strokeStyle='#5f9a5f'; g.strokeRect(PL+.5,top+.5,PW-1,PH-1);
+    let li=0;
+    CH.forEach((c,k)=>{
+      if(c.panel!==p) return;
+      drawTrace(c,k,top,tStart,T,jmin,jmax);
+      if(c.noUI) return;
+      g.fillStyle=c.color; g.font='12px Consolas,monospace'; g.textAlign='left';
+      g.fillText(c.name+' : '+c.scale+' '+c.unit+'/div ; centre '+parseFloat(c.ctr.toPrecision(6))+' '+c.unit,PL+8,top+15+li*14); li++;
+      // repère du zéro
+      const y0=top+PH/2-(0-c.ctr)*(PH/6)/c.scale;
+      if(c.ctr!==0 && y0>top+4 && y0<top+PH-4){g.fillStyle=c.color; g.beginPath(); g.moveTo(PL+1,y0-5); g.lineTo(PL+9,y0); g.lineTo(PL+1,y0+5); g.fill(); g.font='9px Consolas,monospace'; g.fillText('0',PL+11,y0+3);}
+    });
+    g.fillStyle='#6fa36f'; g.textAlign='right'; g.font='11px Segoe UI,Arial';
+    g.fillText(PTITLE[p],PL+PW-8,top+14);
+  }
+  g.textAlign='right'; g.font='bold 12px Consolas,monospace';
+  g.fillStyle=running?'#7dff4f':'#ff5a4a'; g.fillText(running?'● RUN':'■ STOP',PL+PW-8,PT+30);
+  g.fillStyle='#cfd8cf'; g.font='11px Consolas,monospace';
+  g.fillText(fmtDiv(Tdiv)+' / div',PL+PW-8,PT+44);
+  const lastTop=PT+3*(PH+PG);
+  g.fillStyle='#9fc59f'; g.font='10px Consolas,monospace'; g.textAlign='center';
+  for(let i=0;i<=10;i+=2){
+    const t=tStart+i*Tdiv; if(t<0) continue;
+    g.fillText(fmtAx(t),clamp(PL+i*PW/10,PL+22,PL+PW-22),lastTop+PH-4);
+  }
+  if(cur.on){
+    [['A',cur.A,'#ffffff'],['B',cur.B,'#ff9a1f']].forEach(([nm,f,col])=>{
+      const x=PL+f*PW, t=tStart+f*T;
+      g.strokeStyle=col; g.lineWidth=1.3; g.setLineDash([6,4]);
+      g.beginPath(); g.moveTo(x+.5,PT); g.lineTo(x+.5,SH-10); g.stroke(); g.setLineDash([]);
+      g.fillStyle=col; g.font='bold 13px Segoe UI,Arial'; g.textAlign='center';
+      g.fillText(nm,x,PT+PH-6);
+      CH.forEach((c,k)=>{
+        const v=sampleAt(k,t); if(isNaN(v)) return;
+        const ff=cfg(c), top=PT+c.panel*(PH+PG), y=clamp(top+PH/2-(v-ff.ctr)*(PH/6)/ff.scale,top+1,top+PH-1);
+        g.fillStyle=c.color; g.beginPath(); g.arc(x,y,4,0,2*Math.PI); g.fill();
+        g.strokeStyle=col; g.lineWidth=1; g.stroke();
+      });
+    });
+  }
+}
+
+function updateReadout(){
+  if(!view) return;
+  const tA=view.tStart+cur.A*view.T, tB=view.tStart+cur.B*view.T, dt=tB-tA;
+  $('rdHead').innerHTML='tA = '+fmtT(tA)+' &nbsp; tB = '+fmtT(tB)+' &nbsp; Δt = '+fmtT(dt);
+  let h='<table class="rd"><tr><th>Voie</th><th>A</th><th>B</th><th>B − A</th></tr>';
+  CH.forEach((c,k)=>{
+    const a=sampleAt(k,tA), b=sampleAt(k,tB);
+    const f=v=>isNaN(v)?'—':fx(v,c.dec);
+    h+='<tr><td style="color:'+c.tc+'">'+c.name+' ('+c.unit+')</td><td>'+f(a)+'</td><td>'+f(b)+'</td><td>'+((isNaN(a)||isNaN(b))?'—':fx(b-a,c.dec))+'</td></tr>';
+  });
+  $('rdTab').innerHTML=h+'</table>';
+}
+
+function stopScope(){ if(!running) return; running=false; frozenEnd=Math.max(0,(nSamples-1)*dtS); $('bRun').textContent='▶ Reprendre'; $('bRun').className='btn btn-green'; }
+function startScope(){ running=true; $('bRun').textContent='⏸ Stop'; $('bRun').className='btn btn-orange'; }
+function setCursor(w,f){ cur[w]=clamp(f,0,1); $('cur'+w).value=cur[w]; drawScope(); updateReadout(); }
+
+function autoScale(){
+  if(!view) return;
+  const j0=Math.max(0,nSamples-NBUF,Math.floor(view.tStart/dtS)), j1=Math.min(nSamples-1,Math.floor(view.tEnd/dtS));
+  if(j1<j0) return;
+  const rng={};
+  CH.forEach((c,k)=>{
+    const id=cfg(c).id; let mn=Infinity,mx=-Infinity; const st=Math.max(1,Math.floor((j1-j0)/4000));
+    for(let j=j0;j<=j1;j+=st){const v=buf[k][j%NBUF]; if(v<mn)mn=v; if(v>mx)mx=v;}
+    if(!rng[id]) rng[id]=[mn,mx]; else {rng[id][0]=Math.min(rng[id][0],mn); rng[id][1]=Math.max(rng[id][1],mx);}
+  });
+  CH.forEach(c=>{
+    if(c.noUI) return;
+    const [mn,mx]=rng[c.id], span=Math.max(mx-mn,1e-6);
+    let sc=SCALES.find(v=>v*4.6>=span); if(sc===undefined) sc=SCALES[SCALES.length-1];
+    const ctr=(mn+mx)/2, q=sc/2;
+    c.scale=sc; c.ctr=Math.round(ctr/q)*q;
+  });
+  syncChanUI(); drawScope();
+}
+
+let drag=null;
+function pointerF(e){const r=cv.getBoundingClientRect(); return ((e.clientX-r.left)*SW/r.width-PL)/PW;}
+cv.addEventListener('pointerdown',e=>{
+  if(!cur.on){cur.on=true; $('curOn').checked=true;}
+  const f=pointerF(e); drag=Math.abs(f-cur.A)<=Math.abs(f-cur.B)?'A':'B';
+  stopScope(); cv.setPointerCapture(e.pointerId); setCursor(drag,f);
+});
+cv.addEventListener('pointermove',e=>{ if(drag) setCursor(drag,pointerF(e)); });
+cv.addEventListener('pointerup',()=>{drag=null;});
+cv.addEventListener('pointercancel',()=>{drag=null;});
+
+/* ======================= COURBE E(SOC) ======================= */
+function drawOcv(){
+  const c=$('ocv'), q=c.getContext('2d'), W=c.width, H=c.height;
+  q.clearRect(0,0,W,H); q.fillStyle='#fff'; q.fillRect(0,0,W,H);
+  const m={l:70,r:20,t:20,b:46}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const lo0=Math.min(ocv(0),vmin()), hi0=Math.max(ocv(1),vmax());
+  const stp=(()=>{const raw=(hi0-lo0)/6, e=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/e; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*e;})();
+  const lo=Math.floor((lo0-0.3*stp)/stp)*stp, hi=Math.ceil((hi0+0.3*stp)/stp)*stp;
+  const X=s=>m.l+s/100*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+  q.strokeStyle='#e3e8f3'; q.lineWidth=1; q.fillStyle='#666'; q.font='12px Segoe UI,Arial';
+  q.textAlign='center'; for(let s=0;s<=100;s+=10){q.beginPath(); q.moveTo(X(s),m.t); q.lineTo(X(s),m.t+ph); q.stroke(); q.fillText(s,X(s),m.t+ph+16);}
+  q.textAlign='right'; for(let v=lo;v<=hi+1e-9;v+=stp){q.beginPath(); q.moveTo(m.l,Y(v)); q.lineTo(m.l+pw,Y(v)); q.stroke(); q.fillText(parseFloat(v.toPrecision(5)),m.l-6,Y(v)+4);}
+  q.strokeStyle='#999'; q.lineWidth=1.5; q.strokeRect(m.l,m.t,pw,ph);
+  q.fillStyle='#555'; q.textAlign='center'; q.font='13px Segoe UI,Arial'; q.fillText('État de charge (%)',m.l+pw/2,H-8);
+  q.save(); q.translate(16,m.t+ph/2); q.rotate(-Math.PI/2); q.fillText('Tension (V)',0,0); q.restore();
+  q.setLineDash([7,5]); q.lineWidth=1.5;
+  q.strokeStyle='#c0392b'; q.beginPath(); q.moveTo(m.l,Y(vmin())); q.lineTo(m.l+pw,Y(vmin())); q.stroke();
+  q.strokeStyle='#e07b00'; q.beginPath(); q.moveTo(m.l,Y(vmax())); q.lineTo(m.l+pw,Y(vmax())); q.stroke();
+  q.setLineDash([]); q.font='11px Segoe UI,Arial'; q.textAlign='left';
+  q.fillStyle='#c0392b'; q.fillText('tension mini '+fx(vmin(),2)+' V',m.l+6,Y(vmin())-5);
+  q.fillStyle='#e07b00'; q.fillText('tension maxi '+fx(vmax(),2)+' V',m.l+6,Y(vmax())-5);
+  q.fillStyle='rgba(224,123,0,.55)';
+  S.trace.forEach(p=>{q.beginPath(); q.arc(X(p[0]),Y(clamp(p[1],lo,hi)),2.5,0,2*Math.PI); q.fill();});
+  q.strokeStyle='#1f3c88'; q.lineWidth=3; q.beginPath();
+  for(let s=0;s<=100;s+=1){const x=X(s), y=Y(ocv(s/100)); if(s===0) q.moveTo(x,y); else q.lineTo(x,y);} q.stroke();
+  const ex=X(S.soc*100), ey=Y(S.E), uy=Y(clamp(S.U,lo,hi));
+  q.strokeStyle='#bbb'; q.lineWidth=1; q.setLineDash([3,3]); q.beginPath(); q.moveTo(ex,m.t); q.lineTo(ex,m.t+ph); q.stroke(); q.setLineDash([]);
+  q.fillStyle='#e07b00'; q.beginPath(); q.arc(ex,uy,6,0,2*Math.PI); q.fill(); q.strokeStyle='#fff'; q.lineWidth=2; q.stroke();
+  q.fillStyle='#1f3c88'; q.beginPath(); q.arc(ex,ey,6,0,2*Math.PI); q.fill(); q.strokeStyle='#fff'; q.lineWidth=2; q.stroke();
+  q.font='bold 12px Segoe UI,Arial'; q.textAlign='left';
+  q.fillStyle='#1f3c88'; q.fillText('E',ex+9,ey-8);
+  q.fillStyle='#e07b00'; q.fillText('U',ex+9,uy+16);
+}
+
+/* ======================= COMMANDES ======================= */
+function bindPair(id,apply){
+  const sl=$('sl-'+id), nb=$('nb-'+id);
+  sl.addEventListener('input',()=>{nb.value=sl.value; apply(+sl.value);});
+  nb.addEventListener('change',()=>{const v=clamp(parseFloat(nb.value)||0,+sl.min,+sl.max); nb.value=v; sl.value=v; apply(v);});
+}
+function setPair(id,v){$('sl-'+id).value=v; $('nb-'+id).value=v;}
+bindPair('Ic',v=>{UI.Ic=v; S.cut='';});
+bindPair('Id',v=>{UI.Id=v; S.cut='';});
+bindPair('R', v=>{UI.R=v;  S.cut='';});
+
+function applyMode(){
+  const m=UI.mode;
+  $('row-Ic').style.display=m==='chg'?'flex':'none';
+  $('row-Id').style.display=m==='dcc'?'flex':'none';
+  $('row-R').style.display=m==='dres'?'flex':'none';
+  $('g-open').style.display=m==='repos'?'':'none';
+  $('g-cs').style.display=(m==='chg'||m==='dcc')?'':'none';
+  $('g-r').style.display=m==='dres'?'':'none';
+  $('cs-lbl').textContent=m==='chg'?'Chargeur à courant constant':'Charge à courant constant';
+}
+document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>{
+  UI.mode=document.querySelector('input[name=mode]:checked').value; S.cut=''; applyMode();
+}));
+[['oCV','cv'],['oRC','rc'],['oPeu','peu'],['oBMS','bms']].forEach(([id,k])=>$(id).addEventListener('change',()=>{UI[k]=$(id).checked; S.cut='';}));
+
+const SPEEDS=[1,10,60,300,600,1800,3600];
+SPEEDS.forEach(v=>{const o=document.createElement('option'); o.value=v; o.textContent='× '+v+(v>=60?(' ('+(v>=3600?(v/3600)+' h':(v/60)+' min')+' / s)'):''); $('spd').appendChild(o);});
+$('spd').value=UI.speed;
+$('spd').addEventListener('change',()=>{UI.speed=+$('spd').value;});
+$('bPause').addEventListener('click',()=>{UI.pause=!UI.pause; $('bPause').textContent=UI.pause?'▶ Reprendre':'⏸ Pause'; $('bPause').className='btn '+(UI.pause?'btn-green':'btn-orange');});
+$('bSoc').addEventListener('click',()=>{
+  const v=clamp(parseFloat($('soc0').value)||0,0,100); $('soc0').value=v;
+  S.soc=v/100; S.urc=0; S.cut=''; S.E=ocv(S.soc); S.U=S.E-P.R*S.I-S.urc;
+});
+function resetCounters(){S.Qd=S.Qc=S.Ed=S.Ec=S.Ej=0; S.t=0;}
+$('bCnt').addEventListener('click',resetCounters);
+function resetAll(){
+  resetState(clamp((parseFloat($('soc0').value)||50)/100,0,1));
+  nSamples=0; simT=0; if(!running) startScope();
+}
+$('bReset').addEventListener('click',resetAll);
+$('bTrace').addEventListener('click',()=>{S.trace.length=0;});
+
+/* ======================= AFFICHAGE / ALERTES ======================= */
+function updateDisplay(){
+  const m=UI.mode;
+  $('b-soc').textContent=fx(S.soc*100,1)+' %';
+  const fh=Math.round(S.soc*174);
+  const bf=$('bat-fill'); bf.setAttribute('height',fh); bf.setAttribute('y',254-fh);
+  bf.setAttribute('fill',S.soc>0.5?'#2d9d57':S.soc>0.2?'#e0a02b':'#c0392b');
+  $('t-i').textContent=(S.I>0?'+':'')+fx(S.I,2)+' A';
+  $('t-u').textContent=fx(S.U,2)+' V';
+  $('bl-e').textContent=fx(S.E,3)+' V';
+  $('bl-qd').textContent=fx(S.Qd,2)+' Ah';
+  $('bl-qc').textContent=fx(S.Qc,2)+' Ah';
+  $('bl-ed').textContent=fx(S.Ed,1)+' Wh';
+  $('bl-ej').textContent=fx(S.Ej,1)+' Wh';
+  $('bl-t').textContent='t = '+fmtT(S.t);
+  $('cs-val').textContent='I = '+fx(m==='chg'?UI.Ic:UI.Id,1)+' A';
+  $('r-val').textContent='Rch = '+fx(UI.R,1)+' Ω';
+  $('pk-lbl').textContent=CHEM[P.chem].name+(P.chem==='theo'?'':' '+P.nS+'S')+' — '+fx(vnom(),1)+' V — '+fx(P.Qn,0)+' Ah';
+  $('pk-bms').textContent='BMS : '+(UI.bms?(S.cut==='vmin'||S.cut==='vmax'?'coupure':'actif'):'désactivé');
+  const out=[];
+  const c=S.cut;
+  if(c==='vmin') out.push(['bad','🛑 BMS : tension minimale atteinte, décharge interrompue (SOC = '+fx(S.soc*100,1)+' %).']);
+  if(c==='vmax') out.push(['bad','🛑 BMS : tension maximale atteinte, charge interrompue (SOC = '+fx(S.soc*100,1)+' %).']);
+  if(c==='empty') out.push(['bad','🪫 Batterie vide (SOC = 0 %) : décharge interrompue.']);
+  if(c==='full') out.push(['ok',UI.cv?'✅ Charge terminée (courant de fin de charge atteint, SOC = '+fx(S.soc*100,1)+' %).':'🔋 Batterie pleine (SOC = 100 %) : charge interrompue.']);
+  if(S.cv) out.push(['info','⚡ Phase à tension constante : le courant de charge diminue.']);
+  if(!c && S.I>0 && S.U<vmin()-1e-6 && !UI.bms) out.push(['warn','⚠ Tension inférieure à la tension minimale : décharge profonde (risque de dégradation).']);
+  if(!c && S.I<0 && S.U>vmax()+1e-6 && !UI.cv) out.push(['warn','⚠ Tension supérieure à la tension maximale de charge : risque de surcharge.']);
+  if(Math.abs(S.I)>2*P.Qn) out.push(['warn','⚠ Courant supérieur à 2C : régime très sévère pour la batterie.']);
+  if(UI.rc && m==='repos' && Math.abs(S.urc)>0.005) out.push(['info','⏳ Relaxation en cours : la tension n\'a pas encore atteint E.']);
+  if(UI.peu && S.I>0) out.push(['info','Effet Peukert actif : la capacité utile diminue quand le courant augmente.']);
+  if(!out.length) out.push(['ok',m==='repos'?'⏸ Batterie au repos':m==='chg'?'🔌 Charge en cours':'⚡ Décharge en cours']);
+  $('alerts').innerHTML=out.map(o=>'<div class="al '+o[0]+'">'+o[1]+'</div>').join('');
+}
+
+/* ======================= PARAMETRES ======================= */
+const PF=[{k:'Qn',conv:1,min:0.1},{k:'R',conv:1000,min:1},{k:'nS',conv:1,min:1,int:true},{k:'Ev',conv:1,min:0.1},{k:'Ep',conv:1,min:0.2},{k:'k',conv:1,min:1},{k:'R1',conv:1000,min:1},{k:'tau',conv:1,min:1}];
+function fillParams(){
+  $('p-chem').value=P.chem;
+  PF.forEach(f=>{$('p-'+f.k).value=parseFloat((P[f.k]*f.conv).toPrecision(4));});
+  const th=P.chem==='theo';
+  $('p-nS').disabled=th; $('p-Ev').disabled=!th; $('p-Ep').disabled=!th;
+}
+function afterParams(){
+  const mx=Math.max(1,Math.ceil(P.Qn*2));
+  ['sl-Ic','nb-Ic','sl-Id','nb-Id'].forEach(id=>$(id).max=mx);
+  ['Ic','Id'].forEach(k=>{if(UI[k]>mx){UI[k]=mx; setPair(k,mx);}});
+  S.E=ocv(S.soc);
+}
+PF.forEach(f=>$('p-'+f.k).addEventListener('change',()=>{
+  let v=parseFloat($('p-'+f.k).value); if(f.int) v=Math.round(v);
+  if(!(v>=f.min)){fillParams(); return;}
+  if(f.k==='Ep' && v<=P.Ev){fillParams(); return;}
+  if(f.k==='Ev' && v>=P.Ep){fillParams(); return;}
+  P[f.k]=v/f.conv; afterParams(); fillParams(); defaultScales();
+}));
+$('p-chem').addEventListener('change',()=>{
+  loadChem($('p-chem').value); fillParams(); afterParams(); resetAll(); defaultScales(); S.trace.length=0;
+});
+$('pDef').addEventListener('click',()=>{loadChem(P.chem); fillParams(); afterParams(); defaultScales();});
+$('bParam').addEventListener('click',()=>{fillParams(); $('mdParams').classList.add('show');});
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.hasAttribute('data-close')) m.classList.remove('show'); });
+});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal').classList.remove('show')));
+
+/* ======================= SCOPE CONTROLS ======================= */
+$('bRun').addEventListener('click',()=>{running?stopScope():startScope(); drawScope();});
+$('bAuto').addEventListener('click',autoScale);
+$('tbSel').addEventListener('change',()=>{tbIdx=+$('tbSel').value; drawScope();});
+$('curOn').addEventListener('change',()=>{cur.on=$('curOn').checked; drawScope();});
+$('curA').addEventListener('input',()=>setCursor('A',+$('curA').value));
+$('curB').addEventListener('input',()=>setCursor('B',+$('curB').value));
+
+/* ======================= BOUCLE PRINCIPALE ======================= */
+let lastT=performance.now(), frameN=0, lastDisp=0;
+function frame(now){
+  const dt=Math.min(0.1,(now-lastT)/1000); lastT=now;
+  if(!UI.pause) simAdvance(dt*UI.speed);
+  if(++frameN%2===0) drawScope();
+  if(now-lastDisp>100){lastDisp=now; updateDisplay(); drawOcv(); if(running||frameN%10===0) updateReadout();}
+  requestAnimationFrame(frame);
+}
+
+/* ======================= INIT ======================= */
+loadChem('li'); resetState(0.5);
+buildScopeUI(); defaultScales(); fillParams(); afterParams(); applyMode();
+record(); drawScope(); updateReadout(); updateDisplay(); drawOcv();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

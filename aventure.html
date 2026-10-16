@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mode aventure – BTS Électrotechnique</title>
+<style>
+:root{
+  --blue:#1f3c88; --blue-light:#f0f4ff; --green:#28a745; --green-dark:#1e7e34;
+  --orange:#e07b00; --gray:#7d8597; --border:#dde3f0;
+}
+*{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif}
+body{margin:0;background:linear-gradient(135deg,#f4f6f9,#e9eef5);min-height:100vh;padding:16px}
+.container{max-width:820px;margin:auto;background:#fff;border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);padding:26px 28px}
+@media (max-width:600px){.container{padding:18px 14px;border-radius:8px}}
+
+h1{margin:0 0 4px;font-size:1.5rem;color:var(--blue)}
+.sous{margin:0 0 18px;color:#555;font-size:.92rem;line-height:1.5}
+
+.bilan{background:var(--blue-light);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:26px}
+.barre{height:22px;background:#e3e8f4;border-radius:11px;overflow:hidden;margin:8px 0 12px}
+.remplissage{height:100%;background:var(--green);color:#fff;font-size:.78rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;min-width:34px;transition:width .4s}
+.bilan-bas{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.detail{font-size:.85rem;color:#444}
+
+.bouton{display:inline-block;background:var(--green);color:#fff;text-decoration:none;border:none;
+  padding:10px 22px;border-radius:7px;font-size:.95rem;font-weight:600;cursor:pointer;transition:.2s}
+.bouton:hover{background:var(--green-dark)}
+.bouton.fini{background:var(--blue);cursor:default}
+
+.niveau{margin-bottom:12px}
+.niveau summary{display:flex;align-items:baseline;gap:10px;cursor:pointer;list-style:none;
+  font-size:1.05rem;font-weight:600;color:var(--blue);padding:9px 4px;border-bottom:2px solid var(--border)}
+.niveau summary::-webkit-details-marker{display:none}
+.niveau summary::before{content:"▸";display:inline-block;transition:transform .15s}
+.niveau[open] summary::before{transform:rotate(90deg)}
+.niveau summary .nt{flex:1}
+.niveau summary small{font-size:.8rem;font-weight:500;color:var(--gray);white-space:nowrap}
+.niveau.complet summary{border-bottom-color:var(--green)}
+.niveau.complet summary small{color:var(--green-dark)}
+.niveau[open] .chemin{margin-top:16px;margin-bottom:10px}
+[hidden]{display:none !important}
+.boutons{display:flex;gap:10px;flex-wrap:wrap}
+.bouton.secondaire{background:#fff;color:var(--orange);border:2px solid var(--orange);padding:8px 18px}
+.bouton.secondaire:hover{background:#fff6ea}
+.outils{display:flex;justify-content:flex-end;gap:18px;margin-bottom:6px}
+.lien-outil{background:none;border:none;padding:0;color:var(--blue);cursor:pointer;font-size:.84rem;text-decoration:underline}
+
+.chemin{list-style:none;margin:0;padding:0}
+.etape{position:relative;padding:0 0 14px 46px}
+.etape:last-child{padding-bottom:0}
+.etape::before{content:"";position:absolute;left:15px;top:30px;bottom:-2px;width:3px;background:var(--border)}
+.etape:last-child::before{display:none}
+.etape.valide::before{background:var(--green)}
+.noeud{position:absolute;left:0;top:0;width:33px;height:33px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;
+  background:#fff;border:3px solid var(--border);color:var(--gray)}
+.etape.valide .noeud{background:var(--green);border-color:var(--green);color:#fff}
+.etape.passe .noeud{background:#fff;border-color:var(--orange);color:var(--orange)}
+.etape.courante .noeud{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 5px rgba(31,60,136,.15)}
+
+.carte{border:1px solid var(--border);border-radius:9px;padding:10px 14px;background:#fff}
+.etape.courante .carte{border:2px solid var(--blue);background:var(--blue-light)}
+.etape.verrou .carte{background:#f7f8fb;color:var(--gray)}
+.titre{font-size:.95rem;font-weight:600;line-height:1.35}
+.titre a{color:inherit;text-decoration:none}
+.titre a:hover{text-decoration:underline}
+.meta{font-size:.8rem;color:var(--gray);margin-top:3px}
+.etape.valide .meta{color:var(--green-dark)}
+.actions{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:9px;font-size:.84rem}
+.actions label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.lien-passer{background:none;border:none;padding:0;color:var(--orange);cursor:pointer;font-size:.84rem;text-decoration:underline}
+.aide{margin-top:26px;font-size:.82rem;color:#555;line-height:1.6;border-top:1px solid var(--border);padding-top:14px}
+.aide a{color:var(--blue)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🧭 Mode aventure</h1>
+  <p class="sous">Avance étape par étape, du plus simple au plus complexe afin de devenir un technicien en électrotechnique. Les thèmes reviennent plusieurs fois, avec un niveau d'exigence croissant. Une étape est validée à partir de <b id="seuilTxt"></b> de réussite.</p>
+
+  <div class="bilan">
+    <strong>Ta progression</strong>
+    <div class="barre"><div id="barGlobal" class="remplissage">0%</div></div>
+    <div class="bilan-bas">
+      <span class="detail" id="detailGlobal"></span>
+      <span class="boutons">
+        <a id="btnPasse" class="bouton secondaire" href="#" hidden></a>
+        <a id="btnContinuer" class="bouton" href="#">Continuer l'aventure</a>
+      </span>
+    </div>
+  </div>
+
+  <div class="outils">
+    <button type="button" class="lien-outil" id="btnDeplier">Tout déplier</button>
+    <button type="button" class="lien-outil" id="btnReplier">Tout replier</button>
+  </div>
+  <div id="parcours"></div>
+
+  <div class="aide">
+    Le score d'une étape est enregistré quand tu cliques sur <b>« Envoyer le résultat »</b> à la fin de l'exercice.
+    Tu gardes ton meilleur score. Tu peux refaire un exercice autant de fois que tu veux, ou travailler par thème depuis la
+    <a href="31.html">liste des exercices</a> et le <a href="HiScores.html">tableau de bord</a>.
+  </div>
+</div>
+
+<script src="exercices.js"></script>
+<script src="parcours.js"></script>
+<script>
+// ------------------------------------------------------------
+// Lecture / écriture du stockage local
+// ------------------------------------------------------------
+function lireScores(){
+  try { return JSON.parse(localStorage.getItem("scoresApp")) || {}; }
+  catch(e){ return {}; }
+}
+function lireAventure(){
+  try {
+    const a = JSON.parse(localStorage.getItem("aventure")) || {};
+    return { passe: a.passe || {}, tp: a.tp || {} };
+  } catch(e){ return { passe:{}, tp:{} }; }
+}
+function sauverAventure(a){
+  try { localStorage.setItem("aventure", JSON.stringify(a)); } catch(e){}
+}
+
+// ------------------------------------------------------------
+// Outils
+// ------------------------------------------------------------
+const cle = e => e.theme + "/" + e.exo;
+const url = e => CHEMIN_PAGES + e.theme + "/" + e.exo + "/index.html";
+
+function titreDe(e){
+  const t = listeExercices.find(x => x.theme === e.theme);
+  const ex = t && t.exercices.find(x => x.nom === e.exo);
+  return ex ? ex.titre : "Thème " + e.theme + " – " + e.exo;
+}
+function scoreDe(e, scores){
+  const th = scores[e.theme];
+  const v = (th && typeof th === "object") ? th[e.exo] : undefined;
+  return typeof v === "number" ? v : null;
+}
+// États possibles : "valide", "passe", "afaire"
+function etatDe(e, scores, av){
+  const s = scoreDe(e, scores);
+  if (s !== null && s >= SEUIL_VALIDATION) return "valide";
+  if (e.type === "tp" && av.tp[cle(e)]) return "valide";
+  if (av.passe[cle(e)]) return "passe";
+  return "afaire";
+}
+function esc(t){ return String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// ------------------------------------------------------------
+// Affichage
+// ------------------------------------------------------------
+let ouverts = null, dernierNiv = null;   // niveaux dépliés (mémorisés entre deux affichages)
+
+function afficher(){
+  const scores = lireScores(), av = lireAventure();
+  const toutes = parcours.flatMap(n => n.etapes);
+  const etats = toutes.map(e => etatDe(e, scores, av));
+  const iCourante = etats.indexOf("afaire");       // -1 si tout est fait
+
+  const nbValides = etats.filter(x => x === "valide").length;
+  const nbPassees = etats.filter(x => x === "passe").length;
+  const pct = Math.round(nbValides / toutes.length * 100);
+
+  const barre = document.getElementById("barGlobal");
+  barre.style.width = Math.max(pct, 8) + "%";
+  barre.textContent = pct + "%";
+  document.getElementById("detailGlobal").textContent =
+    nbValides + " étape" + (nbValides > 1 ? "s" : "") + " validée" + (nbValides > 1 ? "s" : "") +
+    " sur " + toutes.length + (nbPassees ? " (" + nbPassees + " passée" + (nbPassees > 1 ? "s" : "") + ")" : "");
+
+  const btn = document.getElementById("btnContinuer");
+  if (iCourante === -1){
+    btn.textContent = "🎉 Parcours terminé";
+    btn.className = "bouton fini";
+    btn.removeAttribute("href");
+  } else {
+    btn.textContent = (nbValides + nbPassees === 0) ? "Commencer l'aventure" : "Continuer l'aventure";
+    btn.className = "bouton";
+    btn.href = url(toutes[iCourante]);
+  }
+
+  // Bouton « revenir à une étape passée »
+  const iPasse = etats.indexOf("passe");
+  const bp = document.getElementById("btnPasse");
+  if (iPasse === -1){ bp.hidden = true; }
+  else {
+    bp.hidden = false;
+    bp.href = url(toutes[iPasse]);
+    bp.textContent = "↩ Revenir à une étape passée (" + nbPassees + ")";
+  }
+
+  // Niveau contenant l'étape courante : on le déplie automatiquement
+  let nivCourant = -1, cpt = 0;
+  parcours.forEach((niv, n) => {
+    if (iCourante >= cpt && iCourante < cpt + niv.etapes.length) nivCourant = n;
+    cpt += niv.etapes.length;
+  });
+  if (ouverts === null) ouverts = new Set();
+  if (nivCourant !== -1 && nivCourant !== dernierNiv) ouverts.add(nivCourant);
+  dernierNiv = nivCourant;
+
+  let html = "", k = 0;
+  parcours.forEach((niveau, n) => {
+    const debut = k;
+    const nbNiv = niveau.etapes.length;
+    const etatsNiv = etats.slice(debut, debut + nbNiv);
+    const valNiv = etatsNiv.filter(x => x === "valide").length;
+    const pasNiv = etatsNiv.filter(x => x === "passe").length;
+    html += '<details class="niveau' + (valNiv === nbNiv ? " complet" : "") + '" data-niv="' + n + '"' +
+            (ouverts.has(n) ? " open" : "") + '>' +
+            '<summary><span class="nt">Niveau ' + (n + 1) + ' : ' + esc(niveau.titre) + '</span>' +
+            '<small>' + (valNiv === nbNiv ? "✓ " : "") + valNiv + ' / ' + nbNiv +
+            (pasNiv ? ' · » ' + pasNiv : '') + '</small></summary><ol class="chemin">';
+
+    niveau.etapes.forEach(e => {
+      const etat = etats[k], estCourante = (k === iCourante);
+      const verrou = (etat === "afaire" && !estCourante);
+      const s = scoreDe(e, scores);
+      let classe = verrou ? "verrou" : estCourante ? "courante" : etat;
+      let sym = etat === "valide" ? "✓" : etat === "passe" ? "»" : estCourante ? "▶" : "🔒";
+      let meta = "";
+      if (etat === "valide")      meta = s !== null ? "Meilleur score : " + Math.round(s) + " %" : "Réalisé";
+      else if (etat === "passe")  meta = "Passée" + (s !== null ? " – meilleur score : " + Math.round(s) + " %" : "");
+      else if (estCourante)       meta = s !== null ? "Meilleur score : " + Math.round(s) + " % (il faut " + SEUIL_VALIDATION + " %)" : "Pas encore tentée";
+      else                        meta = "Se débloque après l'étape précédente";
+
+      const titre = verrou
+        ? esc(titreDe(e))
+        : '<a href="' + url(e) + '">' + esc(titreDe(e)) + '</a>';
+
+      let actions = "";
+      if (!verrou && e.type === "tp" && etat !== "valide"){
+        actions += '<label><input type="checkbox" data-tp="' + cle(e) + '"> J\'ai réalisé ce TP</label>';
+      }
+      if (estCourante){
+        actions += '<button class="lien-passer" data-passe="' + cle(e) + '">Passer cette étape</button>';
+      }
+      if (etat === "valide" && e.type === "tp" && av.tp[cle(e)] && (s === null || s < SEUIL_VALIDATION)){
+        actions += '<label><input type="checkbox" data-tp="' + cle(e) + '" checked> Réalisé</label>';
+      }
+
+      html += '<li class="etape ' + classe + '"><span class="noeud" aria-hidden="true">' + sym + '</span>' +
+              '<div class="carte"><div class="titre">' + titre + '</div>' +
+              '<div class="meta">' + meta + '</div>' +
+              (actions ? '<div class="actions">' + actions + '</div>' : '') +
+              '</div></li>';
+      k++;
+    });
+    html += '</ol></details>';
+  });
+  document.getElementById("parcours").innerHTML = html;
+}
+
+// ------------------------------------------------------------
+// Actions (clic sur « Passer » ou case « TP réalisé »)
+// ------------------------------------------------------------
+document.getElementById("parcours").addEventListener("click", ev => {
+  const p = ev.target.closest("[data-passe]");
+  if (p){
+    if (!confirm("Passer cette étape sans la valider ? Tu pourras toujours y revenir plus tard.")) return;
+    const av = lireAventure();
+    av.passe[p.dataset.passe] = true;
+    sauverAventure(av); afficher();
+  }
+});
+document.getElementById("parcours").addEventListener("change", ev => {
+  const c = ev.target.closest("[data-tp]");
+  if (c){
+    const av = lireAventure();
+    if (c.checked) av.tp[c.dataset.tp] = true; else delete av.tp[c.dataset.tp];
+    sauverAventure(av); afficher();
+  }
+});
+
+// Mémorise les niveaux ouverts/fermés par l'élève (l'évènement toggle ne remonte pas : phase de capture)
+document.getElementById("parcours").addEventListener("toggle", ev => {
+  const d = ev.target;
+  if (!d.dataset || d.dataset.niv === undefined) return;
+  const n = +d.dataset.niv;
+  if (d.open) ouverts.add(n); else ouverts.delete(n);
+}, true);
+document.getElementById("btnDeplier").addEventListener("click", () => {
+  ouverts = new Set(parcours.map((_, i) => i)); afficher();
+});
+document.getElementById("btnReplier").addEventListener("click", () => {
+  ouverts = new Set(); afficher();
+});
+
+document.getElementById("seuilTxt").textContent = SEUIL_VALIDATION + " %";
+afficher();
+</script>
+</body>
+</html>

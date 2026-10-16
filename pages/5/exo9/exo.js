@@ -3,7 +3,7 @@
 // =====================
 
 // Carburant (gaz naturel simplifié)
-let PCI = (Math.floor(Math.random()*3)+10)*10; // 100 à 120 MJ/kg
+let PCI = (Math.floor(Math.random()*8))*2.5+40; // 40 à 60 MJ/kg
 
 // Masse consommée
 let m = (Math.floor(Math.random()*50)+2)/10; // 0.2 à 0.6 kg

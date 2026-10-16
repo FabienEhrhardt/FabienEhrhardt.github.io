@@ -3,20 +3,23 @@ const listeExercices = [
     {
         theme: "0",
         exercices: [
-			{ nom: "exo1", titre: "Conversion - Puissance de 10" },
-			{ nom: "exo2", titre: "Fonction affine - Lecture graphique" },
-			{ nom: "exo3", titre: "Pythagore - Trigonométrie" },
-			{ nom: "exo0", titre: "Formules : Unités 1" },
+			{ nom: "exo1", titre: "Conversion - Puissance de 10" },  //
+			{ nom: "exo2", titre: "Fonction affine - Lecture graphique" }, 
+			{ nom: "exo3", titre: "Pythagore - Trigonométrie" }, //
+			{ nom: "exo0", titre: "Formules : Unités 1" }, //
 			{ nom: "exo4", titre: "Formules : Unités 2" },
         ]
     },
 	{
         theme: "1",
         exercices: [
-			{ nom: "exo0", titre: "Formules : Energie / Puissance" },
-			{ nom: "exo7", titre: "Différencier source d'énergie et forme d'énergie" },
-			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" },
-			{ nom: "exo8", titre: "Éolienne – Rendements et facteur de charge" },
+			{ nom: "exo0", titre: "Formules : Energie / Puissance" }, //
+			{ nom: "exo7", titre: "Différencier source d'énergie et forme d'énergie" }, //
+			{ nom: "exo1", titre: "Chaine d'énergie - Rendements" }, //
+			{ nom: "exo11", titre: "Conversions d'énergie" }, //
+			{ nom: "exo8", titre: "Éolienne – Rendements et facteur de charge" }, //
+			{ nom: "exo9", titre: "Production d’énergie électrique par combustion" }, //
+			{ nom: "exo10", titre: "Bilan d'énergie d'une centrale de cogénération" },
 			{ nom: "exo2", titre: "Formules : Energie et transferts thermiques " },
 			{ nom: "exo4", titre: "Ballon d’eau chaude – Bilan énergétique" },
 			{ nom: "exo3", titre: "Refroidissement thermique d’un module IGBT" },
@@ -36,23 +39,30 @@ const listeExercices = [
 	{
         theme: "31",
         exercices: [
-            { nom: "exo9", titre: "Formules : Régime continu" },
-			{ nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" },
-			{ nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" },
-			{ nom: "exo16", titre: "Expression temporelle de signaux sinusoïdaux"},
-			{ nom: "exo10", titre: "📟 TP – Maîtrise de l'oscilloscope numérique" },
-			{ nom: "exo11", titre: "Utilisation oscilloscope et signaux sinusoïdaux" },
-			{ nom: "exo15", titre: "Schéma des symboles électriques" },
-			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
-			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" },
-			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" },
-			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" },
-			{ nom: "exo5", titre: "Calcul de puissance en monophasé" },
-			{ nom: "exo13", titre: "🔌 TP – La pince multimètre wattmétrique F407" },
-			{ nom: "exo6", titre: "Bilan de puissance en monophasé" },
-			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" },
+            { nom: "exo9", titre: "Formules : Régime continu" }, //
+			{ nom: "exo22", titre: "Régime continu : association de résistances 1" }, //
+			{ nom: "exo23", titre: "Régime continu : association de résistances 2" }, //
+			{ nom: "exo24", titre: "Régime continu : association de résistances 3" }, //					
+			{ nom: "exo0", titre: "Formules : Régime monophasé sinusoïdal" }, //
+			{ nom: "exo1", titre: "Courbes sinusoïdales i(t) et v(t)" }, //
+			{ nom: "exo16", titre: "Expression temporelle de signaux sinusoïdaux"}, //
+			{ nom: "exo17", titre: "Impédance, courant et tension : R, L et C"}, //
+			{ nom: "exo10", titre: "📟 TP – Maîtrise de l'oscilloscope numérique" }, //
+			{ nom: "exo11", titre: "Utilisation oscilloscope et signaux sinusoïdaux" }, //
+			{ nom: "exo15", titre: "Schéma des symboles électriques" }, //
+			{ nom: "exo18", titre: "Charges pures : puissance, impédance et composants équivalents" }, //
+			{ nom: "exo7", titre: "Etude des composants élémentaires R, L et C en régime sinusoïdal" }, //
+			{ nom: "exo2", titre: "Tracé du diagramme de Fresnel pour circuit RL série" }, //
+			{ nom: "exo3", titre: "Tracé du diagramme de Fresnel pour circuit RLC série" }, //
+			{ nom: "exo4", titre: "Tracé du diagramme de Fresnel pour circuit avec 2 composants en série" }, //
+			{ nom: "exo5", titre: "Calcul de puissance en monophasé" }, //
+			{ nom: "exo13", titre: "🔌 TP – La pince multimètre wattmétrique F407" }, //
+			{ nom: "exo6", titre: "Bilan de puissance en monophasé" }, //
 			{ nom: "exo8", titre: "Formules : Régime triphasé sinusoïdal" },
 			{ nom: "exo12", titre: "Intérêt du réseau triphasé" },
+			{ nom: "exo19", titre: "Bilan de puissance en triphasé" },
+			{ nom: "exo21", titre: "Courant de neutre charge équilibrée : diagramme de Fresnel" },
+			{ nom: "exo20", titre: "Courant de neutre charge déséquilibrée : diagramme de Fresnel" },
 			{ nom: "exo14", titre: "🔌 TP – Prise en main du contrôleur d'installation CA 6116N" },
 			
 			
@@ -143,7 +153,10 @@ const listeExercices = [
 		   { nom: "exo8", titre: "Éclairage d’une scène avec un projecteur" },
 		   { nom: "exo2", titre: "Formules : Panneau photovoltaïque" },
 		   { nom: "exo1", titre: "Courbe I=f(V) d'un panneau photovoltaïque" },
-		      
+		   { nom: "exo9", titre: "Dimensionnement d'une centrale photovoltaïque – étude du productible" },
+		   { nom: "exo10", titre: "Étude du productible d'une installation photovoltaïque" },
+		   { nom: "exo11", titre:"Dimensionnement d'une installation photovoltaïque – choix des panneaux et de l'onduleur" }, 
+		   { nom: "exo12", titre:"Dimensionnement des câbles d'une installation photovoltaïque" }, 		   
         ]
     },
 	{
@@ -158,8 +171,7 @@ const listeExercices = [
             { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" },
 			{ nom: "exo6", titre: "Machine à courant continu - Modèle de Thévenin" },
 			{ nom: "exo7", titre: "Machine à courant continu - Courbe C=f(n)" },
-			{ nom: "exo8", titre: "Générateur à courant continu - Modèle de Thévenin " },
-        
+			{ nom: "exo8", titre: "Générateur à courant continu - Modèle de Thévenin " },   
 		]
     },
 	{

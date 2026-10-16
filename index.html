@@ -17,6 +17,7 @@
   <div class="left">
     <button onclick="Sommaire()">Sommaire</button>
     <button onclick="HiScores()">High Scores</button>
+    <button onclick="Aventure()">Mode Aventure</button>
   </div>
 
   <!-- Partie droite -->
@@ -34,6 +35,14 @@
 
 <!-- <script src="script.js"></script>-->
 <script>
+window.addEventListener("message", e => {
+  if (e.data && e.data.type === "bts-recharger") location.reload();
+});
+
+
+
+
+
 window.onload = function () {
 	document.getElementById("zoneSimu").src = `Sommaire.html`;
 	let pseudo;
@@ -55,6 +64,10 @@ function Sommaire(dossier){
 
 function HiScores(dossier){
   document.getElementById("zoneSimu").src = `HiScores.html`;
+}
+
+function Aventure(dossier){
+  document.getElementById("zoneSimu").src = `aventure.html`;
 }
 
 function sauverPseudo(){

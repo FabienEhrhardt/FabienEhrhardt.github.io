@@ -23,6 +23,17 @@
   </div>
   </div>
   
+  <div class="sauvegarde" style="display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px;">
+    <button type="button" onclick="exporterProgression()">💾 Exporter ma progression</button>
+    <button type="button" onclick="document.getElementById('fichierImport').click()">📂 Importer une progression</button>
+    <input type="file" id="fichierImport" accept=".bts" hidden
+           onchange="importerProgression(this.files[0]); this.value='';">
+  </div>
+  <p style="font-size:0.82rem;color:#555;margin:4px 0 14px;">
+    Le fichier exporté (.bts) te permet de retrouver ta progression sur un autre appareil ou après un nettoyage du navigateur.
+    Il est personnel : l'importer sur un autre profil remplace ce profil par le tien.
+  </p>
+
   <button id="Reset" onclick="resetData()">Réinitialiser le profil ?</button>
 </div>
 
@@ -40,6 +51,7 @@
 
 <script src="exercices.js"></script>
 <script src="script.js"></script>
+<script src="sauvegarde.js"></script>
 <script>
 
 // --- Récupération pseudo ---
@@ -237,9 +249,9 @@ function getNiveau(p){
 }
 
 function resetData() {
-    if (confirm("Voulez-vous réinitialiser votre progression ?")) {
+    if (confirm("Voulez-vous réinitialiser votre progression ? Pense à l'exporter avant : cette action efface tout.")) {
         localStorage.clear();
-        location.reload();
+        rechargerTout();
     }
 }
 
