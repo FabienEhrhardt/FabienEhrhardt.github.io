@@ -58,15 +58,14 @@ const listeExercices = [
 			{ nom: "exo5", titre: "Calcul de puissance en monophasé" }, //
 			{ nom: "exo13", titre: "🔌 TP – La pince multimètre wattmétrique F407" }, //
 			{ nom: "exo6", titre: "Bilan de puissance en monophasé" }, //
+			{ nom: "exo25", titre: "Lecture des grandeurs électriques d'une plaque d'un moteur monophasé" }, //
 			{ nom: "exo8", titre: "Formules : Régime triphasé sinusoïdal" },
 			{ nom: "exo12", titre: "Intérêt du réseau triphasé" },
 			{ nom: "exo19", titre: "Bilan de puissance en triphasé" },
 			{ nom: "exo21", titre: "Courant de neutre charge équilibrée : diagramme de Fresnel" },
 			{ nom: "exo20", titre: "Courant de neutre charge déséquilibrée : diagramme de Fresnel" },
 			{ nom: "exo14", titre: "🔌 TP – Prise en main du contrôleur d'installation CA 6116N" },
-			
-			
-        
+			    
 		]
     },
 	{
@@ -91,8 +90,9 @@ const listeExercices = [
 			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
 			{ nom: "exo6", titre: "Transformateur triphasé – Choix du disjoncteur du secondaire" },
 			{ nom: "exo7", titre: "⚡ TP – Transformateur monophasé et modèle de Kapp" },
+			{ nom: "exo9", titre: "Compensation de l'énergie réactive en monophasé" },
 			{ nom: "exo8", titre: "Schéma des montages avancés" },
-        
+			        
 		]
     },
 	{

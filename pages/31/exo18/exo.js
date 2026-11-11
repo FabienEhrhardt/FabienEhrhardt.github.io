@@ -81,30 +81,17 @@ titre:"Charges pures : puissance, impédance et composants équivalents",
 enonce:`Un technicien doit vérifier différents bancs de charge monophasés raccordés sur un réseau \\(230\\,V - 50\\,Hz\\).
 
 On étudie séparément trois charges pures :
+<ul>
 
-- une charge **résistive** ;
-- une charge **inductive pure** assimilée à une bobine idéale ;
-- une charge **capacitive pure** assimilée à un condensateur idéal.
+<li> une charge résistive  ;</li>
+<li> une charge inductive pure assimilée à une bobine idéale ;</li>
+<li> une charge capacitive pure assimilée à un condensateur idéal.</li>
+</ul>
+Pour une charge résistive : \\(P=\\frac{U^2}{R}\\) <br>
 
-Pour une charge résistive :
+Pour une bobine idéale : \\(Q_L=\\frac{U^2}{X_L}\\) avec : \\(X_L=2\\pi fL\\) <br>
 
-\\(P=\\frac{U^2}{R}\\)
-
-Pour une bobine idéale :
-
-\\(Q_L=\\frac{U^2}{X_L}\\)
-
-avec :
-
-\\(X_L=2\\pi fL\\)
-
-Pour un condensateur idéal :
-
-\\(Q_C=-\\frac{U^2}{X_C}\\)
-
-avec :
-
-\\(X_C=\\frac{1}{2\\pi fC}\\)
+Pour un condensateur idéal : \\(Q_C=-\\frac{U^2}{X_C}\\) avec : \\(X_C=\\frac{1}{2\\pi fC}\\) <br>
 
 On rappelle également :
 

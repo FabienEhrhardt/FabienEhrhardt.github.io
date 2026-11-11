@@ -69,6 +69,7 @@ const parcours = [
     titre: "Puissance monophasée",
     etapes: [
       { theme: "31", exo: "exo5" },                  // Calcul de puissance en monophasé
+	  { theme: "31", exo: "exo25" },                  // Calcul de puissance plaque
       { theme: "31", exo: "exo13", type: "tp" },     // TP pince F407
       { theme: "31", exo: "exo6" },                  // Bilan de puissance en monophasé
     ]
@@ -81,7 +82,7 @@ const parcours = [
     ]
   },
    {
-    titre: "Puissance monophasée",
+    titre: "Utilisation de Fresnel",
     etapes: [
       { theme: "31", exo: "exo2" },                  // Fresnel RL
       { theme: "31", exo: "exo3" },                  // Fresnel RLC

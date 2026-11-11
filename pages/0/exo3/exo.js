@@ -74,6 +74,7 @@ function tracerTriangle(ecran) {
 
 let theme="0";
 let nomExo="exo2";
+let nbquestion=6;
 
 let exo={
 
@@ -124,7 +125,7 @@ donc \\(c=\\frac{b}{\\sin \\varphi}=${arrondi(c4)}\\) <br> attention à mettre l
 },
 // =====================
 {
-texte:`On donne a=${a5} et \\(\\varphi=${phi5}\\)°. Déterminer c.`,
+texte:`On donne a=${a5} et \\(\\varphi=${phi5}\\)°. Déterminer b.`,
 reponse:b5,
 feedback:`La trigonométrie donne : \\(\\tan \\varphi=\\frac{b}{a}\\) <br>
 donc \\(b=a\\times{\\tan \\varphi}=${arrondi(b5)}\\) <br> attention à mettre la calculatrice en degré!`,
