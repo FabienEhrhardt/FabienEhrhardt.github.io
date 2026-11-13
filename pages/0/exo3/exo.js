@@ -73,7 +73,7 @@ function tracerTriangle(ecran) {
 // =====================
 
 let theme="0";
-let nomExo="exo2";
+let nomExo="exo3";
 let nbquestion=6;
 
 let exo={
