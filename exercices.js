@@ -85,6 +85,8 @@ const listeExercices = [
         exercices: [
 			{ nom: "exo0", titre: "Formules : Transformateur monophasé" },
 			{ nom: "exo1", titre: "Hacheur série en conduction continue - étude des courbes" },
+			{ nom: "exo10", titre: "Étude d'un redresseur monophasé simple alternance" },
+			{ nom: "exo11", titre: "Étude d'un redresseur monophasé double alternance" },
 			{ nom: "exo3", titre: "Formules : Transformateur triphasé" },
 			{ nom: "exo4", titre: "Transformateur triphasé – Lecture de plaque" },
 			{ nom: "exo5", titre: "Transformateur triphasé – Bilan de puissance" },
@@ -169,8 +171,10 @@ const listeExercices = [
 			{ nom: "exo3", titre: "Étude de plaque d’un moteur triphasé asynchrone" },
 			{ nom: "exo1", titre: "Courbe C=f(n) d'un moteur asynchrone" },
             { nom: "exo2", titre: "Association d'un variateur et d'un moteur asynchrone" },
-			{ nom: "exo6", titre: "Machine à courant continu - Modèle de Thévenin" },
+			
+			{ nom: "exo9", titre: "Étude de la plaque signalétique d'un moteur à courant continu" },
 			{ nom: "exo7", titre: "Machine à courant continu - Courbe C=f(n)" },
+			{ nom: "exo6", titre: "Machine à courant continu - Modèle de Thévenin" },
 			{ nom: "exo8", titre: "Générateur à courant continu - Modèle de Thévenin " },   
 		]
     },
