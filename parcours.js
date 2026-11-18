@@ -309,6 +309,11 @@ const parcours = [
     etapes: [
       { theme: "33", exo: "exo8" },
       { theme: "33", exo: "exo1"},
+	  { theme: "33", exo: "exo12"},
+	  { theme: "33", exo: "exo13"},
+	  { theme: "33", exo: "exo14"},
+	  { theme: "33", exo: "exo15"},
+	  { theme: "33", exo: "exo16"},
 	  { theme: "33", exo: "exo10"},
 	  { theme: "33", exo: "exo11"},// Formules                 
     ]

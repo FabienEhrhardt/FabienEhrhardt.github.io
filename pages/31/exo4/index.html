@@ -176,9 +176,10 @@ window.onload = function () {
   //Titre de l'exercice
   titre_texte="Tracé du diagramme de Fresnel pour circuit avec 2 composants en série";
   //Enoncé de l'exercice
-  enonce_texte=`On suppose avoir un circuit avec 2 composants en série.<br>
+  enonce_texte=`On suppose avoir un circuit avec 2 composants en série alimentés par un courant I=${I} A de fréquence f=50 Hz.<br>
   Le composant 1 est `+Nom1+`.<br>
-  Le composant 2 est `+Nom2+`.`;
+  Le composant 2 est `+Nom2+`.<br>
+  `;
   
   // Ecriture des questions 
   //QuestionX : énoncé de la question
@@ -210,7 +211,7 @@ window.onload = function () {
 `;
   Unite1=`\\(V\\)`;
   
-  Question2=`Déterminer la valeur efficace de la tension sur le composant 1.`;
+  Question2=`Déterminer la valeur efficace de la tension sur le composant 2.`;
   R2=arrondi(V2);
   FbRep2 =`C'est le même tableau !
   \\(V_2=${V2} V\\)`;

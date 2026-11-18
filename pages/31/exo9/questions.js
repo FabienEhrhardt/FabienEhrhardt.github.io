@@ -1,5 +1,5 @@
 let theme="31";
-let nomExo="exo8";
+let nomExo="exo9";
 
 let chapitre="Régime continu";
 
